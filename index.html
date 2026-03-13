@@ -5,130 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIS Airlines — Twoje Niebo, Nasz Kierunek</title>
     <meta name="description" content="VIS Airlines — polska linia lotnicza nowej generacji z hubem w CPK.">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="css/style.css">
 
     <style>
         /* ============================================
-           NAWIGACJA — przebudowana
+           NAWIGACJA — dwa paski, wyrównane
            ============================================ */
         .nav {
-            height: auto;
-            flex-direction: column;
-            padding: 0;
-            gap: 0;
+            height: auto; flex-direction: column; padding: 0; gap: 0;
         }
         .nav.scrolled { height: auto; }
 
-        /* Górny pasek — język, waluta, konto */
         .nav-top {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 6px;
-            padding: 8px 48px;
-            background: rgba(6,14,26,0.95);
-            border-bottom: 1px solid rgba(255,255,255,0.04);
+            padding: 0 48px;
+            height: 38px;
+            background: rgba(4,10,20,0.98);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
             font-size: 12px;
+            gap: 0;
         }
         .nav-top-btn {
-            background: none;
-            border: none;
-            color: var(--gray-300);
-            font-size: 12px;
+            background: none; border: none;
+            color: var(--gray-300); font-size: 12px;
             font-family: var(--font-body);
-            padding: 4px 12px;
-            cursor: pointer;
-            transition: color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            position: relative;
-            border-radius: 4px;
+            padding: 0 14px; height: 38px;
+            cursor: pointer; transition: color 0.2s;
+            display: inline-flex; align-items: center; gap: 5px;
+            position: relative; border-radius: 0;
+            border-left: 1px solid rgba(255,255,255,0.06);
+            text-decoration: none;
+            white-space: nowrap;
         }
-        .nav-top-btn:hover { color: var(--white); background: rgba(255,255,255,0.05); }
-        .nav-top-divider {
-            width: 1px; height: 16px;
-            background: rgba(255,255,255,0.08);
-            margin: 0 4px;
-        }
+        .nav-top-btn:first-child { border-left: none; }
+        .nav-top-btn:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+        .nav-top-btn.accent { color: var(--gold-500); font-weight: 500; }
 
-        /* Popup okienko (język / waluta) */
         .popup-panel {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
+            position: absolute; top: 100%; right: 0;
             background: var(--navy-700);
             border: 1px solid rgba(201,168,76,0.2);
             border-radius: var(--radius-md);
             box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-            padding: 8px 0;
-            min-width: 180px;
-            z-index: 200;
-            display: none;
+            padding: 8px 0; min-width: 180px;
+            z-index: 200; display: none;
         }
         .popup-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
         .popup-option {
-            padding: 10px 20px;
-            font-size: 13px;
-            color: var(--gray-200);
-            cursor: pointer;
-            transition: all 0.15s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 10px 20px; font-size: 13px; color: var(--gray-200);
+            cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 10px;
         }
         .popup-option:hover { background: rgba(201,168,76,0.08); color: var(--white); }
         .popup-option.selected { color: var(--gold-500); }
-        .popup-option .flag { font-size: 18px; }
+        .popup-option .flag { font-size: 16px; }
 
-        /* Dolny pasek — logo + linki */
         .nav-bottom {
             width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 48px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 48px; height: 56px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
         }
-        .nav-main-links {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-        }
+        .nav-main-links { display: flex; gap: 0; align-items: center; height: 100%; }
         .nav-main-link {
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--gray-200);
-            padding: 8px 16px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: all 0.2s;
-            background: none;
-            border: none;
-            font-family: var(--font-body);
-            text-decoration: none;
+            font-size: 13px; font-weight: 400; color: var(--gray-200);
+            padding: 0 18px; height: 56px;
+            display: inline-flex; align-items: center;
+            cursor: pointer; transition: all 0.2s;
+            background: none; border: none; border-bottom: 2px solid transparent;
+            font-family: var(--font-body); text-decoration: none;
         }
-        .nav-main-link:hover { color: var(--gold-500); background: rgba(255,255,255,0.04); }
-        .nav-main-link.active { color: var(--gold-500); }
+        .nav-main-link:hover { color: var(--gold-500); background: rgba(255,255,255,0.02); border-bottom-color: var(--gold-600); }
+        .nav-main-link.active { color: var(--gold-500); border-bottom-color: var(--gold-500); }
 
 
         /* ============================================
-           HERO — treść wąsko po lewej, formularz szeroki
+           HERO
            ============================================ */
         .hero {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 48px;
-            position: relative;
-            overflow: hidden;
-            padding: 140px 48px 80px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 48px; position: relative; overflow: hidden;
+            padding: 130px 48px 80px;
         }
         .hero-bg {
             position: absolute; inset: 0;
@@ -139,369 +103,151 @@
         }
         .hero-grid-overlay {
             position: absolute; inset: 0; opacity: 0.02;
-            background-image:
-                linear-gradient(var(--gold-600) 1px, transparent 1px),
-                linear-gradient(90deg, var(--gold-600) 1px, transparent 1px);
+            background-image: linear-gradient(var(--gold-600) 1px, transparent 1px), linear-gradient(90deg, var(--gold-600) 1px, transparent 1px);
             background-size: 80px 80px;
             mask-image: radial-gradient(ellipse at 25% 60%, black 15%, transparent 65%);
             -webkit-mask-image: radial-gradient(ellipse at 25% 60%, black 15%, transparent 65%);
         }
-        .hero-deco-line {
-            position: absolute; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent);
-        }
+        .hero-deco-line { position: absolute; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,0.12), transparent); }
         .hero-deco-line-1 { top: 28%; left: 0; right: 0; transform: rotate(-3deg); }
         .hero-deco-line-2 { top: 68%; left: 0; right: 0; transform: rotate(2deg); opacity: 0.6; }
 
-        .hero-content {
-            position: relative; z-index: 2;
-            max-width: 420px; flex-shrink: 0;
-        }
+        .hero-content { position: relative; z-index: 2; max-width: 420px; flex-shrink: 0; }
         .hero-tag {
             display: inline-flex; align-items: center; gap: 10px;
             padding: 10px 22px; border-radius: var(--radius-full);
-            background: rgba(201,168,76,0.08);
-            border: 1px solid rgba(201,168,76,0.15);
+            background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.15);
             font-size: 12px; font-weight: 400; color: var(--gold-500);
             letter-spacing: 3px; text-transform: uppercase; margin-bottom: 28px;
         }
         .hero-tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-500); animation: pulse 2.5s ease-in-out infinite; }
-        .hero h1 {
-            font-family: var(--font-display);
-            font-size: clamp(32px, 3.5vw, 52px);
-            font-weight: 600; line-height: 1.1; margin-bottom: 20px;
-        }
+        .hero h1 { font-family: var(--font-display); font-size: clamp(32px,3.5vw,52px); font-weight: 600; line-height: 1.1; margin-bottom: 20px; }
         .hero h1 .accent { color: var(--gold-500); font-style: italic; }
-        .hero-desc {
-            font-size: 16px; font-weight: 300; color: var(--gray-200);
-            line-height: 1.8; margin-bottom: 0;
-        }
-        .hero-stats {
-            display: flex; gap: 40px; margin-top: 40px;
-            padding-top: 28px; border-top: 1px solid rgba(201,168,76,0.1);
-        }
+        .hero-desc { font-size: 16px; font-weight: 300; color: var(--gray-200); line-height: 1.8; }
+        .hero-stats { display: flex; gap: 40px; margin-top: 40px; padding-top: 28px; border-top: 1px solid rgba(201,168,76,0.1); }
         .hero-stat-value { font-family: var(--font-display); font-size: 32px; font-weight: 600; color: var(--gold-500); line-height: 1; }
         .hero-stat-label { font-size: 10px; font-weight: 400; color: var(--gray-400); text-transform: uppercase; letter-spacing: 2px; margin-top: 6px; }
 
 
         /* ============================================
-           WYSZUKIWARKA — szersza od środka w prawo
+           WYSZUKIWARKA — szeroka
            ============================================ */
         .search-panel {
-            position: relative; z-index: 10;
-            width: 580px; flex-shrink: 0;
-            background: rgba(12,24,44,0.8);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(201,168,76,0.12);
-            border-radius: var(--radius-lg);
-            padding: 32px 36px 36px;
-            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+            position: relative; z-index: 10; width: 580px; flex-shrink: 0;
+            background: rgba(12,24,44,0.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(201,168,76,0.12); border-radius: var(--radius-lg);
+            padding: 32px 36px 36px; box-shadow: 0 24px 80px rgba(0,0,0,0.4);
         }
-        .search-panel-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 24px;
-        }
-        .search-panel-title {
-            font-family: var(--font-display); font-size: 26px; font-weight: 600;
-        }
+        .search-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .search-panel-title { font-family: var(--font-display); font-size: 26px; font-weight: 600; }
         .search-panel-title .gold { color: var(--gold-500); }
-
-        /* Typ lotu — w obie / w jedną */
-        .trip-toggle {
-            display: flex;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: var(--radius-full);
-            padding: 3px;
-            gap: 2px;
-        }
-        .trip-toggle-btn {
-            padding: 7px 18px;
-            border-radius: var(--radius-full);
-            font-size: 12px; font-weight: 500;
-            font-family: var(--font-body);
-            color: var(--gray-400);
-            background: none; border: none;
-            cursor: pointer; transition: all 0.25s;
-            letter-spacing: 0.3px;
-        }
-        .trip-toggle-btn.active {
-            background: var(--gold-600);
-            color: var(--navy-800);
-            font-weight: 600;
-        }
-
+        .trip-toggle { display: flex; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-full); padding: 3px; gap: 2px; }
+        .trip-toggle-btn { padding: 7px 18px; border-radius: var(--radius-full); font-size: 12px; font-weight: 500; font-family: var(--font-body); color: var(--gray-400); background: none; border: none; cursor: pointer; transition: all 0.25s; }
+        .trip-toggle-btn.active { background: var(--gold-600); color: var(--navy-800); font-weight: 600; }
         .search-form { display: flex; flex-direction: column; gap: 16px; }
+        .search-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .search-row-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .search-row-full { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .search-btn { width: 100%; padding: 15px; font-size: 15px; font-weight: 600; margin-top: 4px; }
 
-        /* Row z Skąd i Dokąd obok siebie */
-        .search-row-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        /* Custom dropdown */
+        /* Dropdown */
         .dropdown-wrapper { position: relative; }
         .dropdown-trigger {
-            width: 100%; padding: 13px 38px 13px 16px;
-            border-radius: var(--radius-sm); background: var(--navy-900);
-            border: 1px solid rgba(255,255,255,0.08);
-            color: var(--white); font-size: 14px;
-            font-family: var(--font-body); font-weight: 300;
-            cursor: pointer; text-align: left;
-            transition: border-color 0.3s; outline: none;
-            position: relative; overflow: hidden;
-            text-overflow: ellipsis; white-space: nowrap;
+            width: 100%; padding: 13px 38px 13px 16px; border-radius: var(--radius-sm);
+            background: var(--navy-900); border: 1px solid rgba(255,255,255,0.08);
+            color: var(--white); font-size: 14px; font-family: var(--font-body); font-weight: 300;
+            cursor: pointer; text-align: left; transition: border-color 0.3s; outline: none;
+            position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
-        .dropdown-trigger::after {
-            content: '▾'; position: absolute; right: 14px; top: 50%;
-            transform: translateY(-50%); color: var(--gold-600); font-size: 13px;
-        }
+        .dropdown-trigger::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gold-600); font-size: 13px; }
         .dropdown-trigger:focus, .dropdown-trigger.open { border-color: var(--gold-600); }
         .dropdown-trigger .placeholder { color: var(--gray-500); }
-        .dropdown-trigger .sel-code {
-            font-family: var(--font-mono); color: var(--gold-500);
-            font-weight: 500; font-size: 12px; margin-left: 4px;
-        }
-
+        .dropdown-trigger .sel-code { font-family: var(--font-mono); color: var(--gold-500); font-weight: 500; font-size: 12px; margin-left: 4px; }
         .dropdown-menu {
             position: absolute; top: calc(100% + 4px); left: 0; right: 0;
             background: var(--navy-900); border: 1px solid rgba(201,168,76,0.2);
             border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-            z-index: 100; max-height: 300px; overflow-y: auto;
-            display: none;
+            z-index: 100; max-height: 300px; overflow-y: auto; display: none;
         }
         .dropdown-menu.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
         .dropdown-menu::-webkit-scrollbar { width: 5px; }
         .dropdown-menu::-webkit-scrollbar-thumb { background: var(--gold-800); border-radius: 3px; }
-        .dropdown-country {
-            padding: 10px 16px 5px; font-size: 11px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 2px; color: var(--gold-600);
-            pointer-events: none; border-top: 1px solid rgba(255,255,255,0.04);
-        }
+        .dropdown-country { padding: 10px 16px 5px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--gold-600); pointer-events: none; border-top: 1px solid rgba(255,255,255,0.04); }
         .dropdown-country:first-child { border-top: none; }
-        .dropdown-option {
-            padding: 9px 16px 9px 22px; font-size: 13px; color: var(--gray-200);
-            cursor: pointer; transition: all 0.12s;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .dropdown-option { padding: 9px 16px 9px 22px; font-size: 13px; color: var(--gray-200); cursor: pointer; transition: all 0.12s; display: flex; justify-content: space-between; align-items: center; }
         .dropdown-option:hover { background: rgba(201,168,76,0.08); color: var(--white); }
-        .dropdown-option .iata {
-            font-family: var(--font-mono); font-size: 11px; color: var(--gold-500);
-            font-weight: 500; background: rgba(201,168,76,0.1);
-            padding: 2px 7px; border-radius: 4px;
-        }
+        .dropdown-option .iata { font-family: var(--font-mono); font-size: 11px; color: var(--gold-500); font-weight: 500; background: rgba(201,168,76,0.1); padding: 2px 7px; border-radius: 4px; }
 
-
-        /* === KALENDARZ CUSTOM === */
+        /* Kalendarz */
         .calendar-trigger {
-            width: 100%; padding: 13px 16px; padding-right: 38px;
-            border-radius: var(--radius-sm); background: var(--navy-900);
-            border: 1px solid rgba(255,255,255,0.08);
-            color: var(--white); font-size: 14px;
-            font-family: var(--font-body); font-weight: 300;
-            cursor: pointer; text-align: left;
-            transition: border-color 0.3s; outline: none;
-        }
-        .calendar-trigger::after {
-            content: '📅'; position: absolute; right: 14px; top: 50%;
-            transform: translateY(-50%); font-size: 14px;
+            width: 100%; padding: 13px 16px; border-radius: var(--radius-sm);
+            background: var(--navy-900); border: 1px solid rgba(255,255,255,0.08);
+            color: var(--white); font-size: 14px; font-family: var(--font-body); font-weight: 300;
+            cursor: pointer; text-align: left; transition: border-color 0.3s; outline: none;
         }
         .calendar-trigger:focus, .calendar-trigger.open { border-color: var(--gold-600); }
         .calendar-trigger .placeholder { color: var(--gray-500); }
-
         .calendar-panel {
             position: absolute; top: calc(100% + 4px); left: 0;
             background: var(--navy-900); border: 1px solid rgba(201,168,76,0.2);
             border-radius: var(--radius-md); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            z-index: 150; padding: 20px; width: 300px;
-            display: none;
+            z-index: 150; padding: 20px; width: 300px; display: none;
         }
         .calendar-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
-        .cal-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 16px;
-        }
-        .cal-header-title {
-            font-family: var(--font-display); font-size: 16px;
-            font-weight: 600; color: var(--white);
-        }
-        .cal-nav-btn {
-            background: rgba(255,255,255,0.06); border: none;
-            color: var(--gold-500); width: 32px; height: 32px;
-            border-radius: 50%; cursor: pointer; font-size: 14px;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-        }
+        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .cal-header-title { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--white); }
+        .cal-nav-btn { background: rgba(255,255,255,0.06); border: none; color: var(--gold-500); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .cal-nav-btn:hover { background: rgba(201,168,76,0.15); }
-        .cal-weekdays {
-            display: grid; grid-template-columns: repeat(7, 1fr);
-            gap: 2px; margin-bottom: 6px;
-        }
-        .cal-weekday {
-            text-align: center; font-size: 10px; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 1px;
-            color: var(--gray-500); padding: 4px 0;
-        }
-        .cal-days {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
-        }
-        .cal-day {
-            text-align: center; padding: 8px 4px; font-size: 13px;
-            border-radius: var(--radius-sm); cursor: pointer;
-            color: var(--gray-200); transition: all 0.15s;
-            background: none; border: none; font-family: var(--font-body);
-        }
-        .cal-day:hover:not(.disabled):not(.empty) {
-            background: rgba(201,168,76,0.12); color: var(--white);
-        }
-        .cal-day.selected {
-            background: var(--gold-600) !important; color: var(--navy-800) !important;
-            font-weight: 600;
-        }
-        .cal-day.today {
-            border: 1px solid var(--gold-700);
-        }
+        .cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; margin-bottom: 6px; }
+        .cal-weekday { text-align: center; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-500); padding: 4px 0; }
+        .cal-days { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+        .cal-day { text-align: center; padding: 8px 4px; font-size: 13px; border-radius: var(--radius-sm); cursor: pointer; color: var(--gray-200); transition: all 0.15s; background: none; border: none; font-family: var(--font-body); }
+        .cal-day:hover:not(.disabled):not(.empty) { background: rgba(201,168,76,0.12); color: var(--white); }
+        .cal-day.selected { background: var(--gold-600) !important; color: var(--navy-800) !important; font-weight: 600; }
+        .cal-day.today { border: 1px solid var(--gold-700); }
         .cal-day.disabled { color: var(--gray-600); cursor: default; }
         .cal-day.empty { cursor: default; }
 
-
-        /* === PASAŻEROWIE POPUP === */
-        .pax-trigger {
-            width: 100%; padding: 13px 38px 13px 16px;
-            border-radius: var(--radius-sm); background: var(--navy-900);
-            border: 1px solid rgba(255,255,255,0.08);
-            color: var(--white); font-size: 14px;
-            font-family: var(--font-body); font-weight: 300;
-            cursor: pointer; text-align: left;
-            transition: border-color 0.3s; outline: none;
-            position: relative;
-        }
-        .pax-trigger::after {
-            content: '▾'; position: absolute; right: 14px; top: 50%;
-            transform: translateY(-50%); color: var(--gold-600); font-size: 13px;
-        }
+        /* Pasażerowie */
+        .pax-trigger { width: 100%; padding: 13px 38px 13px 16px; border-radius: var(--radius-sm); background: var(--navy-900); border: 1px solid rgba(255,255,255,0.08); color: var(--white); font-size: 14px; font-family: var(--font-body); font-weight: 300; cursor: pointer; text-align: left; transition: border-color 0.3s; outline: none; position: relative; }
+        .pax-trigger::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gold-600); font-size: 13px; }
         .pax-trigger:focus, .pax-trigger.open { border-color: var(--gold-600); }
-
-        .pax-panel {
-            position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-            background: var(--navy-900); border: 1px solid rgba(201,168,76,0.2);
-            border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-            z-index: 150; padding: 20px;
-            display: none;
-        }
+        .pax-panel { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--navy-900); border: 1px solid rgba(201,168,76,0.2); border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5); z-index: 150; padding: 20px; display: none; }
         .pax-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
-        .pax-row-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-        .pax-row-item:last-child { border-bottom: none; }
+        .pax-row-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .pax-row-item:last-of-type { border-bottom: none; }
         .pax-row-info h4 { font-size: 14px; font-weight: 500; color: var(--white); }
         .pax-row-info span { font-size: 11px; color: var(--gray-400); }
-        .pax-controls {
-            display: flex; align-items: center; gap: 14px;
-        }
-        .pax-ctrl-btn {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--gold-500); font-size: 16px; font-weight: 600;
-            cursor: pointer; display: flex; align-items: center;
-            justify-content: center; transition: all 0.2s;
-            font-family: var(--font-body);
-        }
+        .pax-controls { display: flex; align-items: center; gap: 14px; }
+        .pax-ctrl-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--gold-500); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-family: var(--font-body); }
         .pax-ctrl-btn:hover { background: rgba(201,168,76,0.15); border-color: var(--gold-600); }
         .pax-ctrl-btn:disabled { opacity: 0.3; cursor: default; }
-        .pax-ctrl-count {
-            font-size: 16px; font-weight: 600; color: var(--white);
-            width: 24px; text-align: center;
-            font-family: var(--font-mono);
-        }
-        .pax-done-btn {
-            width: 100%; margin-top: 14px;
-            padding: 10px; font-size: 13px; font-weight: 600;
-        }
+        .pax-ctrl-count { font-size: 16px; font-weight: 600; color: var(--white); width: 24px; text-align: center; font-family: var(--font-mono); }
+        .pax-done-btn { width: 100%; margin-top: 14px; padding: 10px; font-size: 13px; font-weight: 600; }
 
-
-        /* === KLASA PODRÓŻY POPUP === */
-        .class-panel {
-            position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-            background: var(--navy-900); border: 1px solid rgba(201,168,76,0.2);
-            border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5);
-            z-index: 150; padding: 8px 0;
-            display: none;
-        }
+        /* Klasa */
+        .class-panel { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--navy-900); border: 1px solid rgba(201,168,76,0.2); border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5); z-index: 150; padding: 8px 0; display: none; }
         .class-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
-        .class-option {
-            padding: 12px 20px; cursor: pointer;
-            display: flex; align-items: center; justify-content: space-between;
-            transition: all 0.12s;
-        }
+        .class-option { padding: 12px 20px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.12s; }
         .class-option:hover { background: rgba(201,168,76,0.08); }
         .class-option.selected { background: rgba(201,168,76,0.1); }
-        .class-option-name {
-            font-size: 14px; font-weight: 500; color: var(--gray-200);
-        }
+        .class-option-name { font-size: 14px; font-weight: 500; color: var(--gray-200); }
         .class-option.selected .class-option-name { color: var(--gold-500); }
-        .class-option-check {
-            color: var(--gold-500); font-size: 14px; display: none;
-        }
+        .class-option-check { color: var(--gold-500); font-size: 14px; display: none; }
         .class-option.selected .class-option-check { display: block; }
 
 
-        /* === GRID dolny — data, pasażerowie, klasa === */
-        .search-row-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        .search-row-3.with-return {
-            grid-template-columns: 1fr 1fr;
-        }
-        .search-row-full {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .search-btn {
-            width: 100%; padding: 15px; font-size: 15px;
-            font-weight: 600; margin-top: 4px;
-        }
-
-
         /* ============================================
-           SEKCJE POD HERO (bez zmian)
+           SEKCJE
            ============================================ */
         .why-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
         .why-card { padding: 36px 28px; }
-        .why-card-icon {
-            width: 56px; height: 56px; border-radius: var(--radius-md);
-            background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.12);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px; margin-bottom: 20px; transition: all 0.3s var(--ease);
-        }
+        .why-card-icon { width: 56px; height: 56px; border-radius: var(--radius-md); background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.12); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; transition: all 0.3s var(--ease); }
         .why-card:hover .why-card-icon { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.3); transform: scale(1.08); }
         .why-card h3 { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-bottom: 10px; }
         .why-card p { font-size: 14px; font-weight: 300; color: var(--gray-400); line-height: 1.7; }
 
-        .cta-section { padding: 0 48px; }
-        .cta-banner {
-            max-width: 1240px; margin: 0 auto; padding: 80px 64px;
-            background: radial-gradient(ellipse at 30% 50%, rgba(201,168,76,0.1) 0%, transparent 60%), var(--navy-700);
-            border: 1px solid rgba(201,168,76,0.12); border-radius: var(--radius-lg);
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 48px; position: relative; overflow: hidden;
-        }
-        .cta-banner::before { content: '✈'; position: absolute; right: -20px; bottom: -30px; font-size: 240px; opacity: 0.03; transform: rotate(-15deg); }
-        .cta-content { position: relative; z-index: 2; }
-        .cta-content h2 { font-family: var(--font-display); font-size: clamp(28px,3vw,40px); font-weight: 600; margin-bottom: 12px; }
-        .cta-content h2 .gold { color: var(--gold-500); }
-        .cta-content p { font-size: 16px; color: var(--gray-300); font-weight: 300; }
-        .cta-actions { position: relative; z-index: 2; flex-shrink: 0; }
-
+        /* Hub CPK — z mapą Polski */
         .hub-section { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
         .hub-text .section-desc { margin-bottom: 28px; }
         .hub-features { display: flex; flex-direction: column; gap: 20px; }
@@ -509,31 +255,134 @@
         .hub-feature-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
         .hub-feature h4 { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
         .hub-feature p { font-size: 13px; color: var(--gray-400); font-weight: 300; line-height: 1.6; }
-        .hub-visual { position: relative; height: 400px; border-radius: var(--radius-lg); background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%), var(--navy-700); border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .hub-visual-center { width: 80px; height: 80px; border-radius: 50%; background: rgba(201,168,76,0.12); border: 2px solid var(--gold-600); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--gold-500); position: relative; z-index: 2; }
-        .hub-orbit { position: absolute; border-radius: 50%; border: 1px solid rgba(201,168,76,0.06); }
-        .hub-orbit-1 { width: 180px; height: 180px; }
-        .hub-orbit-2 { width: 280px; height: 280px; }
-        .hub-orbit-3 { width: 380px; height: 380px; }
+        .hub-visual {
+            position: relative; height: 420px; border-radius: var(--radius-lg);
+            background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.04) 0%, transparent 70%), var(--navy-700);
+            border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; overflow: hidden;
+        }
+        .hub-visual svg { width: 90%; height: 90%; }
 
-        /* === RESPONSIVE === */
+        /* === OFERTY — styl British Airways === */
+        .offers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .offer-card {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--navy-700);
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.4s var(--ease);
+            cursor: pointer;
+        }
+        .offer-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            border-color: rgba(201,168,76,0.2);
+        }
+        .offer-card-img {
+            width: 100%; height: 200px;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.85);
+            transition: filter 0.4s;
+        }
+        .offer-card:hover .offer-card-img { filter: brightness(1); }
+        .offer-card-body { padding: 24px; }
+        .offer-card-body h3 { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+        .offer-card-route { font-size: 13px; color: var(--gray-400); margin-bottom: 16px; }
+        .offer-card-cta {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 14px; font-weight: 600; color: var(--gold-500);
+            transition: gap 0.3s;
+        }
+        .offer-card:hover .offer-card-cta { gap: 12px; }
+
+
+        /* ============================================
+           STOPKA — styl LOT z oneworld
+           ============================================ */
+        .footer {
+            background: var(--navy-900);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 0;
+        }
+        .footer-inner { max-width: 1240px; margin: 0 auto; }
+        .footer-main { padding: 60px 48px 40px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 40px; }
+        .footer-col-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 20px; }
+        .footer-link { display: block; font-size: 13px; font-weight: 300; color: var(--gray-400); margin-bottom: 10px; text-decoration: none; cursor: pointer; transition: color 0.2s; }
+        .footer-link:hover { color: var(--gold-500); }
+
+        .footer-social { display: flex; gap: 10px; margin-top: 16px; }
+        .footer-social-btn {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: var(--gray-300);
+            cursor: pointer; transition: all 0.2s; text-decoration: none;
+        }
+        .footer-social-btn:hover { background: rgba(201,168,76,0.15); color: var(--gold-500); border-color: var(--gold-600); }
+
+        .footer-mid {
+            padding: 24px 48px;
+            border-top: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 24px;
+        }
+        .footer-mid-section { display: flex; align-items: center; gap: 16px; }
+        .footer-mid-label { font-size: 13px; font-weight: 500; color: var(--gray-300); white-space: nowrap; }
+        .footer-payment-icons { display: flex; gap: 8px; align-items: center; }
+        .footer-payment-icon {
+            padding: 6px 12px; border-radius: 4px;
+            background: rgba(255,255,255,0.08); font-size: 12px;
+            font-weight: 700; color: var(--white); letter-spacing: 0.5px;
+            font-family: var(--font-body);
+        }
+        .footer-alliance {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .footer-alliance-badge {
+            padding: 8px 16px; border-radius: var(--radius-sm);
+            border: 1px solid rgba(201,168,76,0.2);
+            background: rgba(201,168,76,0.05);
+            font-size: 12px; font-weight: 600; color: var(--gold-500);
+            letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .footer-bottom-bar {
+            padding: 20px 48px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 16px;
+        }
+        .footer-bottom-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .footer-bottom-links a { font-size: 12px; color: var(--gray-500); text-decoration: none; transition: color 0.2s; }
+        .footer-bottom-links a:hover { color: var(--gray-300); }
+        .footer-copy { font-size: 12px; color: var(--gray-600); }
+
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
         @media (max-width: 1100px) {
-            .hero { flex-direction: column; padding: 140px 24px 60px; gap: 40px; }
+            .hero { flex-direction: column; padding: 130px 24px 60px; gap: 40px; }
             .hero-content { max-width: 100%; }
             .search-panel { width: 100%; max-width: 580px; }
+            .offers-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
-            .nav-top { padding: 8px 16px; flex-wrap: wrap; justify-content: center; }
-            .nav-bottom { padding: 10px 16px; }
+            .nav-top { padding: 0 16px; }
+            .nav-bottom { padding: 0 16px; height: 50px; }
             .nav-main-links { display: none; }
-            .hero { padding: 130px 16px 40px; }
+            .hero { padding: 120px 16px 40px; }
             .hero-stats { flex-wrap: wrap; gap: 24px; }
             .why-grid { grid-template-columns: 1fr; }
             .hub-section { grid-template-columns: 1fr; }
-            .cta-banner { flex-direction: column; text-align: center; padding: 40px 24px; }
-            .cta-section { padding: 0 16px; }
             .search-row-2, .search-row-3, .search-row-full { grid-template-columns: 1fr; }
-            .hub-visual { height: 280px; }
+            .footer-main { grid-template-columns: 1fr 1fr; }
+            .footer-mid { flex-direction: column; align-items: flex-start; }
+            .footer-bottom-bar { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -541,11 +390,9 @@
 
     <!-- ===== NAWIGACJA ===== -->
     <nav class="nav">
-        <!-- Górny pasek -->
         <div class="nav-top">
-            <!-- Język -->
             <div style="position:relative;">
-                <button class="nav-top-btn" id="lang-btn">🇵🇱 Polski ▾</button>
+                <button class="nav-top-btn" id="lang-btn">PL Polski ▾</button>
                 <div class="popup-panel" id="lang-panel">
                     <div class="popup-option selected" data-lang="pl"><span class="flag">🇵🇱</span> Polski</div>
                     <div class="popup-option" data-lang="en"><span class="flag">🇬🇧</span> English</div>
@@ -553,37 +400,30 @@
                     <div class="popup-option" data-lang="uk"><span class="flag">🇺🇦</span> Українська</div>
                 </div>
             </div>
-            <div class="nav-top-divider"></div>
-            <!-- Waluta -->
             <div style="position:relative;">
-                <button class="nav-top-btn" id="currency-btn">💰 PLN ▾</button>
+                <button class="nav-top-btn" id="currency-btn">PLN ▾</button>
                 <div class="popup-panel" id="currency-panel">
-                    <div class="popup-option selected" data-cur="PLN">🇵🇱 PLN — Złoty</div>
-                    <div class="popup-option" data-cur="EUR">🇪🇺 EUR — Euro</div>
-                    <div class="popup-option" data-cur="USD">🇺🇸 USD — Dolar</div>
-                    <div class="popup-option" data-cur="GBP">🇬🇧 GBP — Funt</div>
+                    <div class="popup-option selected" data-cur="PLN">PLN — Złoty</div>
+                    <div class="popup-option" data-cur="EUR">EUR — Euro</div>
+                    <div class="popup-option" data-cur="USD">USD — Dolar</div>
+                    <div class="popup-option" data-cur="GBP">GBP — Funt</div>
                 </div>
             </div>
-            <div class="nav-top-divider"></div>
             <a href="login.html" class="nav-top-btn">Zaloguj się</a>
-            <a href="register.html" class="nav-top-btn" style="color: var(--gold-500); font-weight: 500;">Załóż konto</a>
+            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
         </div>
-
-        <!-- Dolny pasek -->
         <div class="nav-bottom">
             <a href="index.html" class="nav-logo">
                 <div class="nav-logo-mark">V</div>
                 <div class="nav-logo-text">VIS <em>Airlines</em></div>
             </a>
-
             <div class="nav-main-links">
-                <a href="flights.html" class="nav-main-link">Zaplanuj podróż</a>
+                <a href="flights.html" class="nav-main-link active">Zaplanuj podróż</a>
                 <a href="#" class="nav-main-link">Odpraw się</a>
                 <a href="#" class="nav-main-link">Zarządzaj rezerwacją</a>
                 <a href="#" class="nav-main-link">Informacje</a>
                 <a href="#" class="nav-main-link">Pomoc</a>
             </div>
-
             <button class="nav-hamburger" aria-label="Menu">☰</button>
         </div>
     </nav>
@@ -596,35 +436,17 @@
         <div class="hero-deco-line hero-deco-line-1"></div>
         <div class="hero-deco-line hero-deco-line-2"></div>
 
-        <!-- Lewa — treść -->
         <div class="hero-content">
-            <div class="hero-tag animate-in">
-                <div class="hero-tag-dot"></div>
-                Hub CPK — Polska
-            </div>
-            <h1 class="animate-in animate-in-d1">
-                Lataj z&nbsp;<span class="accent">VIS&nbsp;Airlines</span><br>prosto z&nbsp;serca Europy
-            </h1>
-            <p class="hero-desc animate-in animate-in-d2">
-                Polska linia lotnicza nowej generacji. Łączymy Centralny Port Komunikacyjny ze światem.
-            </p>
+            <div class="hero-tag animate-in"><div class="hero-tag-dot"></div>Hub CPK — Polska</div>
+            <h1 class="animate-in animate-in-d1">Lataj z&nbsp;<span class="accent">VIS&nbsp;Airlines</span><br>prosto z&nbsp;serca Europy</h1>
+            <p class="hero-desc animate-in animate-in-d2">Polska linia lotnicza nowej generacji. Łączymy Centralny Port Komunikacyjny ze światem.</p>
             <div class="hero-stats animate-in animate-in-d3">
-                <div class="hero-stat">
-                    <div class="hero-stat-value">CPK</div>
-                    <div class="hero-stat-label">Hub bazowy</div>
-                </div>
-                <div class="hero-stat">
-                    <div class="hero-stat-value">4</div>
-                    <div class="hero-stat-label">Typy samolotów</div>
-                </div>
-                <div class="hero-stat">
-                    <div class="hero-stat-value">24/7</div>
-                    <div class="hero-stat-label">Obsługa</div>
-                </div>
+                <div class="hero-stat"><div class="hero-stat-value">CPK</div><div class="hero-stat-label">Hub bazowy</div></div>
+                <div class="hero-stat"><div class="hero-stat-value">12</div><div class="hero-stat-label">Typy samolotów</div></div>
+                <div class="hero-stat"><div class="hero-stat-value">24/7</div><div class="hero-stat-label">Obsługa</div></div>
             </div>
         </div>
 
-        <!-- Prawa — formularz -->
         <div class="search-panel animate-in animate-in-d2">
             <div class="search-panel-header">
                 <div class="search-panel-title">Zarezerwuj <span class="gold">lot</span></div>
@@ -633,106 +455,30 @@
                     <button class="trip-toggle-btn" data-type="one">W jedną stronę</button>
                 </div>
             </div>
-
             <div class="search-form">
-                <!-- SKĄD / DOKĄD -->
                 <div class="search-row-2">
-                    <div class="form-group">
-                        <label class="form-label">Skąd</label>
-                        <div class="dropdown-wrapper" id="dd-from">
-                            <button type="button" class="dropdown-trigger" data-value=""><span class="placeholder">Lotnisko wylotu</span></button>
-                            <div class="dropdown-menu" id="menu-from"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Dokąd</label>
-                        <div class="dropdown-wrapper" id="dd-to">
-                            <button type="button" class="dropdown-trigger" data-value=""><span class="placeholder">Lotnisko docelowe</span></button>
-                            <div class="dropdown-menu" id="menu-to"></div>
-                        </div>
-                    </div>
+                    <div class="form-group"><label class="form-label">Skąd</label><div class="dropdown-wrapper" id="dd-from"><button type="button" class="dropdown-trigger" data-value=""><span class="placeholder">Lotnisko wylotu</span></button><div class="dropdown-menu" id="menu-from"></div></div></div>
+                    <div class="form-group"><label class="form-label">Dokąd</label><div class="dropdown-wrapper" id="dd-to"><button type="button" class="dropdown-trigger" data-value=""><span class="placeholder">Lotnisko docelowe</span></button><div class="dropdown-menu" id="menu-to"></div></div></div>
                 </div>
-
-                <!-- DATY -->
-                <div class="search-row-3 with-return" id="dates-row">
-                    <div class="form-group">
-                        <label class="form-label">Data wylotu</label>
-                        <div class="dropdown-wrapper" id="cal-dep-wrap">
-                            <button type="button" class="calendar-trigger" id="cal-dep-btn"><span class="placeholder">Wybierz datę</span></button>
-                            <div class="calendar-panel" id="cal-dep-panel"></div>
-                        </div>
-                    </div>
-                    <div class="form-group" id="return-date-group">
-                        <label class="form-label">Data powrotu</label>
-                        <div class="dropdown-wrapper" id="cal-ret-wrap">
-                            <button type="button" class="calendar-trigger" id="cal-ret-btn"><span class="placeholder">Wybierz datę</span></button>
-                            <div class="calendar-panel" id="cal-ret-panel"></div>
-                        </div>
-                    </div>
+                <div class="search-row-3" id="dates-row">
+                    <div class="form-group"><label class="form-label">Data wylotu</label><div class="dropdown-wrapper" id="cal-dep-wrap"><button type="button" class="calendar-trigger" id="cal-dep-btn"><span class="placeholder">Wybierz datę</span></button><div class="calendar-panel" id="cal-dep-panel"></div></div></div>
+                    <div class="form-group" id="return-date-group"><label class="form-label">Data powrotu</label><div class="dropdown-wrapper" id="cal-ret-wrap"><button type="button" class="calendar-trigger" id="cal-ret-btn"><span class="placeholder">Wybierz datę</span></button><div class="calendar-panel" id="cal-ret-panel"></div></div></div>
                 </div>
-
-                <!-- PASAŻEROWIE / KLASA -->
                 <div class="search-row-full">
-                    <div class="form-group">
-                        <label class="form-label">Pasażerowie</label>
-                        <div class="dropdown-wrapper" id="pax-wrap">
-                            <button type="button" class="pax-trigger" id="pax-btn">1 pasażer</button>
-                            <div class="pax-panel" id="pax-panel">
-                                <div class="pax-row-item" data-pax="adult">
-                                    <div class="pax-row-info"><h4>Dorośli</h4><span>16+ lat</span></div>
-                                    <div class="pax-controls">
-                                        <button class="pax-ctrl-btn" data-action="minus" disabled>−</button>
-                                        <span class="pax-ctrl-count">1</span>
-                                        <button class="pax-ctrl-btn" data-action="plus">+</button>
-                                    </div>
-                                </div>
-                                <div class="pax-row-item" data-pax="child">
-                                    <div class="pax-row-info"><h4>Dzieci</h4><span>6 – 15 lat</span></div>
-                                    <div class="pax-controls">
-                                        <button class="pax-ctrl-btn" data-action="minus" disabled>−</button>
-                                        <span class="pax-ctrl-count">0</span>
-                                        <button class="pax-ctrl-btn" data-action="plus">+</button>
-                                    </div>
-                                </div>
-                                <div class="pax-row-item" data-pax="infant">
-                                    <div class="pax-row-info"><h4>Niemowlęta</h4><span>do 6 miesięcy</span></div>
-                                    <div class="pax-controls">
-                                        <button class="pax-ctrl-btn" data-action="minus" disabled>−</button>
-                                        <span class="pax-ctrl-count">0</span>
-                                        <button class="pax-ctrl-btn" data-action="plus">+</button>
-                                    </div>
-                                </div>
-                                <button class="btn btn-gold pax-done-btn" id="pax-done">Gotowe</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Klasa podróży</label>
-                        <div class="dropdown-wrapper" id="class-wrap">
-                            <button type="button" class="dropdown-trigger" id="class-btn" data-value="economy">Ekonomiczna</button>
-                            <div class="class-panel" id="class-panel">
-                                <div class="class-option selected" data-class="economy">
-                                    <span class="class-option-name">Ekonomiczna</span>
-                                    <span class="class-option-check">✓</span>
-                                </div>
-                                <div class="class-option" data-class="premium">
-                                    <span class="class-option-name">Premium</span>
-                                    <span class="class-option-check">✓</span>
-                                </div>
-                                <div class="class-option" data-class="business">
-                                    <span class="class-option-name">Biznes</span>
-                                    <span class="class-option-check">✓</span>
-                                </div>
-                                <div class="class-option" data-class="first">
-                                    <span class="class-option-name">Pierwsza</span>
-                                    <span class="class-option-check">✓</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="form-group"><label class="form-label">Pasażerowie</label><div class="dropdown-wrapper" id="pax-wrap"><button type="button" class="pax-trigger" id="pax-btn">1 dorosły</button><div class="pax-panel" id="pax-panel">
+                        <div class="pax-row-item" data-pax="adult"><div class="pax-row-info"><h4>Dorośli</h4><span>16+ lat</span></div><div class="pax-controls"><button class="pax-ctrl-btn" data-action="minus" disabled>−</button><span class="pax-ctrl-count">1</span><button class="pax-ctrl-btn" data-action="plus">+</button></div></div>
+                        <div class="pax-row-item" data-pax="child"><div class="pax-row-info"><h4>Dzieci</h4><span>6 – 15 lat</span></div><div class="pax-controls"><button class="pax-ctrl-btn" data-action="minus" disabled>−</button><span class="pax-ctrl-count">0</span><button class="pax-ctrl-btn" data-action="plus">+</button></div></div>
+                        <div class="pax-row-item" data-pax="infant"><div class="pax-row-info"><h4>Niemowlęta</h4><span>do 6 miesięcy</span></div><div class="pax-controls"><button class="pax-ctrl-btn" data-action="minus" disabled>−</button><span class="pax-ctrl-count">0</span><button class="pax-ctrl-btn" data-action="plus">+</button></div></div>
+                        <button class="btn btn-gold pax-done-btn" id="pax-done">Gotowe</button>
+                    </div></div></div>
+                    <div class="form-group"><label class="form-label">Klasa podróży</label><div class="dropdown-wrapper" id="class-wrap"><button type="button" class="dropdown-trigger" id="class-btn" data-value="economy">Ekonomiczna</button><div class="class-panel" id="class-panel">
+                        <div class="class-option selected" data-class="economy"><span class="class-option-name">Ekonomiczna</span><span class="class-option-check">✓</span></div>
+                        <div class="class-option" data-class="premium"><span class="class-option-name">Premium</span><span class="class-option-check">✓</span></div>
+                        <div class="class-option" data-class="business"><span class="class-option-name">Biznes</span><span class="class-option-check">✓</span></div>
+                        <div class="class-option" data-class="first"><span class="class-option-name">Pierwsza</span><span class="class-option-check">✓</span></div>
+                    </div></div></div>
                 </div>
-
-                <button class="btn btn-gold search-btn" id="search-btn">✈ &nbsp;Szukaj lotów</button>
+                <button class="btn btn-gold search-btn" id="search-btn">Szukaj lotów</button>
             </div>
         </div>
     </section>
@@ -744,7 +490,7 @@
             <div class="section-eyebrow">Dlaczego my</div>
             <h2 class="section-title">Latanie, jakie powinno <span class="gold">być</span></h2>
             <div class="divider divider-center"></div>
-            <p class="section-desc">Cztery filary, na których budujemy VIS Airlines — każdy lot to obietnica dotrzymana.</p>
+            <p class="section-desc">Cztery filary VIS Airlines — każdy lot to obietnica dotrzymana.</p>
         </div>
         <div class="why-grid">
             <div class="card why-card reveal reveal-delay-1"><div class="why-card-icon">🛡</div><h3>Bezpieczeństwo</h3><p>Najnowsza flota — żaden samolot nie ma więcej niż 5 lat. Zero kompromisów.</p></div>
@@ -755,7 +501,7 @@
     </section>
 
 
-    <!-- ===== HUB CPK ===== -->
+    <!-- ===== HUB CPK z mapą Polski ===== -->
     <section class="section">
         <div class="hub-section">
             <div class="hub-text reveal">
@@ -770,65 +516,165 @@
                 </div>
             </div>
             <div class="hub-visual reveal reveal-delay-2">
-                <div class="hub-orbit hub-orbit-1"></div>
-                <div class="hub-orbit hub-orbit-2"></div>
-                <div class="hub-orbit hub-orbit-3"></div>
-                <div class="hub-visual-center">CPK</div>
+                <!-- Mapa Polski z zaznaczonym CPK -->
+                <svg viewBox="0 0 500 480" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Kontur Polski (uproszczony) -->
+                    <path d="M168 52 L198 42 L232 38 L255 28 L278 30 L310 22 L340 32 L368 28 L385 42 L398 38 L415 52 L420 72 L410 88 L418 108 L430 125 L425 148 L438 170 L432 195 L440 218 L430 240 L418 255 L405 275 L390 290 L378 310 L362 322 L348 340 L330 350 L312 362 L295 375 L278 385 L258 390 L240 398 L218 402 L195 395 L178 388 L162 378 L148 365 L135 348 L128 330 L118 312 L108 295 L98 278 L88 258 L82 238 L78 218 L82 198 L88 178 L95 158 L105 140 L112 122 L118 105 L128 88 L140 72 L155 58 Z"
+                        fill="rgba(201,168,76,0.06)"
+                        stroke="rgba(201,168,76,0.25)"
+                        stroke-width="1.5"
+                    />
+                    <!-- Woda — Bałtyk (hint) -->
+                    <text x="220" y="18" fill="rgba(201,168,76,0.15)" font-size="11" font-family="var(--font-body)" font-weight="300">Morze Bałtyckie</text>
+
+                    <!-- CPK — punkt główny z pulsem -->
+                    <circle cx="248" cy="215" r="20" fill="rgba(201,168,76,0.1)" stroke="rgba(201,168,76,0.3)" stroke-width="1">
+                        <animate attributeName="r" values="20;28;20" dur="3s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="1;0.3;1" dur="3s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="248" cy="215" r="8" fill="var(--gold-600)" stroke="var(--navy-900)" stroke-width="2"/>
+                    <text x="248" y="248" fill="var(--gold-500)" font-size="14" font-family="var(--font-mono)" font-weight="700" text-anchor="middle">CPK</text>
+                    <text x="248" y="262" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)" text-anchor="middle">Centralny Port Komunikacyjny</text>
+
+                    <!-- Inne miasta -->
+                    <circle cx="260" cy="200" r="3" fill="var(--gray-400)"/><text x="270" y="198" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Warszawa</text>
+                    <circle cx="212" cy="80" r="3" fill="var(--gray-400)"/><text x="222" y="83" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Gdańsk</text>
+                    <circle cx="120" cy="115" r="3" fill="var(--gray-400)"/><text x="95" y="110" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Szczecin</text>
+                    <circle cx="268" cy="305" r="3" fill="var(--gray-400)"/><text x="278" y="308" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Kraków</text>
+                    <circle cx="195" cy="145" r="3" fill="var(--gray-400)"/><text x="163" y="143" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Bydgoszcz</text>
+                    <circle cx="238" cy="295" r="3" fill="var(--gray-400)"/><text x="205" y="293" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Katowice</text>
+                    <circle cx="345" cy="310" r="3" fill="var(--gray-400)"/><text x="355" y="313" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Rzeszów</text>
+                    <circle cx="168" cy="240" r="3" fill="var(--gray-400)"/><text x="132" y="238" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Wrocław</text>
+                    <circle cx="160" cy="195" r="3" fill="var(--gray-400)"/><text x="122" y="193" fill="var(--gray-400)" font-size="9" font-family="var(--font-body)">Poznań</text>
+
+                    <!-- Linie od CPK do miast -->
+                    <line x1="248" y1="215" x2="260" y2="200" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="212" y2="80" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="120" y2="115" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="268" y2="305" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="195" y2="145" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="238" y2="295" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="345" y2="310" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="168" y2="240" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                    <line x1="248" y1="215" x2="160" y2="195" stroke="rgba(201,168,76,0.12)" stroke-width="0.8" stroke-dasharray="3,3"/>
+                </svg>
             </div>
         </div>
     </section>
 
 
-    <!-- ===== CTA ===== -->
-    <section class="cta-section" style="padding-bottom: 120px;">
-        <div class="cta-banner reveal">
-            <div class="cta-content">
-                <h2>Gotowy na <span class="gold">pierwszy lot</span>?</h2>
-                <p>Załóż konto, wyszukaj połączenie i zarezerwuj bilet — w mniej niż 3 minuty.</p>
+    <!-- ===== OFERTY — styl British Airways ===== -->
+    <section class="section">
+        <div class="section-header-center reveal">
+            <div class="section-eyebrow">Wybierz kierunek</div>
+            <h2 class="section-title">Nasze najlepsze <span class="gold">oferty</span></h2>
+            <div class="divider divider-center"></div>
+        </div>
+        <div class="offers-grid">
+            <div class="offer-card reveal reveal-delay-1">
+                <img class="offer-card-img" src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=600&h=400&fit=crop" alt="Frankfurt">
+                <div class="offer-card-body">
+                    <h3>Frankfurt</h3>
+                    <div class="offer-card-route">CPK → FRA · bezpośredni · 1h 30m</div>
+                    <div class="offer-card-cta">Zobacz ofertę →</div>
+                </div>
             </div>
-            <div class="cta-actions"><a href="register.html" class="btn btn-gold btn-lg">Załóż konto za darmo</a></div>
+            <div class="offer-card reveal reveal-delay-2">
+                <img class="offer-card-img" src="https://images.unsplash.com/photo-1534430480872-3498386e7856?w=600&h=400&fit=crop" alt="Nowy Jork">
+                <div class="offer-card-body">
+                    <h3>Nowy Jork</h3>
+                    <div class="offer-card-route">CPK → JFK · bezpośredni · 9h 30m</div>
+                    <div class="offer-card-cta">Zobacz ofertę →</div>
+                </div>
+            </div>
+            <div class="offer-card reveal reveal-delay-3">
+                <img class="offer-card-img" src="https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=600&h=400&fit=crop" alt="Australia">
+                <div class="offer-card-body">
+                    <h3>Australia</h3>
+                    <div class="offer-card-route">CPK → SYD · 1 przesiadka · 20h+</div>
+                    <div class="offer-card-cta">Zobacz ofertę →</div>
+                </div>
+            </div>
         </div>
     </section>
 
 
-    <!-- ===== STOPKA ===== -->
+    <!-- ===== STOPKA — styl LOT z oneworld ===== -->
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-grid">
+            <div class="footer-main">
                 <div>
-                    <a href="index.html" class="nav-logo" style="margin-bottom:8px;">
-                        <div class="nav-logo-mark" style="width:36px;height:36px;font-size:16px;">V</div>
-                        <div class="nav-logo-text" style="font-size:20px;">VIS <em>Airlines</em></div>
-                    </a>
-                    <p class="footer-brand-desc">Polska linia lotnicza nowej generacji z hubem w Centralnym Porcie Komunikacyjnym.</p>
-                </div>
-                <div>
-                    <div class="footer-col-title">Podróż</div>
-                    <a href="flights.html" class="footer-link">Szukaj lotów</a>
-                    <a href="#" class="footer-link">Odpraw się</a>
-                    <a href="#" class="footer-link">Zarządzaj rezerwacją</a>
-                    <a href="#" class="footer-link">Bagaż</a>
-                </div>
-                <div>
-                    <div class="footer-col-title">Informacje</div>
-                    <a href="#" class="footer-link">Klasy podróży</a>
-                    <a href="#" class="footer-link">Program lojalnościowy</a>
+                    <div class="footer-col-title">O VIS Airlines</div>
+                    <a href="#" class="footer-link">O nas</a>
                     <a href="#" class="footer-link">Kariera</a>
-                    <a href="#" class="footer-link">Kontakt</a>
+                    <a href="#" class="footer-link">Biuro Prasowe</a>
+                    <a href="#" class="footer-link">Corporate</a>
+                    <a href="#" class="footer-link">Newsletter</a>
+                    <a href="#" class="footer-link">Blog podróżniczy</a>
                 </div>
                 <div>
-                    <div class="footer-col-title">Pomoc</div>
-                    <a href="#" class="footer-link">FAQ</a>
-                    <a href="#" class="footer-link">Status lotu</a>
-                    <a href="#" class="footer-link">Regulamin</a>
-                    <a href="#" class="footer-link">Polityka prywatności</a>
+                    <div class="footer-col-title">Oferta dodatkowa</div>
+                    <a href="#" class="footer-link">VIS dla Grup</a>
+                    <a href="#" class="footer-link">VIS dla Firm</a>
+                    <a href="#" class="footer-link">VIS Cargo</a>
+                    <a href="#" class="footer-link">VIS Charters</a>
+                    <a href="#" class="footer-link">VIS dla Agentów</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Podróż z VIS</div>
+                    <a href="#" class="footer-link">Usługi dodatkowe</a>
+                    <a href="#" class="footer-link">Bagaż</a>
+                    <a href="#" class="footer-link">VIS Upgrade</a>
+                    <a href="#" class="footer-link">Nasze kierunki</a>
+                    <a href="#" class="footer-link">Obsługa pasażera</a>
+                    <a href="#" class="footer-link">VIS Rewards</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Śledź nas na</div>
+                    <div class="footer-social">
+                        <a href="#" class="footer-social-btn">f</a>
+                        <a href="#" class="footer-social-btn">▶</a>
+                        <a href="#" class="footer-social-btn">in</a>
+                        <a href="#" class="footer-social-btn">✦</a>
+                        <a href="#" class="footer-social-btn">𝕏</a>
+                    </div>
+                    <div style="margin-top: 28px;">
+                        <div class="footer-col-title">Pobierz aplikację</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <div style="padding:8px 16px; border-radius:6px; background:rgba(255,255,255,0.08); font-size:11px; color:var(--gray-300); font-weight:500;">▶ Google Play</div>
+                            <div style="padding:8px 16px; border-radius:6px; background:rgba(255,255,255,0.08); font-size:11px; color:var(--gray-300); font-weight:500;"> App Store</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <span>© <span id="footer-year">2026</span> VIS Airlines Sp. z o.o. Hub: CPK, Polska.</span>
-                <div class="footer-bottom-links">
-                    <a href="#">Regulamin</a><a href="#">Prywatność</a><a href="#">Cookies</a>
+
+            <div class="footer-mid">
+                <div class="footer-mid-section">
+                    <span class="footer-mid-label">Metody płatności</span>
+                    <div class="footer-payment-icons">
+                        <span class="footer-payment-icon">VISA</span>
+                        <span class="footer-payment-icon">MC</span>
+                        <span class="footer-payment-icon">PayPo</span>
+                        <span class="footer-payment-icon">Klarna</span>
+                        <span class="footer-payment-icon">BLIK</span>
+                    </div>
                 </div>
+                <div class="footer-alliance">
+                    <span class="footer-mid-label">Jesteśmy członkiem</span>
+                    <span class="footer-alliance-badge">oneworld ®</span>
+                </div>
+            </div>
+
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-links">
+                    <a href="#">Kontakt</a>
+                    <a href="#">Regulacje lotnicze</a>
+                    <a href="#">Regulaminy</a>
+                    <a href="#">Ochrona Danych Osobowych</a>
+                    <a href="#">Cyberbezpieczeństwo</a>
+                    <a href="#">Mapa serwisu</a>
+                </div>
+                <div class="footer-copy">© <span id="footer-year">2026</span> VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone.</div>
             </div>
         </div>
     </footer>
@@ -837,9 +683,6 @@
 
     <script>
     (function() {
-        /* ============================================
-           LOTNISKA — dane
-           ============================================ */
         const airports = [
             { country: '🇵🇱 Polska', cities: [
                 { name: 'Centralny Port Komunikacyjny', code: 'CPK', city: 'Warszawa / CPK' },
@@ -859,334 +702,93 @@
                 { name: 'Berlin Brandenburg', code: 'BER', city: 'Berlin' },
             ]},
         ];
-
-        // Generuj HTML dropdownów
-        function buildAirportMenu(menuEl) {
-            let html = '';
-            airports.forEach(group => {
-                html += '<div class="dropdown-country">' + group.country + '</div>';
-                group.cities.forEach(c => {
-                    html += '<div class="dropdown-option" data-code="' + c.code + '" data-city="' + c.city + '">'
-                        + c.name + ' <span class="iata">' + c.code + '</span></div>';
-                });
+        function buildMenu(el) {
+            let h = '';
+            airports.forEach(g => {
+                h += '<div class="dropdown-country">' + g.country + '</div>';
+                g.cities.forEach(c => { h += '<div class="dropdown-option" data-code="'+c.code+'" data-city="'+c.city+'">'+c.name+' <span class="iata">'+c.code+'</span></div>'; });
             });
-            menuEl.innerHTML = html;
+            el.innerHTML = h;
         }
-        buildAirportMenu(document.getElementById('menu-from'));
-        buildAirportMenu(document.getElementById('menu-to'));
+        buildMenu(document.getElementById('menu-from'));
+        buildMenu(document.getElementById('menu-to'));
 
-
-        /* ============================================
-           DROPDOWNY — otwieranie / wybór
-           ============================================ */
-        function setupDropdown(wrapperId) {
-            const wrap = document.getElementById(wrapperId);
-            const trigger = wrap.querySelector('.dropdown-trigger');
-            const menu = wrap.querySelector('.dropdown-menu');
-
-            trigger.addEventListener('click', e => {
-                e.stopPropagation();
-                closeAllPopups();
-                menu.classList.toggle('show');
-                trigger.classList.toggle('open');
-            });
-
-            menu.addEventListener('click', e => {
-                const opt = e.target.closest('.dropdown-option');
-                if (!opt) return;
-                const code = opt.dataset.code;
-                const city = opt.dataset.city;
-                trigger.dataset.value = code;
-                trigger.innerHTML = city + ' <span class="sel-code">' + code + '</span>';
-                menu.classList.remove('show');
-                trigger.classList.remove('open');
-            });
+        function setupDD(id) {
+            const w = document.getElementById(id), t = w.querySelector('.dropdown-trigger'), m = w.querySelector('.dropdown-menu');
+            t.addEventListener('click', e => { e.stopPropagation(); closeAll(); m.classList.toggle('show'); t.classList.toggle('open'); });
+            m.addEventListener('click', e => { const o = e.target.closest('.dropdown-option'); if(!o) return; t.dataset.value = o.dataset.code; t.innerHTML = o.dataset.city + ' <span class="sel-code">'+o.dataset.code+'</span>'; m.classList.remove('show'); t.classList.remove('open'); });
         }
-        setupDropdown('dd-from');
-        setupDropdown('dd-to');
+        setupDD('dd-from'); setupDD('dd-to');
 
-
-        /* ============================================
-           TYP LOTU — toggle
-           ============================================ */
         let tripType = 'round';
-        const tripBtns = document.querySelectorAll('.trip-toggle-btn');
-        const returnGroup = document.getElementById('return-date-group');
-
-        tripBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tripBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                tripType = btn.dataset.type;
-                if (tripType === 'one') {
-                    returnGroup.style.display = 'none';
-                    document.getElementById('dates-row').style.gridTemplateColumns = '1fr';
-                } else {
-                    returnGroup.style.display = '';
-                    document.getElementById('dates-row').style.gridTemplateColumns = '1fr 1fr';
-                }
+        document.querySelectorAll('.trip-toggle-btn').forEach(b => {
+            b.addEventListener('click', () => {
+                document.querySelectorAll('.trip-toggle-btn').forEach(x => x.classList.remove('active'));
+                b.classList.add('active'); tripType = b.dataset.type;
+                const rg = document.getElementById('return-date-group');
+                const dr = document.getElementById('dates-row');
+                if (tripType === 'one') { rg.style.display = 'none'; dr.style.gridTemplateColumns = '1fr'; }
+                else { rg.style.display = ''; dr.style.gridTemplateColumns = '1fr 1fr'; }
             });
         });
 
+        const MONTHS = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+        const DAYS = ['Pn','Wt','Śr','Cz','Pt','So','Nd'];
+        const today = new Date(); today.setHours(0,0,0,0);
+        const maxD = new Date(today); maxD.setFullYear(maxD.getFullYear()+1);
 
-        /* ============================================
-           KALENDARZ CUSTOM
-           ============================================ */
-        const MONTHS_PL = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
-        const DAYS_PL = ['Pn','Wt','Śr','Cz','Pt','So','Nd'];
-
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const maxDate = new Date(today);
-        maxDate.setFullYear(maxDate.getFullYear() + 1);
-
-        function createCalendar(panelId, btnId, onSelect) {
-            const panel = document.getElementById(panelId);
-            const btn = document.getElementById(btnId);
-            let currentMonth = today.getMonth();
-            let currentYear = today.getFullYear();
-            let selectedDate = null;
-
+        function createCal(pid, bid) {
+            const p = document.getElementById(pid), b = document.getElementById(bid);
+            let cm = today.getMonth(), cy = today.getFullYear(), sel = null;
             function render() {
-                const firstDay = new Date(currentYear, currentMonth, 1);
-                const lastDay = new Date(currentYear, currentMonth + 1, 0);
-                let startDay = firstDay.getDay(); // 0=niedz
-                startDay = startDay === 0 ? 6 : startDay - 1; // 0=pon
-
-                const canPrev = !(currentYear === today.getFullYear() && currentMonth === today.getMonth());
-                const canNext = !(currentYear === maxDate.getFullYear() && currentMonth === maxDate.getMonth());
-
-                let html = '<div class="cal-header">';
-                html += '<button class="cal-nav-btn" data-dir="prev"' + (canPrev ? '' : ' disabled style="opacity:0.2;cursor:default"') + '>‹</button>';
-                html += '<span class="cal-header-title">' + MONTHS_PL[currentMonth] + ' ' + currentYear + '</span>';
-                html += '<button class="cal-nav-btn" data-dir="next"' + (canNext ? '' : ' disabled style="opacity:0.2;cursor:default"') + '>›</button>';
-                html += '</div>';
-
-                html += '<div class="cal-weekdays">';
-                DAYS_PL.forEach(d => { html += '<div class="cal-weekday">' + d + '</div>'; });
-                html += '</div>';
-
-                html += '<div class="cal-days">';
-                for (let i = 0; i < startDay; i++) {
-                    html += '<button class="cal-day empty"></button>';
+                const f = new Date(cy,cm,1), l = new Date(cy,cm+1,0);
+                let sd = f.getDay(); sd = sd===0?6:sd-1;
+                const cp = !(cy===today.getFullYear()&&cm===today.getMonth());
+                const cn = !(cy===maxD.getFullYear()&&cm===maxD.getMonth());
+                let h = '<div class="cal-header"><button class="cal-nav-btn" data-dir="prev"'+(cp?'':' disabled style="opacity:0.2"')+'>‹</button><span class="cal-header-title">'+MONTHS[cm]+' '+cy+'</span><button class="cal-nav-btn" data-dir="next"'+(cn?'':' disabled style="opacity:0.2"')+'>›</button></div><div class="cal-weekdays">';
+                DAYS.forEach(d=>{h+='<div class="cal-weekday">'+d+'</div>';}); h+='</div><div class="cal-days">';
+                for(let i=0;i<sd;i++) h+='<button class="cal-day empty"></button>';
+                for(let d=1;d<=l.getDate();d++){
+                    const dt=new Date(cy,cm,d), it=dt.getTime()===today.getTime(), ip=dt<today, ifut=dt>maxD, is=sel&&dt.getTime()===sel.getTime();
+                    let c='cal-day'; if(it)c+=' today'; if(ip||ifut)c+=' disabled'; if(is)c+=' selected';
+                    h+='<button class="'+c+'" data-date="'+dt.toISOString().split('T')[0]+'"'+(ip||ifut?' disabled':'')+'>'+d+'</button>';
                 }
-                for (let d = 1; d <= lastDay.getDate(); d++) {
-                    const date = new Date(currentYear, currentMonth, d);
-                    const isToday = date.getTime() === today.getTime();
-                    const isPast = date < today;
-                    const isFuture = date > maxDate;
-                    const isSelected = selectedDate && date.getTime() === selectedDate.getTime();
-                    const disabled = isPast || isFuture;
-
-                    let cls = 'cal-day';
-                    if (isToday) cls += ' today';
-                    if (disabled) cls += ' disabled';
-                    if (isSelected) cls += ' selected';
-
-                    html += '<button class="' + cls + '" data-date="' + date.toISOString().split('T')[0] + '"' + (disabled ? ' disabled' : '') + '>' + d + '</button>';
-                }
-                html += '</div>';
-
-                panel.innerHTML = html;
-
-                // Eventy nawigacji
-                panel.querySelectorAll('.cal-nav-btn').forEach(nb => {
-                    nb.addEventListener('click', e => {
-                        e.stopPropagation();
-                        if (nb.disabled) return;
-                        if (nb.dataset.dir === 'prev') {
-                            currentMonth--;
-                            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-                        } else {
-                            currentMonth++;
-                            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-                        }
-                        render();
-                    });
-                });
-
-                // Eventy dni
-                panel.querySelectorAll('.cal-day:not(.disabled):not(.empty)').forEach(dayBtn => {
-                    dayBtn.addEventListener('click', e => {
-                        e.stopPropagation();
-                        selectedDate = new Date(dayBtn.dataset.date + 'T00:00:00');
-                        const formatted = selectedDate.getDate() + ' ' + MONTHS_PL[selectedDate.getMonth()].substring(0,3).toLowerCase() + ' ' + selectedDate.getFullYear();
-                        btn.innerHTML = formatted;
-                        btn.classList.remove('open');
-                        panel.classList.remove('show');
-                        if (onSelect) onSelect(dayBtn.dataset.date);
-                    });
-                });
+                h+='</div>'; p.innerHTML=h;
+                p.querySelectorAll('.cal-nav-btn').forEach(nb=>{nb.addEventListener('click',e=>{e.stopPropagation();if(nb.disabled)return;if(nb.dataset.dir==='prev'){cm--;if(cm<0){cm=11;cy--;}}else{cm++;if(cm>11){cm=0;cy++;}}render();});});
+                p.querySelectorAll('.cal-day:not(.disabled):not(.empty)').forEach(db=>{db.addEventListener('click',e=>{e.stopPropagation();sel=new Date(db.dataset.date+'T00:00:00');const fm=sel.getDate()+' '+MONTHS[sel.getMonth()].substring(0,3).toLowerCase()+' '+sel.getFullYear();b.textContent=fm;b.classList.remove('open');p.classList.remove('show');});});
             }
-
-            btn.addEventListener('click', e => {
-                e.stopPropagation();
-                closeAllPopups();
-                panel.classList.toggle('show');
-                btn.classList.toggle('open');
-                render();
-            });
-
-            return { getDate: () => selectedDate };
+            b.addEventListener('click',e=>{e.stopPropagation();closeAll();p.classList.toggle('show');b.classList.toggle('open');render();});
+            return{getDate:()=>sel};
         }
+        const calD=createCal('cal-dep-panel','cal-dep-btn'), calR=createCal('cal-ret-panel','cal-ret-btn');
 
-        const calDep = createCalendar('cal-dep-panel', 'cal-dep-btn');
-        const calRet = createCalendar('cal-ret-panel', 'cal-ret-btn');
-
-
-        /* ============================================
-           PASAŻEROWIE
-           ============================================ */
-        const paxState = { adult: 1, child: 0, infant: 0 };
-        const paxBtn = document.getElementById('pax-btn');
-        const paxPanel = document.getElementById('pax-panel');
-
-        function updatePaxLabel() {
-            const total = paxState.adult + paxState.child + paxState.infant;
-            let parts = [];
-            if (paxState.adult > 0) parts.push(paxState.adult + ' dor.');
-            if (paxState.child > 0) parts.push(paxState.child + ' dziec.');
-            if (paxState.infant > 0) parts.push(paxState.infant + ' niem.');
-            paxBtn.textContent = parts.join(', ') || '1 pasażer';
-        }
-
-        paxPanel.querySelectorAll('.pax-row-item').forEach(row => {
-            const type = row.dataset.pax;
-            const countEl = row.querySelector('.pax-ctrl-count');
-            const minusBtn = row.querySelector('[data-action="minus"]');
-            const plusBtn = row.querySelector('[data-action="plus"]');
-            const minVal = type === 'adult' ? 1 : 0;
-            const maxVal = 9;
-
-            function updateRow() {
-                countEl.textContent = paxState[type];
-                minusBtn.disabled = paxState[type] <= minVal;
-                plusBtn.disabled = paxState[type] >= maxVal;
-            }
-
-            minusBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                if (paxState[type] > minVal) { paxState[type]--; updateRow(); updatePaxLabel(); }
-            });
-            plusBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                if (paxState[type] < maxVal) { paxState[type]++; updateRow(); updatePaxLabel(); }
-            });
+        const px={adult:1,child:0,infant:0}, pb=document.getElementById('pax-btn'), pp=document.getElementById('pax-panel');
+        function upPax(){let p=[];if(px.adult)p.push(px.adult+' dor.');if(px.child)p.push(px.child+' dziec.');if(px.infant)p.push(px.infant+' niem.');pb.textContent=p.join(', ')||'1 dorosły';}
+        pp.querySelectorAll('.pax-row-item').forEach(r=>{const t=r.dataset.pax,c=r.querySelector('.pax-ctrl-count'),mi=r.querySelector('[data-action="minus"]'),pl=r.querySelector('[data-action="plus"]'),mn=t==='adult'?1:0;
+            function u(){c.textContent=px[t];mi.disabled=px[t]<=mn;pl.disabled=px[t]>=9;}
+            mi.addEventListener('click',e=>{e.stopPropagation();if(px[t]>mn){px[t]--;u();upPax();}});
+            pl.addEventListener('click',e=>{e.stopPropagation();if(px[t]<9){px[t]++;u();upPax();}});
         });
+        pb.addEventListener('click',e=>{e.stopPropagation();closeAll();pp.classList.toggle('show');pb.classList.toggle('open');});
+        document.getElementById('pax-done').addEventListener('click',e=>{e.stopPropagation();pp.classList.remove('show');pb.classList.remove('open');});
 
-        paxBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            closeAllPopups();
-            paxPanel.classList.toggle('show');
-            paxBtn.classList.toggle('open');
-        });
-        document.getElementById('pax-done').addEventListener('click', e => {
-            e.stopPropagation();
-            paxPanel.classList.remove('show');
-            paxBtn.classList.remove('open');
-        });
+        const cb=document.getElementById('class-btn'),cp=document.getElementById('class-panel'),cn={economy:'Ekonomiczna',premium:'Premium',business:'Biznes',first:'Pierwsza'};
+        cb.addEventListener('click',e=>{e.stopPropagation();closeAll();cp.classList.toggle('show');cb.classList.toggle('open');});
+        cp.querySelectorAll('.class-option').forEach(o=>{o.addEventListener('click',e=>{e.stopPropagation();cp.querySelectorAll('.class-option').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');cb.dataset.value=o.dataset.class;cb.textContent=cn[o.dataset.class];cp.classList.remove('show');cb.classList.remove('open');});});
 
+        function setupPop(bi,pi,cb){const b=document.getElementById(bi),p=document.getElementById(pi);b.addEventListener('click',e=>{e.stopPropagation();closeAll();p.classList.toggle('show');});p.querySelectorAll('.popup-option').forEach(o=>{o.addEventListener('click',e=>{e.stopPropagation();p.querySelectorAll('.popup-option').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');p.classList.remove('show');if(cb)cb(o);});});}
+        setupPop('lang-btn','lang-panel',o=>{document.getElementById('lang-btn').textContent=o.querySelector('.flag').textContent+' '+o.textContent.trim()+' ▾';});
+        setupPop('currency-btn','currency-panel',o=>{document.getElementById('currency-btn').textContent=o.dataset.cur+' ▾';});
 
-        /* ============================================
-           KLASA PODRÓŻY
-           ============================================ */
-        const classBtn = document.getElementById('class-btn');
-        const classPanel = document.getElementById('class-panel');
-        const classNames = { economy: 'Ekonomiczna', premium: 'Premium', business: 'Biznes', first: 'Pierwsza' };
+        function closeAll(){document.querySelectorAll('.dropdown-menu.show,.calendar-panel.show,.pax-panel.show,.class-panel.show,.popup-panel.show').forEach(e=>e.classList.remove('show'));document.querySelectorAll('.dropdown-trigger.open,.calendar-trigger.open,.pax-trigger.open').forEach(e=>e.classList.remove('open'));}
+        document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrapper,.popup-panel,.pax-panel,[id$="-btn"]'))closeAll();});
 
-        classBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            closeAllPopups();
-            classPanel.classList.toggle('show');
-            classBtn.classList.toggle('open');
-        });
-
-        classPanel.querySelectorAll('.class-option').forEach(opt => {
-            opt.addEventListener('click', e => {
-                e.stopPropagation();
-                classPanel.querySelectorAll('.class-option').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                classBtn.dataset.value = opt.dataset.class;
-                classBtn.textContent = classNames[opt.dataset.class];
-                classPanel.classList.remove('show');
-                classBtn.classList.remove('open');
-            });
-        });
-
-
-        /* ============================================
-           JĘZYK / WALUTA
-           ============================================ */
-        function setupTopPopup(btnId, panelId, onSelect) {
-            const btn = document.getElementById(btnId);
-            const panel = document.getElementById(panelId);
-            btn.addEventListener('click', e => {
-                e.stopPropagation();
-                closeAllPopups();
-                panel.classList.toggle('show');
-            });
-            panel.querySelectorAll('.popup-option').forEach(opt => {
-                opt.addEventListener('click', e => {
-                    e.stopPropagation();
-                    panel.querySelectorAll('.popup-option').forEach(o => o.classList.remove('selected'));
-                    opt.classList.add('selected');
-                    panel.classList.remove('show');
-                    if (onSelect) onSelect(opt);
-                });
-            });
-        }
-
-        setupTopPopup('lang-btn', 'lang-panel', opt => {
-            const flag = opt.querySelector('.flag').textContent;
-            const name = opt.textContent.trim();
-            document.getElementById('lang-btn').innerHTML = flag + ' ' + name + ' ▾';
-        });
-        setupTopPopup('currency-btn', 'currency-panel', opt => {
-            const cur = opt.dataset.cur;
-            document.getElementById('currency-btn').innerHTML = '💰 ' + cur + ' ▾';
-        });
-
-
-        /* ============================================
-           ZAMKNIJ WSZYSTKIE POPUPY
-           ============================================ */
-        function closeAllPopups() {
-            document.querySelectorAll('.dropdown-menu.show, .calendar-panel.show, .pax-panel.show, .class-panel.show, .popup-panel.show').forEach(el => el.classList.remove('show'));
-            document.querySelectorAll('.dropdown-trigger.open, .calendar-trigger.open, .pax-trigger.open').forEach(el => el.classList.remove('open'));
-        }
-
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.dropdown-wrapper, .popup-panel, [id$="-btn"]')) {
-                closeAllPopups();
-            }
-        });
-
-
-        /* ============================================
-           SZUKAJ
-           ============================================ */
-        document.getElementById('search-btn').addEventListener('click', () => {
-            const from = document.querySelector('#dd-from .dropdown-trigger').dataset.value;
-            const to = document.querySelector('#dd-to .dropdown-trigger').dataset.value;
-            const depDate = calDep.getDate();
-            const retDate = calRet.getDate();
-            const travelClass = classBtn.dataset.value || 'economy';
-
-            if (!from) { alert('Wybierz lotnisko wylotu'); return; }
-            if (!to) { alert('Wybierz lotnisko docelowe'); return; }
-            if (from === to) { alert('Lotnisko wylotu i docelowe nie mogą być takie same'); return; }
-            if (!depDate) { alert('Wybierz datę wylotu'); return; }
-            if (tripType === 'round' && !retDate) { alert('Wybierz datę powrotu'); return; }
-            if (tripType === 'round' && retDate && depDate && retDate <= depDate) { alert('Data powrotu musi być po dacie wylotu'); return; }
-
-            const dep = depDate.toISOString().split('T')[0];
-            let url = 'flights.html?from=' + from + '&to=' + to + '&dep=' + dep;
-            url += '&type=' + tripType;
-            url += '&class=' + travelClass;
-            url += '&adults=' + paxState.adult + '&children=' + paxState.child + '&infants=' + paxState.infant;
-            if (tripType === 'round' && retDate) url += '&ret=' + retDate.toISOString().split('T')[0];
-
-            window.location.href = url;
+        document.getElementById('search-btn').addEventListener('click',()=>{
+            const f=document.querySelector('#dd-from .dropdown-trigger').dataset.value, t=document.querySelector('#dd-to .dropdown-trigger').dataset.value, dd=calD.getDate(), rd=calR.getDate(), tc=cb.dataset.value||'economy';
+            if(!f){alert('Wybierz lotnisko wylotu');return;} if(!t){alert('Wybierz lotnisko docelowe');return;} if(f===t){alert('Lotnisko wylotu i docelowe nie mogą być takie same');return;} if(!dd){alert('Wybierz datę wylotu');return;} if(tripType==='round'&&!rd){alert('Wybierz datę powrotu');return;} if(tripType==='round'&&rd&&dd&&rd<=dd){alert('Data powrotu musi być po dacie wylotu');return;}
+            let u='flights.html?from='+f+'&to='+t+'&dep='+dd.toISOString().split('T')[0]+'&type='+tripType+'&class='+tc+'&adults='+px.adult+'&children='+px.child+'&infants='+px.infant;
+            if(tripType==='round'&&rd)u+='&ret='+rd.toISOString().split('T')[0];
+            window.location.href=u;
         });
     })();
     </script>
