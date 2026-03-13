@@ -1,1 +1,511 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIS Airlines — Twoje Niebo, Nasz Kierunek</title>
+    <meta name="description" content="VIS Airlines — polska linia lotnicza nowej generacji z hubem w CPK. Łączymy Polskę ze światem.">
 
+    <!-- Fonty -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Style wspólne -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Style tylko dla strony głównej -->
+    <style>
+        /* === HERO === */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            padding: 120px 48px 80px;
+        }
+        .hero-bg {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 15% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 50% at 85% 30%, rgba(30,58,95,0.3) 0%, transparent 60%),
+                linear-gradient(195deg, var(--navy-800) 0%, var(--navy-900) 50%, #070d18 100%);
+        }
+
+        /* Delikatna siatka */
+        .hero-grid-overlay {
+            position: absolute; inset: 0;
+            opacity: 0.025;
+            background-image:
+                linear-gradient(var(--gold-600) 1px, transparent 1px),
+                linear-gradient(90deg, var(--gold-600) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(ellipse at 30% 60%, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at 30% 60%, black 20%, transparent 70%);
+        }
+
+        /* Dekoracyjne linie */
+        .hero-deco-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.15), transparent);
+        }
+        .hero-deco-line-1 { top: 30%; left: 0; right: 0; transform: rotate(-3deg); }
+        .hero-deco-line-2 { top: 65%; left: 0; right: 0; transform: rotate(2deg); opacity: 0.7; }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 680px;
+        }
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 22px;
+            border-radius: var(--radius-full);
+            background: rgba(201,168,76,0.08);
+            border: 1px solid rgba(201,168,76,0.15);
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--gold-500);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+        .hero-tag-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--gold-500);
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(44px, 5.5vw, 76px);
+            font-weight: 600;
+            line-height: 1.08;
+            margin-bottom: 28px;
+            letter-spacing: -0.5px;
+        }
+        .hero h1 .accent {
+            color: var(--gold-500);
+            font-style: italic;
+        }
+        .hero-desc {
+            font-size: 18px;
+            font-weight: 300;
+            color: var(--gray-200);
+            line-height: 1.8;
+            max-width: 520px;
+            margin-bottom: 44px;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 56px;
+            margin-top: 72px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(201,168,76,0.1);
+        }
+        .hero-stat-value {
+            font-family: var(--font-display);
+            font-size: 40px;
+            font-weight: 600;
+            color: var(--gold-500);
+            line-height: 1;
+        }
+        .hero-stat-label {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--gray-400);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 8px;
+        }
+        .hero-plane {
+            position: absolute;
+            right: 8%; top: 50%;
+            transform: translateY(-50%) rotate(-8deg);
+            font-size: 200px;
+            opacity: 0.04;
+            animation: float 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+
+        /* === DLACZEGO VIS === */
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+        }
+        .why-card { padding: 36px 28px; }
+        .why-card-icon {
+            width: 56px; height: 56px;
+            border-radius: var(--radius-md);
+            background: rgba(201,168,76,0.08);
+            border: 1px solid rgba(201,168,76,0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            transition: all 0.3s var(--ease);
+        }
+        .why-card:hover .why-card-icon {
+            background: rgba(201,168,76,0.15);
+            border-color: rgba(201,168,76,0.3);
+            transform: scale(1.08);
+        }
+        .why-card h3 {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .why-card p {
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--gray-400);
+            line-height: 1.7;
+        }
+
+
+        /* === CTA BANER === */
+        .cta-section { padding: 0 48px; }
+        .cta-banner {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 80px 64px;
+            background:
+                radial-gradient(ellipse at 30% 50%, rgba(201,168,76,0.1) 0%, transparent 60%),
+                var(--navy-700);
+            border: 1px solid rgba(201,168,76,0.12);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-banner::before {
+            content: '✈';
+            position: absolute;
+            right: -20px; bottom: -30px;
+            font-size: 240px;
+            opacity: 0.03;
+            transform: rotate(-15deg);
+        }
+        .cta-content { position: relative; z-index: 2; }
+        .cta-content h2 {
+            font-family: var(--font-display);
+            font-size: clamp(28px, 3vw, 40px);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .cta-content h2 .gold { color: var(--gold-500); }
+        .cta-content p { font-size: 16px; color: var(--gray-300); font-weight: 300; }
+        .cta-actions { position: relative; z-index: 2; flex-shrink: 0; }
+
+
+        /* === HUB CPK === */
+        .hub-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+        .hub-text .section-desc { margin-bottom: 28px; }
+        .hub-features { display: flex; flex-direction: column; gap: 20px; }
+        .hub-feature { display: flex; gap: 16px; align-items: flex-start; }
+        .hub-feature-icon {
+            width: 40px; height: 40px;
+            border-radius: var(--radius-sm);
+            background: rgba(201,168,76,0.08);
+            border: 1px solid rgba(201,168,76,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .hub-feature h4 { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
+        .hub-feature p { font-size: 13px; color: var(--gray-400); font-weight: 300; line-height: 1.6; }
+
+        .hub-visual {
+            position: relative;
+            height: 400px;
+            border-radius: var(--radius-lg);
+            background:
+                radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+                var(--navy-700);
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .hub-visual-center {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(201,168,76,0.12);
+            border: 2px solid var(--gold-600);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold-500);
+            position: relative;
+            z-index: 2;
+        }
+        .hub-orbit {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(201,168,76,0.06);
+        }
+        .hub-orbit-1 { width: 180px; height: 180px; }
+        .hub-orbit-2 { width: 280px; height: 280px; }
+        .hub-orbit-3 { width: 380px; height: 380px; }
+
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            .hero { padding: 120px 24px 60px; }
+            .why-grid { grid-template-columns: 1fr 1fr; }
+            .hub-section { grid-template-columns: 1fr; }
+            .cta-banner { flex-direction: column; text-align: center; padding: 48px 32px; }
+            .cta-section { padding: 0 24px; }
+        }
+        @media (max-width: 768px) {
+            .hero { padding: 100px 20px 40px; }
+            .hero-stats { flex-wrap: wrap; gap: 32px; }
+            .why-grid { grid-template-columns: 1fr; }
+            .cta-banner { padding: 40px 24px; }
+            .hub-visual { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAWIGACJA ===== -->
+    <nav class="nav">
+        <a href="index.html" class="nav-logo">
+            <div class="nav-logo-mark">V</div>
+            <div class="nav-logo-text">VIS <em>Airlines</em></div>
+        </a>
+
+        <div class="nav-links">
+            <a href="index.html" class="nav-link active">Strona główna</a>
+            <a href="flights.html" class="nav-link">Loty</a>
+            <a href="fleet.html" class="nav-link">Flota</a>
+            <a href="about.html" class="nav-link">O nas</a>
+        </div>
+
+        <div class="nav-actions">
+            <a href="login.html" class="btn btn-outline btn-sm">Zaloguj się</a>
+            <a href="register.html" class="btn btn-gold btn-sm">Załóż konto</a>
+        </div>
+
+        <button class="nav-hamburger" aria-label="Menu">☰</button>
+    </nav>
+
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-grid-overlay"></div>
+        <div class="hero-deco-line hero-deco-line-1"></div>
+        <div class="hero-deco-line hero-deco-line-2"></div>
+        <div class="hero-plane">✈</div>
+
+        <div class="hero-content">
+            <div class="hero-tag animate-in">
+                <div class="hero-tag-dot"></div>
+                Hub CPK — Polska
+            </div>
+
+            <h1 class="animate-in animate-in-d1">
+                Lataj z&nbsp;<span class="accent">VIS&nbsp;Airlines</span> — prosto z&nbsp;serca Europy
+            </h1>
+
+            <p class="hero-desc animate-in animate-in-d2">
+                Polska linia lotnicza nowej generacji. Łączymy Centralny Port Komunikacyjny ze światem — komfortowo, punktualnie i&nbsp;w&nbsp;atrakcyjnych cenach.
+            </p>
+
+            <div class="hero-actions animate-in animate-in-d3">
+                <a href="flights.html" class="btn btn-gold btn-lg">Szukaj lotów</a>
+                <a href="fleet.html" class="btn btn-outline btn-lg">Poznaj flotę</a>
+            </div>
+
+            <div class="hero-stats animate-in animate-in-d4">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">CPK</div>
+                    <div class="hero-stat-label">Hub bazowy</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">4</div>
+                    <div class="hero-stat-label">Typy samolotów</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">24/7</div>
+                    <div class="hero-stat-label">Obsługa klienta</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== DLACZEGO VIS ===== -->
+    <section class="section">
+        <div class="section-header-center reveal">
+            <div class="section-eyebrow">Dlaczego my</div>
+            <h2 class="section-title">Latanie, jakie powinno <span class="gold">być</span></h2>
+            <div class="divider divider-center"></div>
+            <p class="section-desc">
+                Cztery filary, na których budujemy VIS Airlines — każdy lot to obietnica dotrzymana.
+            </p>
+        </div>
+
+        <div class="why-grid">
+            <div class="card why-card reveal reveal-delay-1">
+                <div class="why-card-icon">🛡</div>
+                <h3>Bezpieczeństwo</h3>
+                <p>Najnowsza flota w Europie — żaden nasz samolot nie ma więcej niż 5 lat. Rygorystyczne standardy, zero kompromisów.</p>
+            </div>
+            <div class="card why-card reveal reveal-delay-2">
+                <div class="why-card-icon">⏱</div>
+                <h3>Punktualność</h3>
+                <p>Szanujemy Twój czas. Nasz cel to OTP powyżej 85% — jeden z najlepszych wyników w regionie.</p>
+            </div>
+            <div class="card why-card reveal reveal-delay-3">
+                <div class="why-card-icon">🌿</div>
+                <h3>Ekologia</h3>
+                <p>Silniki nowej generacji, SAF, optymalizacja tras — aktywnie zmniejszamy ślad węglowy każdego lotu.</p>
+            </div>
+            <div class="card why-card reveal reveal-delay-4">
+                <div class="why-card-icon">💎</div>
+                <h3>Komfort</h3>
+                <p>Od ekonomicznej po First Class z prywatnym suite'm — każdy pasażer zasługuje na wyjątkowe doświadczenie.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== HUB CPK ===== -->
+    <section class="section">
+        <div class="hub-section">
+            <div class="hub-text reveal">
+                <div class="section-eyebrow">Nasz hub</div>
+                <h2 class="section-title">Centralny Port <span class="gold">Komunikacyjny</span></h2>
+                <div class="divider"></div>
+                <p class="section-desc">
+                    CPK to strategiczne serce Europy — idealna pozycja tranzytowa między zachodem a wschodem, północą a południem. Stąd łączymy Polskę z&nbsp;całym światem.
+                </p>
+                <div class="hub-features">
+                    <div class="hub-feature">
+                        <div class="hub-feature-icon">📍</div>
+                        <div>
+                            <h4>Centralna lokalizacja</h4>
+                            <p>W promieniu 2h lotu — większość stolic Europy</p>
+                        </div>
+                    </div>
+                    <div class="hub-feature">
+                        <div class="hub-feature-icon">🔄</div>
+                        <div>
+                            <h4>Możliwości tranzytowe</h4>
+                            <p>Połączenia dalekodystansowe z przesiadką w CPK</p>
+                        </div>
+                    </div>
+                    <div class="hub-feature">
+                        <div class="hub-feature-icon">🚄</div>
+                        <div>
+                            <h4>Kolej + lotnictwo</h4>
+                            <p>Zintegrowany węzeł — szybki dojazd z każdego regionu Polski</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hub-visual reveal reveal-delay-2">
+                <div class="hub-orbit hub-orbit-1"></div>
+                <div class="hub-orbit hub-orbit-2"></div>
+                <div class="hub-orbit hub-orbit-3"></div>
+                <div class="hub-visual-center">CPK</div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== CTA ===== -->
+    <section class="cta-section" style="padding-bottom: 120px;">
+        <div class="cta-banner reveal">
+            <div class="cta-content">
+                <h2>Gotowy na <span class="gold">pierwszy lot</span>?</h2>
+                <p>Załóż konto, wyszukaj połączenie i zarezerwuj bilet — w mniej niż 3 minuty.</p>
+            </div>
+            <div class="cta-actions">
+                <a href="register.html" class="btn btn-gold btn-lg">Załóż konto za darmo</a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ===== STOPKA ===== -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
+                <div>
+                    <a href="index.html" class="nav-logo" style="margin-bottom: 8px;">
+                        <div class="nav-logo-mark" style="width:36px;height:36px;font-size:16px;">V</div>
+                        <div class="nav-logo-text" style="font-size:20px;">VIS <em>Airlines</em></div>
+                    </a>
+                    <p class="footer-brand-desc">
+                        Polska linia lotnicza nowej generacji z hubem w Centralnym Porcie Komunikacyjnym. Łączymy Polskę ze światem.
+                    </p>
+                </div>
+                <div>
+                    <div class="footer-col-title">Firma</div>
+                    <a href="about.html" class="footer-link">O nas</a>
+                    <a href="fleet.html" class="footer-link">Flota</a>
+                    <a href="#" class="footer-link">Kariera</a>
+                    <a href="#" class="footer-link">Kontakt</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Podróż</div>
+                    <a href="flights.html" class="footer-link">Szukaj lotów</a>
+                    <a href="#" class="footer-link">Bagaż</a>
+                    <a href="#" class="footer-link">Klasy podróży</a>
+                    <a href="#" class="footer-link">Program lojalnościowy</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Pomoc</div>
+                    <a href="#" class="footer-link">FAQ</a>
+                    <a href="#" class="footer-link">Status lotu</a>
+                    <a href="#" class="footer-link">Regulamin</a>
+                    <a href="#" class="footer-link">Polityka prywatności</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>© <span id="footer-year">2026</span> VIS Airlines Sp. z o.o. Hub: Centralny Port Komunikacyjny, Polska.</span>
+                <div class="footer-bottom-links">
+                    <a href="#">Regulamin</a>
+                    <a href="#">Prywatność</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Wspólny JS -->
+    <script src="js/main.js"></script>
+</body>
+</html>
