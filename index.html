@@ -84,6 +84,24 @@
         .nav-main-link:hover { color: var(--gold-500); background: rgba(255,255,255,0.02); border-bottom-color: var(--gold-600); }
         .nav-main-link.active { color: var(--gold-500); border-bottom-color: var(--gold-500); }
 
+        /* Dropdown pod Informacje */
+        .nav-info-panel {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            background: var(--navy-700); border: 1px solid rgba(201,168,76,0.15);
+            border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            padding: 8px; min-width: 220px; z-index: 200; display: none;
+        }
+        .nav-info-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
+        .nav-info-link {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 16px; border-radius: var(--radius-sm);
+            text-decoration: none; transition: all 0.15s; color: var(--gray-200);
+        }
+        .nav-info-link:hover { background: rgba(201,168,76,0.08); color: var(--white); }
+        .nav-info-icon { font-size: 22px; flex-shrink: 0; }
+        .nav-info-title { font-size: 14px; font-weight: 500; color: var(--white); }
+        .nav-info-desc { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+
 
         /* ============================================
            HERO
@@ -421,7 +439,18 @@
                 <a href="flights.html" class="nav-main-link active">Zaplanuj podróż</a>
                 <a href="#" class="nav-main-link">Odpraw się</a>
                 <a href="#" class="nav-main-link">Zarządzaj rezerwacją</a>
-                <a href="#" class="nav-main-link">Informacje</a>
+                <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
+                    <button class="nav-main-link" id="info-btn" style="cursor:pointer;">Informacje ▾</button>
+                    <div class="nav-info-panel" id="info-panel">
+                        <a href="fleet.html" class="nav-info-link">
+                            <span class="nav-info-icon">✈</span>
+                            <div>
+                                <div class="nav-info-title">Flota</div>
+                                <div class="nav-info-desc">Poznaj nasze samoloty</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
                 <a href="#" class="nav-main-link">Pomoc</a>
             </div>
             <button class="nav-hamburger" aria-label="Menu">☰</button>
@@ -588,10 +617,10 @@
                 </div>
             </div>
             <div class="offer-card reveal reveal-delay-3">
-                <img class="offer-card-img" src="https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=600&h=400&fit=crop" alt="Australia">
+                <img class="offer-card-img" src="https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=600&h=400&fit=crop" alt="Sydney">
                 <div class="offer-card-body">
-                    <h3>Australia</h3>
-                    <div class="offer-card-route">CPK → SYD · 1 przesiadka · 20h+</div>
+                    <h3>Sydney</h3>
+                    <div class="offer-card-route">CPK → SYD · bezpośredni · 18h</div>
                     <div class="offer-card-cta">Zobacz ofertę →</div>
                 </div>
             </div>
@@ -780,8 +809,12 @@
         setupPop('lang-btn','lang-panel',o=>{document.getElementById('lang-btn').textContent=o.querySelector('.flag').textContent+' '+o.textContent.trim()+' ▾';});
         setupPop('currency-btn','currency-panel',o=>{document.getElementById('currency-btn').textContent=o.dataset.cur+' ▾';});
 
-        function closeAll(){document.querySelectorAll('.dropdown-menu.show,.calendar-panel.show,.pax-panel.show,.class-panel.show,.popup-panel.show').forEach(e=>e.classList.remove('show'));document.querySelectorAll('.dropdown-trigger.open,.calendar-trigger.open,.pax-trigger.open').forEach(e=>e.classList.remove('open'));}
-        document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrapper,.popup-panel,.pax-panel,[id$="-btn"]'))closeAll();});
+        function closeAll(){document.querySelectorAll('.dropdown-menu.show,.calendar-panel.show,.pax-panel.show,.class-panel.show,.popup-panel.show,.nav-info-panel.show').forEach(e=>e.classList.remove('show'));document.querySelectorAll('.dropdown-trigger.open,.calendar-trigger.open,.pax-trigger.open').forEach(e=>e.classList.remove('open'));}
+        document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrapper,.popup-panel,.pax-panel,.nav-dropdown-wrapper,[id$="-btn"]'))closeAll();});
+
+        // Informacje dropdown
+        const infoBtn=document.getElementById('info-btn'), infoPanel=document.getElementById('info-panel');
+        infoBtn.addEventListener('click',e=>{e.stopPropagation();closeAll();infoPanel.classList.toggle('show');});
 
         document.getElementById('search-btn').addEventListener('click',()=>{
             const f=document.querySelector('#dd-from .dropdown-trigger').dataset.value, t=document.querySelector('#dd-to .dropdown-trigger').dataset.value, dd=calD.getDate(), rd=calR.getDate(), tc=cb.dataset.value||'economy';
