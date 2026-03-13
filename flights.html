@@ -586,7 +586,7 @@
                                 <span class="fc-badge fc-badge-direct">Bezpośredni</span>
                                 <span class="fc-meta-item">✈ ${flight.id}</span>
                                 <span class="fc-meta-item">${flight.aircraft}</span>
-                                <button class="btn btn-gold btn-sm fc-book" style="margin-left:auto;">Rezerwuj lot</button>
+                                <a href="booking.html?flight=${flight.id}&class=${selectedClass}&date=${selectedDate.toISOString().split('T')[0]}&type=${tripType}&adults=${adults}&children=${children}&infants=${infants}" class="btn btn-gold btn-sm fc-book" style="margin-left:auto;text-decoration:none;">Przejdź dalej</a>
                             </div>
                         </div>
                     `;
@@ -674,7 +674,7 @@
                             <div class="fc-meta-bar">
                                 <span class="fc-badge fc-badge-connect">Przesiadka CPK</span>
                                 <span class="fc-meta-item">✈ ${conn.leg1.id} + ${conn.leg2.id}</span>
-                                <button class="btn btn-gold btn-sm fc-book" style="margin-left:auto;">Rezerwuj połączenie</button>
+                                <a href="booking.html?flight=${conn.leg1.id}&class=${selectedClass}&date=${selectedDate.toISOString().split('T')[0]}&type=${tripType}&adults=${adults}&children=${children}&infants=${infants}" class="btn btn-gold btn-sm fc-book" style="margin-left:auto;text-decoration:none;">Przejdź dalej</a>
                             </div>
                         </div>
                     `;
