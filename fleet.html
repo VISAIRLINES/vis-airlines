@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flota — VIS Airlines</title>
+    <meta name="description" content="Poznaj flotę VIS Airlines — nowoczesne samoloty nowej generacji.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* === NAWIGACJA (taka sama jak index) === */
+        .nav { height: auto; flex-direction: column; padding: 0; gap: 0; }
+        .nav.scrolled { height: auto; }
+        .nav-top {
+            width: 100%; display: flex; align-items: center; justify-content: flex-end;
+            padding: 0 48px; height: 38px; background: rgba(4,10,20,0.98);
+            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; gap: 0;
+        }
+        .nav-top-btn {
+            background: none; border: none; color: var(--gray-300); font-size: 12px;
+            font-family: var(--font-body); padding: 0 14px; height: 38px;
+            cursor: pointer; transition: color 0.2s; display: inline-flex;
+            align-items: center; gap: 5px; position: relative; border-radius: 0;
+            border-left: 1px solid rgba(255,255,255,0.06); text-decoration: none; white-space: nowrap;
+        }
+        .nav-top-btn:first-child { border-left: none; }
+        .nav-top-btn:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+        .nav-top-btn.accent { color: var(--gold-500); font-weight: 500; }
+        .nav-bottom {
+            width: 100%; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 48px; height: 56px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .nav-main-links { display: flex; gap: 0; align-items: center; height: 100%; }
+        .nav-main-link {
+            font-size: 13px; font-weight: 400; color: var(--gray-200); padding: 0 18px;
+            height: 56px; display: inline-flex; align-items: center; cursor: pointer;
+            transition: all 0.2s; background: none; border: none;
+            border-bottom: 2px solid transparent; font-family: var(--font-body); text-decoration: none;
+        }
+        .nav-main-link:hover { color: var(--gold-500); background: rgba(255,255,255,0.02); border-bottom-color: var(--gold-600); }
+        .nav-main-link.active { color: var(--gold-500); border-bottom-color: var(--gold-500); }
+
+        .nav-info-panel {
+            position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            background: var(--navy-700); border: 1px solid rgba(201,168,76,0.15);
+            border-radius: var(--radius-md); box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            padding: 8px; min-width: 220px; z-index: 200; display: none;
+        }
+        .nav-info-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
+        .nav-info-link {
+            display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+            border-radius: var(--radius-sm); text-decoration: none; transition: all 0.15s; color: var(--gray-200);
+        }
+        .nav-info-link:hover { background: rgba(201,168,76,0.08); color: var(--white); }
+        .nav-info-icon { font-size: 22px; flex-shrink: 0; }
+        .nav-info-title { font-size: 14px; font-weight: 500; color: var(--white); }
+        .nav-info-desc { font-size: 11px; color: var(--gray-400); margin-top: 1px; }
+
+        .popup-panel {
+            position: absolute; top: 100%; right: 0; background: var(--navy-700);
+            border: 1px solid rgba(201,168,76,0.2); border-radius: var(--radius-md);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5); padding: 8px 0;
+            min-width: 180px; z-index: 200; display: none;
+        }
+        .popup-panel.show { display: block; animation: scaleIn 0.15s var(--ease-out); }
+        .popup-option {
+            padding: 10px 20px; font-size: 13px; color: var(--gray-200);
+            cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 10px;
+        }
+        .popup-option:hover { background: rgba(201,168,76,0.08); color: var(--white); }
+        .popup-option.selected { color: var(--gold-500); }
+        .popup-option .flag { font-size: 16px; }
+
+
+        /* === PAGE HERO (banner na górze) === */
+        .page-hero {
+            padding: 140px 48px 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-hero-bg {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 30% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+                linear-gradient(195deg, var(--navy-800) 0%, var(--navy-900) 100%);
+        }
+        .page-hero-content {
+            position: relative; z-index: 2;
+            max-width: 1240px; margin: 0 auto;
+        }
+        .page-hero .section-eyebrow { margin-bottom: 12px; }
+        .page-hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(36px, 4vw, 56px);
+            font-weight: 600; margin-bottom: 16px;
+        }
+        .page-hero h1 .gold { color: var(--gold-500); }
+        .page-hero p {
+            font-size: 17px; font-weight: 300; color: var(--gray-300);
+            max-width: 560px; line-height: 1.7;
+        }
+
+
+        /* === FLEET GRID === */
+        .fleet-section {
+            padding: 80px 48px 120px;
+            max-width: 1240px; margin: 0 auto;
+        }
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 32px;
+        }
+
+        /* Fleet card */
+        .fleet-card {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: var(--navy-700);
+            border: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.4s var(--ease);
+        }
+        .fleet-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 64px rgba(0,0,0,0.35);
+            border-color: rgba(201,168,76,0.2);
+        }
+
+        /* Zdjęcie */
+        .fleet-card-img-wrap {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            overflow: hidden;
+        }
+        .fleet-card-img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: brightness(0.9) saturate(1.1);
+            transition: all 0.5s var(--ease);
+        }
+        .fleet-card:hover .fleet-card-img {
+            filter: brightness(1) saturate(1.15);
+            transform: scale(1.03);
+        }
+
+        /* Overlay gradient */
+        .fleet-card-img-wrap::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 80px;
+            background: linear-gradient(to top, var(--navy-700) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* Badge na zdjęciu */
+        .fleet-card-badge {
+            position: absolute;
+            top: 16px; left: 16px;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            background: rgba(6,14,26,0.75);
+            backdrop-filter: blur(8px);
+            font-size: 11px; font-weight: 500;
+            color: var(--gold-500);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: 1px solid rgba(201,168,76,0.2);
+        }
+
+        /* Body */
+        .fleet-card-body {
+            padding: 24px 28px 28px;
+        }
+        .fleet-card-model {
+            font-family: var(--font-display);
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        .fleet-card-model .accent { color: var(--gold-500); }
+        .fleet-card-subtitle {
+            font-size: 13px;
+            color: var(--gray-400);
+            font-weight: 300;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .fleet-card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gold-500);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid rgba(201,168,76,0.3);
+            background: rgba(201,168,76,0.05);
+        }
+        .fleet-card-cta:hover {
+            background: var(--gold-600);
+            color: var(--navy-800);
+            border-color: var(--gold-600);
+            gap: 14px;
+        }
+        .fleet-card-cta-arrow {
+            transition: transform 0.3s;
+        }
+        .fleet-card-cta:hover .fleet-card-cta-arrow {
+            transform: translateX(4px);
+        }
+
+
+        /* === STOPKA (taka sama jak index) === */
+        .footer { background: var(--navy-900); border-top: 1px solid rgba(255,255,255,0.06); padding: 0; }
+        .footer-inner { max-width: 1240px; margin: 0 auto; }
+        .footer-main { padding: 60px 48px 40px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 40px; }
+        .footer-col-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 20px; }
+        .footer-link { display: block; font-size: 13px; font-weight: 300; color: var(--gray-400); margin-bottom: 10px; text-decoration: none; cursor: pointer; transition: color 0.2s; }
+        .footer-link:hover { color: var(--gold-500); }
+        .footer-social { display: flex; gap: 10px; margin-top: 16px; }
+        .footer-social-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--gray-300); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .footer-social-btn:hover { background: rgba(201,168,76,0.15); color: var(--gold-500); border-color: var(--gold-600); }
+        .footer-mid { padding: 24px 48px; border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; }
+        .footer-mid-section { display: flex; align-items: center; gap: 16px; }
+        .footer-mid-label { font-size: 13px; font-weight: 500; color: var(--gray-300); white-space: nowrap; }
+        .footer-payment-icons { display: flex; gap: 8px; align-items: center; }
+        .footer-payment-icon { padding: 6px 12px; border-radius: 4px; background: rgba(255,255,255,0.08); font-size: 12px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+        .footer-alliance { display: flex; align-items: center; gap: 12px; }
+        .footer-alliance-badge { padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid rgba(201,168,76,0.2); background: rgba(201,168,76,0.05); font-size: 12px; font-weight: 600; color: var(--gold-500); letter-spacing: 1px; text-transform: uppercase; }
+        .footer-bottom-bar { padding: 20px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .footer-bottom-links { display: flex; gap: 20px; flex-wrap: wrap; }
+        .footer-bottom-links a { font-size: 12px; color: var(--gray-500); text-decoration: none; transition: color 0.2s; }
+        .footer-bottom-links a:hover { color: var(--gray-300); }
+        .footer-copy { font-size: 12px; color: var(--gray-600); }
+
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            .page-hero { padding: 130px 24px 40px; }
+            .fleet-section { padding: 60px 24px 80px; }
+            .fleet-grid { grid-template-columns: 1fr; }
+            .footer-main { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .nav-top { padding: 0 16px; }
+            .nav-bottom { padding: 0 16px; height: 50px; }
+            .nav-main-links { display: none; }
+            .page-hero { padding: 110px 16px 32px; }
+            .fleet-section { padding: 40px 16px 60px; }
+            .footer-main { grid-template-columns: 1fr; }
+            .footer-mid { flex-direction: column; align-items: flex-start; }
+            .footer-bottom-bar { flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== NAWIGACJA ===== -->
+    <nav class="nav">
+        <div class="nav-top">
+            <div style="position:relative;">
+                <button class="nav-top-btn" id="lang-btn">PL Polski ▾</button>
+                <div class="popup-panel" id="lang-panel">
+                    <div class="popup-option selected" data-lang="pl"><span class="flag">🇵🇱</span> Polski</div>
+                    <div class="popup-option" data-lang="en"><span class="flag">🇬🇧</span> English</div>
+                    <div class="popup-option" data-lang="de"><span class="flag">🇩🇪</span> Deutsch</div>
+                    <div class="popup-option" data-lang="uk"><span class="flag">🇺🇦</span> Українська</div>
+                </div>
+            </div>
+            <div style="position:relative;">
+                <button class="nav-top-btn" id="currency-btn">PLN ▾</button>
+                <div class="popup-panel" id="currency-panel">
+                    <div class="popup-option selected" data-cur="PLN">PLN — Złoty</div>
+                    <div class="popup-option" data-cur="EUR">EUR — Euro</div>
+                    <div class="popup-option" data-cur="USD">USD — Dolar</div>
+                    <div class="popup-option" data-cur="GBP">GBP — Funt</div>
+                </div>
+            </div>
+            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+        </div>
+        <div class="nav-bottom">
+            <a href="index.html" class="nav-logo">
+                <div class="nav-logo-mark">V</div>
+                <div class="nav-logo-text">VIS <em>Airlines</em></div>
+            </a>
+            <div class="nav-main-links">
+                <a href="flights.html" class="nav-main-link">Zaplanuj podróż</a>
+                <a href="#" class="nav-main-link">Odpraw się</a>
+                <a href="#" class="nav-main-link">Zarządzaj rezerwacją</a>
+                <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
+                    <button class="nav-main-link active" id="info-btn" style="cursor:pointer;">Informacje ▾</button>
+                    <div class="nav-info-panel" id="info-panel">
+                        <a href="fleet.html" class="nav-info-link">
+                            <span class="nav-info-icon">✈</span>
+                            <div>
+                                <div class="nav-info-title">Flota</div>
+                                <div class="nav-info-desc">Poznaj nasze samoloty</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <a href="#" class="nav-main-link">Pomoc</a>
+            </div>
+            <button class="nav-hamburger" aria-label="Menu">☰</button>
+        </div>
+    </nav>
+
+
+    <!-- ===== HERO STRONY ===== -->
+    <section class="page-hero">
+        <div class="page-hero-bg"></div>
+        <div class="page-hero-content">
+            <div class="section-eyebrow animate-in">Nasza flota</div>
+            <h1 class="animate-in animate-in-d1">Nowoczesne maszyny,<br><span class="gold">niezawodne połączenia</span></h1>
+            <p class="animate-in animate-in-d2">Latamy samolotami nowej generacji — cichymi, oszczędnymi i komfortowymi. Każda maszyna przechodzi rygorystyczne kontrole techniczne.</p>
+        </div>
+    </section>
+
+
+    <!-- ===== FLEET GRID ===== -->
+    <section class="fleet-section">
+        <div class="fleet-grid">
+
+            <!-- Embraer 175-E2 -->
+            <div class="fleet-card reveal">
+                <div class="fleet-card-img-wrap">
+                    <img
+                        class="fleet-card-img"
+                        src="https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=800&h=500&fit=crop"
+                        alt="Embraer 175-E2 w hangarze VIS Airlines"
+                    >
+                    <div class="fleet-card-badge">W naszej flocie</div>
+                </div>
+                <div class="fleet-card-body">
+                    <div class="fleet-card-model">Embraer <span class="accent">175-E2</span></div>
+                    <div class="fleet-card-subtitle">
+                        Zwrotny i nowoczesny samolot regionalny nowej generacji. Idealny na krótkie trasy krajowe i europejskie — cichy, komfortowy, z najnowszymi silnikami Pratt & Whitney GTF.
+                    </div>
+                    <a href="#" class="fleet-card-cta">
+                        Zobacz szczegóły
+                        <span class="fleet-card-cta-arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ===== STOPKA ===== -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-main">
+                <div>
+                    <div class="footer-col-title">O VIS Airlines</div>
+                    <a href="#" class="footer-link">O nas</a>
+                    <a href="#" class="footer-link">Kariera</a>
+                    <a href="#" class="footer-link">Biuro Prasowe</a>
+                    <a href="#" class="footer-link">Corporate</a>
+                    <a href="#" class="footer-link">Newsletter</a>
+                    <a href="#" class="footer-link">Blog podróżniczy</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Oferta dodatkowa</div>
+                    <a href="#" class="footer-link">VIS dla Grup</a>
+                    <a href="#" class="footer-link">VIS dla Firm</a>
+                    <a href="#" class="footer-link">VIS Cargo</a>
+                    <a href="#" class="footer-link">VIS Charters</a>
+                    <a href="#" class="footer-link">VIS dla Agentów</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Podróż z VIS</div>
+                    <a href="#" class="footer-link">Usługi dodatkowe</a>
+                    <a href="#" class="footer-link">Bagaż</a>
+                    <a href="#" class="footer-link">VIS Upgrade</a>
+                    <a href="#" class="footer-link">Nasze kierunki</a>
+                    <a href="#" class="footer-link">Obsługa pasażera</a>
+                    <a href="#" class="footer-link">VIS Rewards</a>
+                </div>
+                <div>
+                    <div class="footer-col-title">Śledź nas na</div>
+                    <div class="footer-social">
+                        <a href="#" class="footer-social-btn">f</a>
+                        <a href="#" class="footer-social-btn">▶</a>
+                        <a href="#" class="footer-social-btn">in</a>
+                        <a href="#" class="footer-social-btn">✦</a>
+                        <a href="#" class="footer-social-btn">𝕏</a>
+                    </div>
+                    <div style="margin-top: 28px;">
+                        <div class="footer-col-title">Pobierz aplikację</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <div style="padding:8px 16px; border-radius:6px; background:rgba(255,255,255,0.08); font-size:11px; color:var(--gray-300); font-weight:500;">▶ Google Play</div>
+                            <div style="padding:8px 16px; border-radius:6px; background:rgba(255,255,255,0.08); font-size:11px; color:var(--gray-300); font-weight:500;"> App Store</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-mid">
+                <div class="footer-mid-section">
+                    <span class="footer-mid-label">Metody płatności</span>
+                    <div class="footer-payment-icons">
+                        <span class="footer-payment-icon">VISA</span>
+                        <span class="footer-payment-icon">MC</span>
+                        <span class="footer-payment-icon">PayPo</span>
+                        <span class="footer-payment-icon">Klarna</span>
+                        <span class="footer-payment-icon">BLIK</span>
+                    </div>
+                </div>
+                <div class="footer-alliance">
+                    <span class="footer-mid-label">Jesteśmy członkiem</span>
+                    <span class="footer-alliance-badge">oneworld ®</span>
+                </div>
+            </div>
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-links">
+                    <a href="#">Kontakt</a>
+                    <a href="#">Regulacje lotnicze</a>
+                    <a href="#">Regulaminy</a>
+                    <a href="#">Ochrona Danych Osobowych</a>
+                    <a href="#">Cyberbezpieczeństwo</a>
+                    <a href="#">Mapa serwisu</a>
+                </div>
+                <div class="footer-copy">© <span id="footer-year">2026</span> VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+    (function(){
+        // Popup język/waluta
+        function setupPop(bi,pi,cb){const b=document.getElementById(bi),p=document.getElementById(pi);b.addEventListener('click',e=>{e.stopPropagation();closeAll();p.classList.toggle('show');});p.querySelectorAll('.popup-option').forEach(o=>{o.addEventListener('click',e=>{e.stopPropagation();p.querySelectorAll('.popup-option').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');p.classList.remove('show');if(cb)cb(o);});});}
+        setupPop('lang-btn','lang-panel',o=>{document.getElementById('lang-btn').textContent=o.querySelector('.flag').textContent+' '+o.textContent.trim()+' ▾';});
+        setupPop('currency-btn','currency-panel',o=>{document.getElementById('currency-btn').textContent=o.dataset.cur+' ▾';});
+
+        // Informacje dropdown
+        const infoBtn=document.getElementById('info-btn'),infoPanel=document.getElementById('info-panel');
+        infoBtn.addEventListener('click',e=>{e.stopPropagation();closeAll();infoPanel.classList.toggle('show');});
+
+        function closeAll(){document.querySelectorAll('.popup-panel.show,.nav-info-panel.show').forEach(e=>e.classList.remove('show'));}
+        document.addEventListener('click',e=>{if(!e.target.closest('.nav-dropdown-wrapper,.popup-panel,[id$="-btn"]'))closeAll();});
+    })();
+    </script>
+</body>
+</html>
