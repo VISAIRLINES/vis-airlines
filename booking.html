@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezerwacja — VIS Airlines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* NAV */
+        .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
+        .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
+        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
+        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
+        .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
+
+        /* PROGRESS BAR */
+        .progress-bar{display:flex;align-items:center;justify-content:center;gap:0;padding:20px 48px;background:var(--navy-700);border-bottom:1px solid rgba(255,255,255,.04)}
+        .progress-step{display:flex;align-items:center;gap:8px;padding:10px 20px;font-size:13px;color:var(--gray-500);font-weight:400;position:relative}
+        .progress-step.active{color:var(--gold-500);font-weight:600}
+        .progress-step.done{color:var(--green)}
+        .progress-step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray-600);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-mono)}
+        .progress-step.active .progress-step-num{border-color:var(--gold-500);color:var(--gold-500)}
+        .progress-step.done .progress-step-num{border-color:var(--green);background:var(--green);color:var(--navy-800)}
+        .progress-sep{width:40px;height:1px;background:var(--gray-600);margin:0 4px}
+
+        /* MAIN */
+        .booking-page{padding:32px 48px 80px;max-width:1100px;margin:0 auto}
+        .step-title{font-family:var(--font-display);font-size:clamp(24px,3vw,36px);font-weight:600;margin-bottom:8px}
+        .step-title .gold{color:var(--gold-500)}
+        .step-subtitle{font-size:14px;color:var(--gray-400);margin-bottom:32px}
+
+        /* TARIFF GRID */
+        .tariff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+        .tariff-card{background:var(--navy-700);border:2px solid rgba(255,255,255,.06);border-radius:var(--radius-md);overflow:hidden;transition:all .3s;cursor:pointer;display:flex;flex-direction:column}
+        .tariff-card:hover{border-color:rgba(201,168,76,.2);transform:translateY(-2px)}
+        .tariff-card.selected{border-color:var(--gold-500);box-shadow:0 0 0 1px var(--gold-500)}
+        .tariff-card.recommended{border-color:var(--gold-600)}
+        .tariff-header{padding:20px 20px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
+        .tariff-price{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white)}
+        .tariff-card.selected .tariff-price{color:var(--gold-400)}
+        .tariff-currency{font-size:14px;color:var(--gray-400);font-weight:400}
+        .tariff-name{font-size:14px;font-weight:600;color:var(--gray-200);margin-top:8px}
+        .tariff-card.selected .tariff-name{color:var(--gold-500)}
+        .tariff-rec-badge{display:inline-block;padding:4px 12px;border-radius:var(--radius-full);background:var(--gold-600);color:var(--navy-800);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+        .tariff-features{padding:16px 20px;flex:1;display:flex;flex-direction:column;gap:14px}
+        .tariff-feature{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--gray-300);line-height:1.5}
+        .tariff-feature-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+        .tariff-feature strong{color:var(--white);font-weight:500}
+        .tariff-btn-wrap{padding:16px 20px;border-top:1px solid rgba(255,255,255,.04)}
+        .tariff-btn{width:100%;padding:12px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font-body);text-align:center}
+        .tariff-btn-outline{background:none;border:1.5px solid rgba(255,255,255,.15);color:var(--gray-200)}
+        .tariff-btn-outline:hover{border-color:var(--gold-500);color:var(--gold-500)}
+        .tariff-card.selected .tariff-btn-outline{background:var(--gold-600);border-color:var(--gold-600);color:var(--navy-800)}
+
+        /* SUMMARY CARD */
+        .summary-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:28px;margin-bottom:24px}
+        .summary-card h3{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:4px}
+        .summary-card .route-date{font-size:13px;color:var(--gray-400);margin-bottom:20px}
+        .summary-flight{display:flex;align-items:center;gap:24px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+        .summary-flight:last-child{border-bottom:none}
+        .sf-time{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--white)}
+        .sf-code{font-size:11px;color:var(--gray-400)}
+        .sf-arrow{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:80px}
+        .sf-arrow-line{width:60px;height:1px;background:var(--gray-500)}
+        .sf-arrow-dur{font-size:10px;color:var(--gold-500);font-weight:500}
+        .sf-details{font-size:12px;color:var(--gray-400);display:flex;flex-direction:column;gap:2px}
+        .sf-tariff-badge{display:inline-block;padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;margin-left:auto}
+        .sf-tariff-eco{background:rgba(201,168,76,.1);color:var(--gold-500);border:1px solid rgba(201,168,76,.2)}
+        .sf-tariff-biz{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.2)}
+        .summary-total{display:flex;justify-content:flex-end;align-items:baseline;gap:8px;padding-top:20px;margin-top:12px;border-top:1px solid rgba(255,255,255,.06)}
+        .summary-total-label{font-size:14px;color:var(--gray-400)}
+        .summary-total-price{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--gold-500)}
+        .summary-total-cur{font-size:14px;color:var(--gray-400)}
+
+        /* PASSENGER FORM */
+        .pax-form-section{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:28px;margin-bottom:24px}
+        .pax-form-section h3{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:4px}
+        .pax-form-section .form-hint{font-size:12px;color:var(--gray-400);margin-bottom:24px}
+        .pax-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .pax-form-grid .full{grid-column:span 2}
+        .form-input-line{padding:14px 0 10px;border:none;border-bottom:2px solid rgba(255,255,255,.1);border-radius:0;background:transparent;color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;transition:border-color .3s}
+        .form-input-line:focus{border-bottom-color:var(--gold-500)}
+        .form-input-line::placeholder{color:var(--gray-500)}
+        .form-input-line.error{border-bottom-color:var(--red)}
+        .form-error-text{font-size:11px;color:var(--red);margin-top:4px;display:none}
+        .form-error-text.show{display:block}
+        .form-select-line{padding:14px 0 10px;border:none;border-bottom:2px solid rgba(255,255,255,.1);border-radius:0;background:transparent;color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;cursor:pointer;-webkit-appearance:none}
+        .form-select-line:focus{border-bottom-color:var(--gold-500)}
+        .form-select-line option{background:var(--navy-800);color:var(--white)}
+
+        /* ACTION BAR */
+        .action-bar{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-top:12px}
+        .action-bar-price{text-align:right}
+        .action-bar-total{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--gold-500)}
+        .action-bar-sub{font-size:12px;color:var(--gray-400)}
+
+        /* FOOTER (compact) */
+        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
+        .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
+
+        @media(max-width:900px){
+            .tariff-grid{grid-template-columns:1fr 1fr}
+            .booking-page{padding:24px 16px 60px}
+            .pax-form-grid{grid-template-columns:1fr}
+            .pax-form-grid .full{grid-column:span 1}
+            .progress-bar{padding:16px;overflow-x:auto}
+        }
+        @media(max-width:600px){
+            .tariff-grid{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-top">
+            <button class="nav-top-btn">PL Polski ▾</button>
+            <button class="nav-top-btn">PLN ▾</button>
+            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+        </div>
+        <div class="nav-bottom">
+            <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
+        </div>
+    </nav>
+
+    <div class="progress-bar" id="progress"></div>
+    <main class="booking-page" id="app"></main>
+
+    <footer class="footer"><div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone. Członek oneworld®</div></footer>
+
+    <script src="js/main.js"></script>
+    <script>
+    (function(){
+        /* ============ DATA ============ */
+        const ROUTES=[{id:'VS001',from:'CPK',to:'BZG',dep:'07:25',arr:'08:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}}];
+        const AIRPORTS={'CPK':{city:'Warszawa / CPK'},'GDN':{city:'Gdańsk'},'SZZ':{city:'Szczecin'},'KRK':{city:'Kraków'},'BZG':{city:'Bydgoszcz'},'KTW':{city:'Katowice'},'RZE':{city:'Rzeszów'},'WRO':{city:'Wrocław'},'POZ':{city:'Poznań'},'FRA':{city:'Frankfurt'},'MUC':{city:'Monachium'},'DTM':{city:'Dortmund'},'BER':{city:'Berlin'}};
+        const MONTHS=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+        const DAYS_S=['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
+
+        const TARIFFS={
+            economy:[
+                {id:'eco-bronze',name:'Ekonomi Brąz',features:[
+                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Nie dozwolony'},
+                    {icon:'↩',text:'<strong>Zwroty</strong><br>Nie dozwolony'},
+                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
+                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
+                ]},
+                {id:'eco-gold',name:'Ekonomi Gold',rec:true,features:[
+                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Dozwolona plus różnica w taryfie'},
+                    {icon:'↩',text:'<strong>Zwroty</strong><br>Nie dozwolony'},
+                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
+                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
+                    {icon:'📦',text:'<strong>Bagaż rejestrowany</strong><br>1× 23kg'},
+                    {icon:'💺',text:'<strong>Rezerwacja miejsca</strong><br>W cenie'},
+                ]},
+            ],
+            business:[
+                {id:'biz-bronze',name:'Biznes Brąz',features:[
+                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Dozwolona plus różnica w taryfie'},
+                    {icon:'↩',text:'<strong>Zwroty</strong><br>Zwrot z wyjątkiem 299 PLN'},
+                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
+                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
+                    {icon:'📦',text:'<strong>Bagaż rejestrowany</strong><br>2× 32kg'},
+                    {icon:'💺',text:'<strong>Preferred Zone Seat</strong><br>W cenie'},
+                    {icon:'🚀',text:'<strong>Priorytetowy boarding</strong><br>W cenie'},
+                ]},
+                {id:'biz-gold',name:'Biznes Gold',rec:true,features:[
+                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Dozwolona, bez dodatkowych opłat'},
+                    {icon:'↩',text:'<strong>Zwroty</strong><br>Pełny zwrot'},
+                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
+                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
+                    {icon:'📦',text:'<strong>Bagaż rejestrowany</strong><br>2× 32kg'},
+                    {icon:'💺',text:'<strong>Preferred Zone Seat</strong><br>W cenie'},
+                    {icon:'🚀',text:'<strong>Priorytetowy boarding</strong><br>W cenie'},
+                    {icon:'🍽',text:'<strong>Lounge VIS Airlines</strong><br>Dostęp w cenie'},
+                ]},
+            ]
+        };
+        const TARIFF_MULTIPLIER={'eco-bronze':1,'eco-gold':1.15,'biz-bronze':1,'biz-gold':1.12};
+
+        /* ============ PARAMS ============ */
+        const P=new URLSearchParams(location.search);
+        const flightId=P.get('flight')||'VS001';
+        const cls=P.get('class')||'economy';
+        const dateStr=P.get('date')||'';
+        const tripType=P.get('type')||'one';
+        const adults=parseInt(P.get('adults'))||1;
+        const children=parseInt(P.get('children'))||0;
+        const infants=parseInt(P.get('infants'))||0;
+        const totalPax=adults+children;
+
+        const flight=ROUTES.find(r=>r.id===flightId)||ROUTES[0];
+        const basePrice=flight.classes[cls]||flight.classes.economy;
+        const fromA=AIRPORTS[flight.from]||{city:flight.from};
+        const toA=AIRPORTS[flight.to]||{city:flight.to};
+        const depDate=dateStr?new Date(dateStr+'T00:00:00'):new Date();
+
+        function fmtDate(d){return DAYS_S[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();}
+        function fmtShort(d){return d.getDate()+' '+MONTHS[d.getMonth()].substring(0,3)+' '+d.getFullYear();}
+
+        /* ============ STATE ============ */
+        let step=1; // 1=tariff out, 2=tariff return, 3=summary, 4=passenger, 5=services
+        let outTariff=null;
+        let retTariff=null;
+        let outPrice=0, retPrice=0;
+        let passengerData=[];
+
+        const app=document.getElementById('app');
+        const prog=document.getElementById('progress');
+
+        const STEPS=[
+            {num:1,label:'Wybierz taryfę'},
+            ...(tripType==='round'?[{num:2,label:'Lot powrotny'}]:[]),
+            {num:tripType==='round'?3:2,label:'Podsumowanie'},
+            {num:tripType==='round'?4:3,label:'Dane pasażera'},
+            {num:tripType==='round'?5:4,label:'Usługi dodatkowe'},
+        ];
+
+        function renderProgress(){
+            prog.innerHTML=STEPS.map((s,i)=>{
+                const isCurrent=step===(i+1);
+                const isDone=step>(i+1);
+                return (i>0?'<div class="progress-sep"></div>':'')+
+                    `<div class="progress-step ${isCurrent?'active':''} ${isDone?'done':''}">
+                        <span class="progress-step-num">${isDone?'✓':s.num}</span>${s.label}
+                    </div>`;
+            }).join('');
+        }
+
+        /* ============ STEP 1: TARIFF OUTBOUND ============ */
+        function renderTariffs(direction){
+            const isOut=direction==='out';
+            const tariffs=TARIFFS[cls]||TARIFFS.economy;
+            const price=basePrice;
+            const label=isOut?`${fromA.city} → ${toA.city}`:`${toA.city} → ${fromA.city}`;
+            const dateLabel=fmtDate(depDate);
+
+            let html=`
+                <h2 class="step-title">Wybierz <span class="gold">taryfę</span></h2>
+                <div class="step-subtitle">${label} · ${dateLabel}</div>
+                <div class="tariff-grid">
+            `;
+
+            tariffs.forEach(t=>{
+                const mult=TARIFF_MULTIPLIER[t.id]||1;
+                const tPrice=Math.round(price*mult);
+                const total=tPrice*totalPax;
+                const sel=(isOut?outTariff:retTariff)===t.id;
+                html+=`
+                    <div class="tariff-card ${sel?'selected':''} ${t.rec?'recommended':''}" data-tariff="${t.id}" data-price="${tPrice}">
+                        <div class="tariff-header">
+                            <div class="tariff-price">${tPrice} <span class="tariff-currency">PLN</span></div>
+                            <div class="tariff-name">${t.name}</div>
+                            ${t.rec?'<div class="tariff-rec-badge">Nasza rekomendacja</div>':''}
+                        </div>
+                        <div class="tariff-features">
+                            ${t.features.map(f=>`<div class="tariff-feature"><span class="tariff-feature-icon">${f.icon}</span><span>${f.text}</span></div>`).join('')}
+                        </div>
+                        <div class="tariff-btn-wrap">
+                            <button class="tariff-btn tariff-btn-outline">Wybierz</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html+=`</div>
+                <div class="action-bar">
+                    <button class="btn btn-ghost" onclick="history.back()">← Wróć</button>
+                    <button class="btn btn-gold btn-lg" id="tariff-next" disabled>Przejdź dalej →</button>
+                </div>`;
+
+            app.innerHTML=html;
+
+            app.querySelectorAll('.tariff-card').forEach(card=>{
+                card.addEventListener('click',()=>{
+                    app.querySelectorAll('.tariff-card').forEach(c=>c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    const tid=card.dataset.tariff;
+                    const tp=parseInt(card.dataset.price);
+                    if(isOut){outTariff=tid;outPrice=tp;}
+                    else{retTariff=tid;retPrice=tp;}
+                    document.getElementById('tariff-next').disabled=false;
+                });
+            });
+
+            document.getElementById('tariff-next').addEventListener('click',()=>{
+                step++;
+                render();
+            });
+        }
+
+        /* ============ STEP: SUMMARY ============ */
+        function renderSummary(){
+            const totalOut=outPrice*totalPax;
+            const totalRet=retPrice*totalPax;
+            const grandTotal=totalOut+totalRet;
+            const outTariffName=(TARIFFS[cls]||TARIFFS.economy).find(t=>t.id===outTariff)?.name||'';
+            const retTariffName=retTariff?((TARIFFS[cls]||TARIFFS.economy).find(t=>t.id===retTariff)?.name||''):'';
+            const isBiz=cls==='business';
+
+            let html=`<h2 class="step-title">Twój plan <span class="gold">podróży</span></h2>
+                <div class="step-subtitle">Sprawdź szczegóły przed przejściem dalej</div>`;
+
+            // Outbound
+            html+=`<div class="summary-card">
+                <h3>${fromA.city} do ${toA.city}</h3>
+                <div class="route-date">${fmtDate(depDate)}</div>
+                <div class="summary-flight">
+                    <div><div class="sf-time">${flight.dep}</div><div class="sf-code">${flight.from}</div></div>
+                    <div class="sf-arrow"><div class="sf-arrow-dur">${flight.duration}</div><div class="sf-arrow-line"></div></div>
+                    <div><div class="sf-time">${flight.arr}</div><div class="sf-code">${flight.to}</div></div>
+                    <div class="sf-details"><span>Czas: ${flight.duration}</span><span>VIS Airlines · ${flight.aircraft}</span></div>
+                    <span class="sf-tariff-badge ${isBiz?'sf-tariff-biz':'sf-tariff-eco'}">${outTariffName}</span>
+                </div>
+            </div>`;
+
+            // Return
+            if(tripType==='round'&&retTariff){
+                html+=`<div class="summary-card">
+                    <h3>${toA.city} do ${fromA.city}</h3>
+                    <div class="route-date">Lot powrotny</div>
+                    <div class="summary-flight">
+                        <div><div class="sf-time">${flight.arr}</div><div class="sf-code">${flight.to}</div></div>
+                        <div class="sf-arrow"><div class="sf-arrow-dur">${flight.duration}</div><div class="sf-arrow-line"></div></div>
+                        <div><div class="sf-time">${flight.dep}</div><div class="sf-code">${flight.from}</div></div>
+                        <div class="sf-details"><span>Czas: ${flight.duration}</span><span>VIS Airlines · ${flight.aircraft}</span></div>
+                        <span class="sf-tariff-badge ${isBiz?'sf-tariff-biz':'sf-tariff-eco'}">${retTariffName}</span>
+                    </div>
+                </div>`;
+            }
+
+            html+=`<div class="summary-total">
+                <span class="summary-total-label">Łączna cena za rejsy:</span>
+                <span class="summary-total-price">${grandTotal.toLocaleString('pl-PL')}</span>
+                <span class="summary-total-cur">PLN</span>
+            </div>`;
+
+            html+=`<div class="action-bar">
+                <button class="btn btn-ghost" id="sum-back">← Wróć</button>
+                <div class="action-bar-price">
+                    <div class="action-bar-sub">Łączna cena · ${totalPax} ${totalPax===1?'pasażer':'pasażerów'}</div>
+                    <div class="action-bar-total">${grandTotal.toLocaleString('pl-PL')} PLN</div>
+                </div>
+                <button class="btn btn-gold btn-lg" id="sum-next">Wprowadź dane pasażera →</button>
+            </div>`;
+
+            app.innerHTML=html;
+            document.getElementById('sum-back').addEventListener('click',()=>{step--;render();});
+            document.getElementById('sum-next').addEventListener('click',()=>{step++;render();});
+        }
+
+        /* ============ STEP: PASSENGER FORM ============ */
+        function renderPassengerForm(){
+            let html=`<h2 class="step-title">Wprowadź dane <span class="gold">pasażera</span></h2>
+                <div class="step-subtitle">* = pola obowiązkowe · Dane w formie podanej w paszporcie</div>`;
+
+            for(let i=0;i<totalPax;i++){
+                const isChild=i>=adults;
+                const label=isChild?`Dziecko ${i-adults+1}`:`Pasażer ${i+1} (dorosły)`;
+                html+=`<div class="pax-form-section">
+                    <h3>${label}</h3>
+                    <div class="form-hint">Informacje osobowe</div>
+                    <div class="pax-form-grid">
+                        <div>
+                            <select class="form-select-line" data-pax="${i}" data-field="title">
+                                <option value="">Tytuł *</option>
+                                <option value="Pan">Pan</option>
+                                <option value="Pani">Pani</option>
+                            </select>
+                        </div>
+                        <div></div>
+                        <div>
+                            <input class="form-input-line" placeholder="Imię *" data-pax="${i}" data-field="firstName" required>
+                            <div class="form-error-text">Wprowadź imię</div>
+                        </div>
+                        <div>
+                            <input class="form-input-line" placeholder="Nazwisko *" data-pax="${i}" data-field="lastName" required>
+                            <div class="form-error-text">Wprowadź nazwisko</div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            // Contact info
+            html+=`<div class="pax-form-section">
+                <h3>Informacje kontaktowe</h3>
+                <div class="form-hint">Potrzebujemy tych danych do potwierdzenia rezerwacji</div>
+                <div class="pax-form-grid">
+                    <div class="full">
+                        <input class="form-input-line" type="email" placeholder="E-mail *" id="pax-email">
+                        <div class="form-error-text" id="email-error">Wprowadź poprawny adres e-mail</div>
+                    </div>
+                    <div>
+                        <select class="form-select-line" id="pax-phone-prefix">
+                            <option value="+48">🇵🇱 +48</option>
+                            <option value="+49">🇩🇪 +49</option>
+                            <option value="+44">🇬🇧 +44</option>
+                            <option value="+1">🇺🇸 +1</option>
+                        </select>
+                    </div>
+                    <div>
+                        <input class="form-input-line" type="tel" placeholder="Numer telefonu (bez 0 na początku) *" id="pax-phone">
+                        <div class="form-error-text" id="phone-error">Wprowadź poprawny numer telefonu (9 cyfr)</div>
+                    </div>
+                </div>
+            </div>`;
+
+            const grandTotal=(outPrice+retPrice)*totalPax;
+            html+=`<div class="action-bar">
+                <button class="btn btn-ghost" id="pax-back">← Wróć</button>
+                <div class="action-bar-price">
+                    <div class="action-bar-sub">Łączna cena · ${totalPax} ${totalPax===1?'pasażer':'pasażerów'}</div>
+                    <div class="action-bar-total">${grandTotal.toLocaleString('pl-PL')} PLN</div>
+                </div>
+                <button class="btn btn-gold btn-lg" id="pax-confirm">Potwierdź →</button>
+            </div>`;
+
+            app.innerHTML=html;
+            document.getElementById('pax-back').addEventListener('click',()=>{step--;render();});
+            document.getElementById('pax-confirm').addEventListener('click',validateAndProceed);
+        }
+
+        function validateAndProceed(){
+            let valid=true;
+            // Clear errors
+            document.querySelectorAll('.form-error-text').forEach(e=>e.classList.remove('show'));
+            document.querySelectorAll('.form-input-line').forEach(e=>e.classList.remove('error'));
+
+            // Passengers
+            const paxInputs=document.querySelectorAll('[data-field]');
+            paxInputs.forEach(inp=>{
+                if(inp.tagName==='SELECT'){
+                    if(!inp.value){inp.classList.add('error');valid=false;}
+                } else {
+                    if(!inp.value.trim()){
+                        inp.classList.add('error');
+                        const err=inp.parentElement.querySelector('.form-error-text');
+                        if(err)err.classList.add('show');
+                        valid=false;
+                    }
+                }
+            });
+
+            // Email
+            const email=document.getElementById('pax-email');
+            const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!emailRegex.test(email.value)){
+                email.classList.add('error');
+                document.getElementById('email-error').classList.add('show');
+                valid=false;
+            }
+
+            // Phone
+            const phone=document.getElementById('pax-phone');
+            const phoneClean=phone.value.replace(/\s/g,'');
+            if(!/^\d{7,15}$/.test(phoneClean)){
+                phone.classList.add('error');
+                document.getElementById('phone-error').classList.add('show');
+                valid=false;
+            }
+
+            if(!valid){
+                // Scroll to first error
+                const firstErr=document.querySelector('.error');
+                if(firstErr)firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+                return;
+            }
+
+            // Success → next step (services)
+            step++;
+            render();
+        }
+
+        /* ============ STEP: SERVICES ============ */
+        function renderServices(){
+            const grandTotal=(outPrice+retPrice)*totalPax;
+            app.innerHTML=`
+                <h2 class="step-title">Usługi <span class="gold">dodatkowe</span></h2>
+                <div class="step-subtitle">Uzupełnij swoją podróż o dodatkowe usługi</div>
+
+                <div class="summary-card" style="text-align:center;padding:60px 40px;">
+                    <div style="font-size:48px;margin-bottom:16px;">✈</div>
+                    <h3 style="font-size:24px;margin-bottom:8px;">Usługi dodatkowe</h3>
+                    <p style="color:var(--gray-400);font-size:14px;max-width:400px;margin:0 auto 24px;">
+                        Ta sekcja jest w trakcie budowy. Wkrótce będziesz mógł dodać: dodatkowy bagaż, wybór miejsca, ubezpieczenie podróżne, posiłki i więcej.
+                    </p>
+                    <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--gold-500);margin-bottom:8px;">${grandTotal.toLocaleString('pl-PL')} PLN</div>
+                    <div style="font-size:13px;color:var(--gray-400);margin-bottom:32px;">Łączna cena za ${totalPax} ${totalPax===1?'pasażera':'pasażerów'}</div>
+                    <a href="index.html" class="btn btn-gold btn-lg">Wróć na stronę główną</a>
+                </div>
+            `;
+        }
+
+        /* ============ RENDER ============ */
+        function render(){
+            renderProgress();
+            window.scrollTo({top:0,behavior:'smooth'});
+
+            if(step===1) renderTariffs('out');
+            else if(step===2 && tripType==='round') renderTariffs('return');
+            else if((step===2 && tripType!=='round')||(step===3 && tripType==='round')) renderSummary();
+            else if((step===3 && tripType!=='round')||(step===4 && tripType==='round')) renderPassengerForm();
+            else renderServices();
+        }
+
+        render();
+    })();
+    </script>
+</body>
+</html>
