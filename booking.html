@@ -92,10 +92,57 @@
         .form-select-line option{background:var(--navy-800);color:var(--white)}
 
         /* ACTION BAR */
-        .action-bar{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-top:12px}
+        .action-bar{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-top:12px;gap:16px;flex-wrap:wrap}
         .action-bar-price{text-align:right}
         .action-bar-total{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--gold-500)}
         .action-bar-sub{font-size:12px;color:var(--gray-400)}
+
+        /* EXTRAS SECTIONS */
+        .extras-section{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);margin-bottom:20px;overflow:hidden}
+        .extras-section-header{display:flex;align-items:center;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.04)}
+        .extras-section-icon{font-size:28px;flex-shrink:0}
+        .extras-section-title{font-size:16px;font-weight:600;color:var(--white)}
+        .extras-section-desc{font-size:12px;color:var(--gray-400);margin-top:2px}
+        .extras-options{padding:4px 0}
+
+        /* Toggle item (on/off) */
+        .extras-toggle{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;cursor:pointer;transition:background .2s;border-bottom:1px solid rgba(255,255,255,.02)}
+        .extras-toggle:last-child{border-bottom:none}
+        .extras-toggle:hover{background:rgba(255,255,255,.02)}
+        .extras-toggle.active{background:rgba(201,168,76,.04)}
+        .et-info{}
+        .et-name{font-size:14px;font-weight:500;color:var(--white)}
+        .et-desc{font-size:12px;color:var(--gray-400);margin-top:2px}
+        .et-switch{flex-shrink:0;margin-left:16px}
+        .et-switch-track{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.1);position:relative;transition:background .2s}
+        .extras-toggle.active .et-switch-track{background:var(--gold-600)}
+        .et-switch-thumb{width:18px;height:18px;border-radius:50%;background:var(--white);position:absolute;top:3px;left:3px;transition:transform .2s}
+        .extras-toggle.active .et-switch-thumb{transform:translateX(20px)}
+
+        /* Counter item */
+        .extras-counter{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.02)}
+        .extras-counter:last-child{border-bottom:none}
+        .et-counter{display:flex;align-items:center;gap:14px}
+        .et-counter-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--gold-500);font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);transition:all .2s}
+        .et-counter-btn:hover{background:rgba(201,168,76,.15);border-color:var(--gold-600)}
+        .et-counter-val{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--white);width:24px;text-align:center}
+
+        /* Extras summary */
+        .extras-summary{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:20px 24px;margin-top:24px;margin-bottom:8px}
+        .extras-summary-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;color:var(--gray-300);border-bottom:1px solid rgba(255,255,255,.03)}
+        .extras-summary-row:last-child{border-bottom:none}
+        .extras-summary-total{font-size:18px;font-weight:700;color:var(--gold-500);padding-top:14px;margin-top:6px;border-top:2px solid rgba(201,168,76,.2) !important;border-bottom:none !important}
+
+        /* Payment */
+        .payment-box{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:40px;text-align:center}
+        .payment-box-icon{font-size:40px;margin-bottom:16px}
+        .payment-box h3{font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:8px}
+        .payment-box p{font-size:14px;color:var(--gray-400);line-height:1.7;max-width:420px;margin:0 auto 20px}
+        .payment-methods{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+        .pm-badge{padding:6px 14px;border-radius:4px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700;color:var(--white);letter-spacing:.5px}
+        .payment-stripe-placeholder{border:2px dashed rgba(201,168,76,.2);border-radius:var(--radius-md);padding:40px;margin:0 auto;max-width:500px}
+        .psp-inner{text-align:center}
+        .psp-text{font-size:14px;color:var(--gray-400)}
 
         /* FOOTER (compact) */
         .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
@@ -217,6 +264,7 @@
             {num:tripType==='round'?3:2,label:'Podsumowanie'},
             {num:tripType==='round'?4:3,label:'Dane pasażera'},
             {num:tripType==='round'?5:4,label:'Usługi dodatkowe'},
+            {num:tripType==='round'?6:5,label:'Płatność'},
         ];
 
         function renderProgress(){
@@ -475,23 +523,242 @@
         }
 
         /* ============ STEP: SERVICES ============ */
-        function renderServices(){
-            const grandTotal=(outPrice+retPrice)*totalPax;
-            app.innerHTML=`
-                <h2 class="step-title">Usługi <span class="gold">dodatkowe</span></h2>
-                <div class="step-subtitle">Uzupełnij swoją podróż o dodatkowe usługi</div>
+        /* ============ EXTRAS STATE ============ */
+        let extras={seat:false,bag12:0,bag10:0,bag15:0,bag20:0,bag23:0,bag40:0,bagOversized:0,priority:false,fasttrack:false,lounge:false};
+        const EXTRAS_PRICES={seat:25,bag12:49,bag10:59,bag15:89,bag20:119,bag23:149,bag40:249,bagOversized:199,priority:35,fasttrack:49,lounge:129};
 
-                <div class="summary-card" style="text-align:center;padding:60px 40px;">
-                    <div style="font-size:48px;margin-bottom:16px;">✈</div>
-                    <h3 style="font-size:24px;margin-bottom:8px;">Usługi dodatkowe</h3>
-                    <p style="color:var(--gray-400);font-size:14px;max-width:400px;margin:0 auto 24px;">
-                        Ta sekcja jest w trakcie budowy. Wkrótce będziesz mógł dodać: dodatkowy bagaż, wybór miejsca, ubezpieczenie podróżne, posiłki i więcej.
-                    </p>
-                    <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--gold-500);margin-bottom:8px;">${grandTotal.toLocaleString('pl-PL')} PLN</div>
-                    <div style="font-size:13px;color:var(--gray-400);margin-bottom:32px;">Łączna cena za ${totalPax} ${totalPax===1?'pasażera':'pasażerów'}</div>
-                    <a href="index.html" class="btn btn-gold btn-lg">Wróć na stronę główną</a>
+        function calcExtrasTotal(){
+            let t=0;
+            if(extras.seat) t+=EXTRAS_PRICES.seat*totalPax;
+            t+=extras.bag12*EXTRAS_PRICES.bag12;
+            t+=extras.bag10*EXTRAS_PRICES.bag10;
+            t+=extras.bag15*EXTRAS_PRICES.bag15;
+            t+=extras.bag20*EXTRAS_PRICES.bag20;
+            t+=extras.bag23*EXTRAS_PRICES.bag23;
+            t+=extras.bag40*EXTRAS_PRICES.bag40;
+            t+=extras.bagOversized*EXTRAS_PRICES.bagOversized;
+            if(extras.priority) t+=EXTRAS_PRICES.priority*totalPax;
+            if(extras.fasttrack) t+=EXTRAS_PRICES.fasttrack*totalPax;
+            if(extras.lounge) t+=EXTRAS_PRICES.lounge*totalPax;
+            return t;
+        }
+
+        function renderServices(){
+            const flightTotal=(outPrice+retPrice)*totalPax;
+            const extrasTotal=calcExtrasTotal();
+            const grandTotal=flightTotal+extrasTotal;
+
+            let html=`
+                <h2 class="step-title">Usługi <span class="gold">dodatkowe</span></h2>
+                <div class="step-subtitle">Uzupełnij swoją podróż — każda usługa jest opcjonalna</div>
+
+                <!-- WYBÓR MIEJSCA -->
+                <div class="extras-section">
+                    <div class="extras-section-header">
+                        <div class="extras-section-icon">💺</div>
+                        <div>
+                            <div class="extras-section-title">Wybór miejsca</div>
+                            <div class="extras-section-desc">Wybierz preferowane miejsce w samolocie</div>
+                        </div>
+                    </div>
+                    <div class="extras-options">
+                        <div class="extras-toggle ${extras.seat?'active':''}" data-extra="seat">
+                            <div class="et-info">
+                                <div class="et-name">Rezerwacja miejsca</div>
+                                <div class="et-desc">${EXTRAS_PRICES.seat} PLN / os.</div>
+                            </div>
+                            <div class="et-switch">
+                                <div class="et-switch-track"><div class="et-switch-thumb"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BAGAŻ PODRĘCZNY -->
+                <div class="extras-section">
+                    <div class="extras-section-header">
+                        <div class="extras-section-icon">🧳</div>
+                        <div>
+                            <div class="extras-section-title">Bagaż podręczny</div>
+                            <div class="extras-section-desc">Dodaj cięższy bagaż podręczny</div>
+                        </div>
+                    </div>
+                    <div class="extras-options">
+                        <div class="extras-counter" data-extra="bag12">
+                            <div class="et-info"><div class="et-name">Bagaż podręczny 12 kg</div><div class="et-desc">${EXTRAS_PRICES.bag12} PLN / szt.</div></div>
+                            <div class="et-counter">
+                                <button class="et-counter-btn" data-action="minus">−</button>
+                                <span class="et-counter-val">${extras.bag12}</span>
+                                <button class="et-counter-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BAGAŻ REJESTROWANY -->
+                <div class="extras-section">
+                    <div class="extras-section-header">
+                        <div class="extras-section-icon">📦</div>
+                        <div>
+                            <div class="extras-section-title">Bagaż rejestrowany</div>
+                            <div class="extras-section-desc">Dodaj bagaż oddawany przy odprawie</div>
+                        </div>
+                    </div>
+                    <div class="extras-options">
+                        ${['bag10','bag15','bag20','bag23','bag40'].map(k=>{
+                            const kg=k.replace('bag','');
+                            return `<div class="extras-counter" data-extra="${k}">
+                                <div class="et-info"><div class="et-name">Bagaż ${kg} kg</div><div class="et-desc">${EXTRAS_PRICES[k]} PLN / szt.</div></div>
+                                <div class="et-counter">
+                                    <button class="et-counter-btn" data-action="minus">−</button>
+                                    <span class="et-counter-val">${extras[k]}</span>
+                                    <button class="et-counter-btn" data-action="plus">+</button>
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- BAGAŻ NIESTANDARDOWY -->
+                <div class="extras-section">
+                    <div class="extras-section-header">
+                        <div class="extras-section-icon">🎿</div>
+                        <div>
+                            <div class="extras-section-title">Bagaż niestandardowy</div>
+                            <div class="extras-section-desc">Sprzęt sportowy, instrumenty muzyczne, itp.</div>
+                        </div>
+                    </div>
+                    <div class="extras-options">
+                        <div class="extras-counter" data-extra="bagOversized">
+                            <div class="et-info"><div class="et-name">Bagaż niestandardowy</div><div class="et-desc">${EXTRAS_PRICES.bagOversized} PLN / szt.</div></div>
+                            <div class="et-counter">
+                                <button class="et-counter-btn" data-action="minus">−</button>
+                                <span class="et-counter-val">${extras.bagOversized}</span>
+                                <button class="et-counter-btn" data-action="plus">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USŁUGI PREMIUM -->
+                <div class="extras-section">
+                    <div class="extras-section-header">
+                        <div class="extras-section-icon">⭐</div>
+                        <div>
+                            <div class="extras-section-title">Usługi premium</div>
+                            <div class="extras-section-desc">Podróżuj wygodniej</div>
+                        </div>
+                    </div>
+                    <div class="extras-options">
+                        <div class="extras-toggle ${extras.priority?'active':''}" data-extra="priority">
+                            <div class="et-info"><div class="et-name">Pierwszeństwo wejścia na pokład</div><div class="et-desc">${EXTRAS_PRICES.priority} PLN / os.</div></div>
+                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
+                        </div>
+                        <div class="extras-toggle ${extras.fasttrack?'active':''}" data-extra="fasttrack">
+                            <div class="et-info"><div class="et-name">Fast Track</div><div class="et-desc">${EXTRAS_PRICES.fasttrack} PLN / os. · przyspieszona kontrola bezpieczeństwa</div></div>
+                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
+                        </div>
+                        <div class="extras-toggle ${extras.lounge?'active':''}" data-extra="lounge">
+                            <div class="et-info"><div class="et-name">Business Lounge VIS Airlines</div><div class="et-desc">${EXTRAS_PRICES.lounge} PLN / os. · napoje, przekąski, Wi-Fi, prysznic</div></div>
+                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PODSUMOWANIE KOSZTÓW -->
+                <div class="extras-summary">
+                    <div class="extras-summary-row"><span>Loty</span><span>${flightTotal.toLocaleString('pl-PL')} PLN</span></div>
+                    <div class="extras-summary-row"><span>Usługi dodatkowe</span><span id="extras-cost">${extrasTotal>0?extrasTotal.toLocaleString('pl-PL')+' PLN':'—'}</span></div>
+                    <div class="extras-summary-row extras-summary-total"><span>Łączna cena</span><span id="extras-grand">${grandTotal.toLocaleString('pl-PL')} PLN</span></div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-ghost" id="svc-back">← Wróć</button>
+                    <button class="btn btn-gold btn-lg" id="svc-pay">Przejdź do płatności →</button>
                 </div>
             `;
+
+            app.innerHTML=html;
+
+            // Toggle events
+            app.querySelectorAll('.extras-toggle').forEach(el=>{
+                el.addEventListener('click',()=>{
+                    const key=el.dataset.extra;
+                    extras[key]=!extras[key];
+                    el.classList.toggle('active');
+                    updateExtrasTotals();
+                });
+            });
+
+            // Counter events
+            app.querySelectorAll('.extras-counter').forEach(el=>{
+                const key=el.dataset.extra;
+                el.querySelector('[data-action="minus"]').addEventListener('click',()=>{
+                    if(extras[key]>0){extras[key]--;el.querySelector('.et-counter-val').textContent=extras[key];updateExtrasTotals();}
+                });
+                el.querySelector('[data-action="plus"]').addEventListener('click',()=>{
+                    if(extras[key]<9){extras[key]++;el.querySelector('.et-counter-val').textContent=extras[key];updateExtrasTotals();}
+                });
+            });
+
+            document.getElementById('svc-back').addEventListener('click',()=>{step--;render();});
+            document.getElementById('svc-pay').addEventListener('click',()=>{step++;render();});
+        }
+
+        function updateExtrasTotals(){
+            const flightTotal=(outPrice+retPrice)*totalPax;
+            const et=calcExtrasTotal();
+            const gt=flightTotal+et;
+            const ec=document.getElementById('extras-cost');
+            const eg=document.getElementById('extras-grand');
+            if(ec) ec.textContent=et>0?et.toLocaleString('pl-PL')+' PLN':'—';
+            if(eg) eg.textContent=gt.toLocaleString('pl-PL')+' PLN';
+        }
+
+        /* ============ STEP: PAYMENT ============ */
+        function renderPayment(){
+            const flightTotal=(outPrice+retPrice)*totalPax;
+            const extrasTotal=calcExtrasTotal();
+            const grandTotal=flightTotal+extrasTotal;
+
+            app.innerHTML=`
+                <h2 class="step-title">Płatność <span class="gold">bezpieczna</span></h2>
+                <div class="step-subtitle">Finalizuj swoją rezerwację</div>
+
+                <div class="extras-summary" style="margin-bottom:32px;">
+                    <div class="extras-summary-row"><span>Loty (${totalPax} ${totalPax===1?'pasażer':'pasażerów'})</span><span>${flightTotal.toLocaleString('pl-PL')} PLN</span></div>
+                    ${extrasTotal>0?`<div class="extras-summary-row"><span>Usługi dodatkowe</span><span>${extrasTotal.toLocaleString('pl-PL')} PLN</span></div>`:''}
+                    <div class="extras-summary-row extras-summary-total"><span>Do zapłaty</span><span>${grandTotal.toLocaleString('pl-PL')} PLN</span></div>
+                </div>
+
+                <div class="payment-box">
+                    <div class="payment-box-icon">🔒</div>
+                    <h3>Płatność online</h3>
+                    <p>Tutaj zostanie zintegrowany system płatności Stripe.<br>Obsługiwane metody: karta płatnicza, BLIK, PayPo, Klarna.</p>
+                    <div class="payment-methods">
+                        <span class="pm-badge">VISA</span>
+                        <span class="pm-badge">Mastercard</span>
+                        <span class="pm-badge">BLIK</span>
+                        <span class="pm-badge">PayPo</span>
+                        <span class="pm-badge">Klarna</span>
+                    </div>
+                    <div class="payment-stripe-placeholder" id="stripe-mount">
+                        <div class="psp-inner">
+                            <div class="psp-text">Stripe Checkout — wkrótce aktywny</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-gold btn-lg" style="width:100%;margin-top:20px;" disabled>Zapłać ${grandTotal.toLocaleString('pl-PL')} PLN</button>
+                    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-500);">
+                        Klikając „Zapłać" akceptujesz regulamin VIS Airlines i politykę prywatności.
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-ghost" id="pay-back">← Wróć do usług dodatkowych</button>
+                </div>
+            `;
+
+            document.getElementById('pay-back').addEventListener('click',()=>{step--;render();});
         }
 
         /* ============ RENDER ============ */
@@ -503,7 +770,8 @@
             else if(step===2 && tripType==='round') renderTariffs('return');
             else if((step===2 && tripType!=='round')||(step===3 && tripType==='round')) renderSummary();
             else if((step===3 && tripType!=='round')||(step===4 && tripType==='round')) renderPassengerForm();
-            else renderServices();
+            else if((step===4 && tripType!=='round')||(step===5 && tripType==='round')) renderServices();
+            else renderPayment();
         }
 
         render();
