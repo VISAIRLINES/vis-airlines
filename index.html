@@ -16,11 +16,13 @@
 
     <!-- Style tylko dla strony głównej -->
     <style>
-        /* === HERO === */
+        /* === HERO — layout z wyszukiwarką === */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            gap: 60px;
             position: relative;
             overflow: hidden;
             padding: 120px 48px 80px;
@@ -32,8 +34,6 @@
                 radial-gradient(ellipse 60% 50% at 85% 30%, rgba(30,58,95,0.3) 0%, transparent 60%),
                 linear-gradient(195deg, var(--navy-800) 0%, var(--navy-900) 50%, #070d18 100%);
         }
-
-        /* Delikatna siatka */
         .hero-grid-overlay {
             position: absolute; inset: 0;
             opacity: 0.025;
@@ -44,8 +44,6 @@
             mask-image: radial-gradient(ellipse at 30% 60%, black 20%, transparent 70%);
             -webkit-mask-image: radial-gradient(ellipse at 30% 60%, black 20%, transparent 70%);
         }
-
-        /* Dekoracyjne linie */
         .hero-deco-line {
             position: absolute;
             height: 1px;
@@ -57,7 +55,8 @@
         .hero-content {
             position: relative;
             z-index: 2;
-            max-width: 680px;
+            max-width: 540px;
+            flex-shrink: 0;
         }
         .hero-tag {
             display: inline-flex;
@@ -82,10 +81,10 @@
         }
         .hero h1 {
             font-family: var(--font-display);
-            font-size: clamp(44px, 5.5vw, 76px);
+            font-size: clamp(36px, 4vw, 62px);
             font-weight: 600;
             line-height: 1.08;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             letter-spacing: -0.5px;
         }
         .hero h1 .accent {
@@ -93,49 +92,203 @@
             font-style: italic;
         }
         .hero-desc {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 300;
             color: var(--gray-200);
             line-height: 1.8;
-            max-width: 520px;
-            margin-bottom: 44px;
+            max-width: 460px;
+            margin-bottom: 36px;
         }
-        .hero-actions {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
         .hero-stats {
             display: flex;
-            gap: 56px;
-            margin-top: 72px;
-            padding-top: 40px;
+            gap: 48px;
+            margin-top: 48px;
+            padding-top: 32px;
             border-top: 1px solid rgba(201,168,76,0.1);
         }
         .hero-stat-value {
             font-family: var(--font-display);
-            font-size: 40px;
+            font-size: 36px;
             font-weight: 600;
             color: var(--gold-500);
             line-height: 1;
         }
         .hero-stat-label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 400;
             color: var(--gray-400);
             text-transform: uppercase;
             letter-spacing: 2px;
             margin-top: 8px;
         }
-        .hero-plane {
+
+
+        /* === WYSZUKIWARKA LOTÓW === */
+        .search-panel {
+            position: relative;
+            z-index: 10;
+            width: 420px;
+            flex-shrink: 0;
+            background: rgba(15,31,56,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+        }
+        .search-panel-title {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .search-panel-title .gold { color: var(--gold-500); }
+        .search-panel-subtitle {
+            font-size: 13px;
+            color: var(--gray-400);
+            font-weight: 300;
+            margin-bottom: 28px;
+        }
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* Custom dropdown */
+        .dropdown-wrapper {
+            position: relative;
+        }
+        .dropdown-trigger {
+            width: 100%;
+            padding: 14px 16px;
+            padding-right: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--navy-900);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--white);
+            font-size: 15px;
+            font-family: var(--font-body);
+            font-weight: 300;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color 0.3s var(--ease);
+            outline: none;
+            appearance: none;
+            position: relative;
+        }
+        .dropdown-trigger::after {
+            content: '▾';
             position: absolute;
-            right: 8%; top: 50%;
-            transform: translateY(-50%) rotate(-8deg);
-            font-size: 200px;
-            opacity: 0.04;
-            animation: float 8s ease-in-out infinite;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold-500);
+            font-size: 14px;
             pointer-events: none;
+        }
+        .dropdown-trigger:focus,
+        .dropdown-trigger.open {
+            border-color: var(--gold-600);
+        }
+        .dropdown-trigger .placeholder {
+            color: var(--gray-500);
+        }
+        .dropdown-trigger .selected-code {
+            font-family: var(--font-mono);
+            color: var(--gold-500);
+            font-weight: 500;
+            font-size: 13px;
+            margin-left: 6px;
+        }
+
+        /* Dropdown menu */
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            background: var(--navy-900);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: var(--radius-md);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            z-index: 100;
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+            animation: scaleIn 0.2s var(--ease-out);
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-menu::-webkit-scrollbar { width: 5px; }
+        .dropdown-menu::-webkit-scrollbar-track { background: transparent; }
+        .dropdown-menu::-webkit-scrollbar-thumb { background: var(--gold-800); border-radius: 3px; }
+
+        .dropdown-country {
+            padding: 10px 16px 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gold-600);
+            pointer-events: none;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+        .dropdown-country:first-child {
+            border-top: none;
+        }
+        .dropdown-option {
+            padding: 10px 16px 10px 24px;
+            font-size: 14px;
+            color: var(--gray-200);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dropdown-option:hover {
+            background: rgba(201,168,76,0.08);
+            color: var(--white);
+        }
+        .dropdown-option .iata {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--gold-500);
+            font-weight: 500;
+            background: rgba(201,168,76,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Kalendarz */
+        .date-input-wrapper {
+            position: relative;
+        }
+        .date-input-wrapper .form-input {
+            cursor: pointer;
+            color-scheme: dark;
+        }
+        .date-input-wrapper .form-input::-webkit-calendar-picker-indicator {
+            filter: invert(0.7) sepia(1) saturate(3) hue-rotate(10deg);
+            cursor: pointer;
+        }
+
+        /* Przycisk szukaj */
+        .search-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Pasażerowie */
+        .pax-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
 
@@ -238,7 +391,6 @@
         }
         .hub-feature h4 { font-size: 15px; font-weight: 500; margin-bottom: 2px; }
         .hub-feature p { font-size: 13px; color: var(--gray-400); font-weight: 300; line-height: 1.6; }
-
         .hub-visual {
             position: relative;
             height: 400px;
@@ -279,7 +431,13 @@
 
         /* === RESPONSIVE === */
         @media (max-width: 1024px) {
-            .hero { padding: 120px 24px 60px; }
+            .hero {
+                flex-direction: column;
+                padding: 120px 24px 60px;
+                gap: 40px;
+            }
+            .hero-content { max-width: 100%; }
+            .search-panel { width: 100%; max-width: 500px; }
             .why-grid { grid-template-columns: 1fr 1fr; }
             .hub-section { grid-template-columns: 1fr; }
             .cta-banner { flex-direction: column; text-align: center; padding: 48px 32px; }
@@ -291,6 +449,7 @@
             .why-grid { grid-template-columns: 1fr; }
             .cta-banner { padding: 40px 24px; }
             .hub-visual { height: 300px; }
+            .pax-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -319,14 +478,14 @@
     </nav>
 
 
-    <!-- ===== HERO ===== -->
+    <!-- ===== HERO + WYSZUKIWARKA ===== -->
     <section class="hero">
         <div class="hero-bg"></div>
         <div class="hero-grid-overlay"></div>
         <div class="hero-deco-line hero-deco-line-1"></div>
         <div class="hero-deco-line hero-deco-line-2"></div>
-        <div class="hero-plane">✈</div>
 
+        <!-- Lewa strona — treść -->
         <div class="hero-content">
             <div class="hero-tag animate-in">
                 <div class="hero-tag-dot"></div>
@@ -341,12 +500,7 @@
                 Polska linia lotnicza nowej generacji. Łączymy Centralny Port Komunikacyjny ze światem — komfortowo, punktualnie i&nbsp;w&nbsp;atrakcyjnych cenach.
             </p>
 
-            <div class="hero-actions animate-in animate-in-d3">
-                <a href="flights.html" class="btn btn-gold btn-lg">Szukaj lotów</a>
-                <a href="fleet.html" class="btn btn-outline btn-lg">Poznaj flotę</a>
-            </div>
-
-            <div class="hero-stats animate-in animate-in-d4">
+            <div class="hero-stats animate-in animate-in-d3">
                 <div class="hero-stat">
                     <div class="hero-stat-value">CPK</div>
                     <div class="hero-stat-label">Hub bazowy</div>
@@ -359,6 +513,97 @@
                     <div class="hero-stat-value">24/7</div>
                     <div class="hero-stat-label">Obsługa klienta</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Prawa strona — wyszukiwarka -->
+        <div class="search-panel animate-in animate-in-d2">
+            <div class="search-panel-title">Zarezerwuj <span class="gold">lot</span></div>
+            <div class="search-panel-subtitle">Znajdź połączenie i leć z VIS Airlines</div>
+
+            <div class="search-form">
+                <!-- SKĄD -->
+                <div class="form-group">
+                    <label class="form-label">Skąd</label>
+                    <div class="dropdown-wrapper" id="dropdown-from">
+                        <button type="button" class="dropdown-trigger" data-value="">
+                            <span class="placeholder">Wybierz lotnisko wylotu</span>
+                        </button>
+                        <div class="dropdown-menu" id="menu-from">
+                            <div class="dropdown-country">🇵🇱 Polska</div>
+                            <div class="dropdown-option" data-code="CPK" data-city="Warszawa / CPK">Centralny Port Komunikacyjny <span class="iata">CPK</span></div>
+                            <div class="dropdown-option" data-code="GDN" data-city="Gdańsk">Gdańsk im. Lecha Wałęsy <span class="iata">GDN</span></div>
+                            <div class="dropdown-option" data-code="SZZ" data-city="Szczecin">Szczecin-Goleniów <span class="iata">SZZ</span></div>
+                            <div class="dropdown-option" data-code="KRK" data-city="Kraków">Kraków Balice <span class="iata">KRK</span></div>
+                            <div class="dropdown-option" data-code="BZG" data-city="Bydgoszcz">Bydgoszcz Szwederowo <span class="iata">BZG</span></div>
+                            <div class="dropdown-option" data-code="KTW" data-city="Katowice">Katowice-Pyrzowice <span class="iata">KTW</span></div>
+                            <div class="dropdown-option" data-code="RZE" data-city="Rzeszów">Rzeszów-Jasionka <span class="iata">RZE</span></div>
+                            <div class="dropdown-option" data-code="WRO" data-city="Wrocław">Wrocław Strachowice <span class="iata">WRO</span></div>
+                            <div class="dropdown-option" data-code="POZ" data-city="Poznań">Poznań Ławica <span class="iata">POZ</span></div>
+                            <div class="dropdown-country">🇩🇪 Niemcy</div>
+                            <div class="dropdown-option" data-code="FRA" data-city="Frankfurt">Frankfurt am Main <span class="iata">FRA</span></div>
+                            <div class="dropdown-option" data-code="MUC" data-city="Monachium">Monachium <span class="iata">MUC</span></div>
+                            <div class="dropdown-option" data-code="DTM" data-city="Dortmund">Dortmund <span class="iata">DTM</span></div>
+                            <div class="dropdown-option" data-code="BER" data-city="Berlin">Berlin Brandenburg <span class="iata">BER</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOKĄD -->
+                <div class="form-group">
+                    <label class="form-label">Dokąd</label>
+                    <div class="dropdown-wrapper" id="dropdown-to">
+                        <button type="button" class="dropdown-trigger" data-value="">
+                            <span class="placeholder">Wybierz lotnisko docelowe</span>
+                        </button>
+                        <div class="dropdown-menu" id="menu-to">
+                            <div class="dropdown-country">🇵🇱 Polska</div>
+                            <div class="dropdown-option" data-code="CPK" data-city="Warszawa / CPK">Centralny Port Komunikacyjny <span class="iata">CPK</span></div>
+                            <div class="dropdown-option" data-code="GDN" data-city="Gdańsk">Gdańsk im. Lecha Wałęsy <span class="iata">GDN</span></div>
+                            <div class="dropdown-option" data-code="SZZ" data-city="Szczecin">Szczecin-Goleniów <span class="iata">SZZ</span></div>
+                            <div class="dropdown-option" data-code="KRK" data-city="Kraków">Kraków Balice <span class="iata">KRK</span></div>
+                            <div class="dropdown-option" data-code="BZG" data-city="Bydgoszcz">Bydgoszcz Szwederowo <span class="iata">BZG</span></div>
+                            <div class="dropdown-option" data-code="KTW" data-city="Katowice">Katowice-Pyrzowice <span class="iata">KTW</span></div>
+                            <div class="dropdown-option" data-code="RZE" data-city="Rzeszów">Rzeszów-Jasionka <span class="iata">RZE</span></div>
+                            <div class="dropdown-option" data-code="WRO" data-city="Wrocław">Wrocław Strachowice <span class="iata">WRO</span></div>
+                            <div class="dropdown-option" data-code="POZ" data-city="Poznań">Poznań Ławica <span class="iata">POZ</span></div>
+                            <div class="dropdown-country">🇩🇪 Niemcy</div>
+                            <div class="dropdown-option" data-code="FRA" data-city="Frankfurt">Frankfurt am Main <span class="iata">FRA</span></div>
+                            <div class="dropdown-option" data-code="MUC" data-city="Monachium">Monachium <span class="iata">MUC</span></div>
+                            <div class="dropdown-option" data-code="DTM" data-city="Dortmund">Dortmund <span class="iata">DTM</span></div>
+                            <div class="dropdown-option" data-code="BER" data-city="Berlin">Berlin Brandenburg <span class="iata">BER</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATA + PASAŻEROWIE -->
+                <div class="pax-row">
+                    <div class="form-group">
+                        <label class="form-label">Data wylotu</label>
+                        <div class="date-input-wrapper">
+                            <input type="date" class="form-input" id="flight-date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Pasażerowie</label>
+                        <select class="form-select" id="flight-pax">
+                            <option value="1">1 osoba</option>
+                            <option value="2">2 osoby</option>
+                            <option value="3">3 osoby</option>
+                            <option value="4">4 osoby</option>
+                            <option value="5">5 osób</option>
+                            <option value="6">6 osób</option>
+                            <option value="7">7 osób</option>
+                            <option value="8">8 osób</option>
+                            <option value="9">9 osób</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PRZYCISK -->
+                <button class="btn btn-gold search-btn" id="search-btn">
+                    ✈ &nbsp;Szukaj lotów
+                </button>
             </div>
         </div>
     </section>
@@ -507,5 +752,98 @@
 
     <!-- Wspólny JS -->
     <script src="js/main.js"></script>
+
+    <!-- JS wyszukiwarki lotów -->
+    <script>
+    (function() {
+        // === Kalendarz — min: dziś, max: rok do przodu ===
+        const dateInput = document.getElementById('flight-date');
+        const today = new Date();
+        const maxDate = new Date(today);
+        maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+        function formatDate(d) {
+            return d.toISOString().split('T')[0];
+        }
+        dateInput.min = formatDate(today);
+        dateInput.max = formatDate(maxDate);
+        // Domyślna data — jutro
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.value = formatDate(tomorrow);
+
+
+        // === Custom dropdown — obsługa otwierania/zamykania ===
+        const dropdowns = document.querySelectorAll('.dropdown-wrapper');
+
+        dropdowns.forEach(wrapper => {
+            const trigger = wrapper.querySelector('.dropdown-trigger');
+            const menu = wrapper.querySelector('.dropdown-menu');
+            const options = wrapper.querySelectorAll('.dropdown-option');
+
+            // Otwórz / zamknij
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Zamknij inne otwarte
+                document.querySelectorAll('.dropdown-menu.show').forEach(m => {
+                    if (m !== menu) m.classList.remove('show');
+                });
+                document.querySelectorAll('.dropdown-trigger.open').forEach(t => {
+                    if (t !== trigger) t.classList.remove('open');
+                });
+                menu.classList.toggle('show');
+                trigger.classList.toggle('open');
+            });
+
+            // Wybór opcji
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    const code = option.getAttribute('data-code');
+                    const city = option.getAttribute('data-city');
+
+                    trigger.setAttribute('data-value', code);
+                    trigger.innerHTML = city + ' <span class="selected-code">' + code + '</span>';
+                    menu.classList.remove('show');
+                    trigger.classList.remove('open');
+                });
+            });
+        });
+
+        // Zamknij dropdown po kliknięciu gdziekolwiek
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            document.querySelectorAll('.dropdown-trigger.open').forEach(t => t.classList.remove('open'));
+        });
+
+
+        // === Przycisk "Szukaj lotów" ===
+        document.getElementById('search-btn').addEventListener('click', () => {
+            const from = document.querySelector('#dropdown-from .dropdown-trigger').getAttribute('data-value');
+            const to = document.querySelector('#dropdown-to .dropdown-trigger').getAttribute('data-value');
+            const date = dateInput.value;
+            const pax = document.getElementById('flight-pax').value;
+
+            if (!from) {
+                alert('Wybierz lotnisko wylotu');
+                return;
+            }
+            if (!to) {
+                alert('Wybierz lotnisko docelowe');
+                return;
+            }
+            if (from === to) {
+                alert('Lotnisko wylotu i docelowe nie mogą być takie same');
+                return;
+            }
+            if (!date) {
+                alert('Wybierz datę wylotu');
+                return;
+            }
+
+            // Przekierowanie do strony wyników (stworzymy ją później)
+            window.location.href = 'flights.html?from=' + from + '&to=' + to + '&date=' + date + '&pax=' + pax;
+        });
+    })();
+    </script>
 </body>
 </html>
