@@ -92,11 +92,22 @@
 
         .flight-card {
             background: var(--navy-700); border: 1px solid rgba(255,255,255,.06);
-            border-radius: var(--radius-md); padding: 24px 28px; margin-bottom: 16px;
-            transition: all .3s var(--ease); cursor: pointer;
+            border-radius: var(--radius-md); margin-bottom: 16px;
+            transition: all .3s var(--ease); overflow: hidden;
         }
-        .flight-card:hover { border-color: rgba(201,168,76,.2); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
-        .flight-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+        .flight-card:hover { border-color: rgba(201,168,76,.15); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+
+        .fc-main {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            min-height: 100px;
+        }
+
+        /* Left — route info */
+        .fc-route-section {
+            padding: 24px 28px;
+            display: flex; align-items: center; gap: 20px;
+        }
 
         /* Route visual */
         .fc-route { display: flex; align-items: center; gap: 20px; }
@@ -108,14 +119,74 @@
         .fc-line::after { content: '✈'; position: absolute; right: -2px; top: -9px; font-size: 13px; color: var(--gold-500); }
         .fc-type { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Price */
-        .fc-price-block { text-align: right; }
-        .fc-price { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--gold-500); }
-        .fc-price-per { font-size: 11px; color: var(--gray-400); }
-        .fc-price-class { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+        /* Right — class columns (styl Lufthansa) */
+        .fc-classes {
+            display: flex;
+            border-left: 1px solid rgba(255,255,255,.06);
+        }
+        .fc-class-col {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 0; min-width: 150px;
+            cursor: pointer; transition: all .2s;
+            border-left: 1px solid rgba(255,255,255,.06);
+            position: relative;
+        }
+        .fc-class-col:first-child { border-left: none; }
+        .fc-class-col:hover { background: rgba(201,168,76,.04); }
+        .fc-class-col.selected { background: rgba(201,168,76,.08); }
 
-        /* Meta */
-        .fc-meta { display: flex; gap: 20px; font-size: 12px; color: var(--gray-400); align-items: center; flex-wrap: wrap; }
+        /* Górna część — klasa + cena */
+        .fc-class-top {
+            padding: 18px 24px 14px;
+            display: flex; flex-direction: column;
+            align-items: center; width: 100%;
+            flex: 1;
+        }
+        .fc-class-name {
+            font-size: 14px; font-weight: 600;
+            color: var(--gray-200); margin-bottom: 10px;
+            letter-spacing: 0.3px;
+        }
+        .fc-class-col.selected .fc-class-name { color: var(--gold-500); }
+        .fc-class-from {
+            font-size: 11px; color: var(--gray-500);
+            margin-bottom: 2px;
+        }
+        .fc-class-price {
+            font-family: var(--font-display);
+            font-size: 26px; font-weight: 700;
+            color: var(--white); line-height: 1;
+        }
+        .fc-class-col.selected .fc-class-price { color: var(--gold-400); }
+        .fc-class-currency {
+            font-size: 12px; color: var(--gray-400);
+            margin-top: 4px; font-weight: 400;
+        }
+
+        /* Dolna część — strzałka */
+        .fc-class-bottom {
+            width: 100%;
+            padding: 10px;
+            border-top: 1px solid rgba(255,255,255,.04);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: var(--gray-500);
+            transition: all .2s;
+        }
+        .fc-class-col:hover .fc-class-bottom { color: var(--gold-500); }
+        .fc-class-col.selected .fc-class-bottom {
+            color: var(--gold-500);
+            background: rgba(201,168,76,.06);
+        }
+
+        /* Meta bar at bottom */
+        .fc-meta-bar {
+            padding: 12px 28px;
+            border-top: 1px solid rgba(255,255,255,.04);
+            display: flex; gap: 20px; font-size: 12px; color: var(--gray-400);
+            align-items: center; flex-wrap: wrap;
+            background: rgba(0,0,0,.1);
+        }
         .fc-meta-item { display: flex; align-items: center; gap: 5px; }
         .fc-badge { padding: 3px 10px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
         .fc-badge-direct { background: rgba(46,204,113,.1); color: var(--green); border: 1px solid rgba(46,204,113,.2); }
@@ -196,6 +267,9 @@
             .search-summary{flex-direction:column;align-items:flex-start}
             .fc-route{flex-wrap:wrap}
             .fc-time{font-size:20px}
+            .fc-main{grid-template-columns:1fr}
+            .fc-classes{border-left:none;border-top:1px solid rgba(255,255,255,.04)}
+            .fc-class-col{min-width:0;padding:14px 16px}
             .date-strip-day{min-width:80px;padding:10px 8px}
             .nav-main-links{display:none}
             .nav-top{padding:0 16px}.nav-bottom{padding:0 16px}
@@ -472,31 +546,47 @@
             if (directFlights.length > 0) {
                 resultsHTML += `<div class="results-title">Znaleziono <strong>${directFlights.length}</strong> lot${directFlights.length > 1 ? 'ów' : ''} bezpośredni${directFlights.length > 1 ? 'ch' : ''}</div>`;
                 for (const flight of directFlights) {
-                    const price = getClassPrice(flight, selectedClass, selectedDate);
-                    const totalPrice = price * totalPax;
+                    // Build class columns
+                    const availClasses = Object.keys(flight.classes);
+                    let classCols = '';
+                    for (const cls of availClasses) {
+                        const price = getPriceForDate(flight.classes[cls], selectedDate);
+                        const total = price * totalPax;
+                        const isSelected = cls === selectedClass;
+                        classCols += `
+                            <div class="fc-class-col ${isSelected ? 'selected' : ''}" data-flight="${flight.id}" data-class="${cls}">
+                                <div class="fc-class-top">
+                                    <div class="fc-class-name">${CLASS_NAMES[cls]}</div>
+                                    <div class="fc-class-from">Od</div>
+                                    <div class="fc-class-price">${price}</div>
+                                    <div class="fc-class-currency">PLN${totalPax > 1 ? ' · razem ' + total + ' PLN' : ''}</div>
+                                </div>
+                                <div class="fc-class-bottom">˅</div>
+                            </div>
+                        `;
+                    }
+
                     resultsHTML += `
                         <div class="flight-card">
-                            <div class="flight-card-header">
-                                <div class="fc-route">
-                                    <div><div class="fc-time">${flight.dep}</div><div class="fc-time-sub">${from.city}</div></div>
-                                    <div class="fc-arrow-block">
-                                        <div class="fc-duration">${flight.duration}</div>
-                                        <div class="fc-line"></div>
-                                        <div class="fc-type">Bezpośredni</div>
+                            <div class="fc-main">
+                                <div class="fc-route-section">
+                                    <div class="fc-route">
+                                        <div><div class="fc-time">${flight.dep}</div><div class="fc-time-sub">${from.city}</div></div>
+                                        <div class="fc-arrow-block">
+                                            <div class="fc-duration">${flight.duration}</div>
+                                            <div class="fc-line"></div>
+                                            <div class="fc-type">Bezpośredni</div>
+                                        </div>
+                                        <div><div class="fc-time">${flight.arr}</div><div class="fc-time-sub">${to.city}</div></div>
                                     </div>
-                                    <div><div class="fc-time">${flight.arr}</div><div class="fc-time-sub">${to.city}</div></div>
                                 </div>
-                                <div class="fc-price-block">
-                                    <div class="fc-price">${totalPrice} PLN</div>
-                                    <div class="fc-price-per">${totalPax > 1 ? price + ' PLN / os.' : 'za osobę'}</div>
-                                    <div class="fc-price-class">${CLASS_NAMES[selectedClass]}</div>
-                                </div>
+                                <div class="fc-classes">${classCols}</div>
                             </div>
-                            <div class="fc-meta">
+                            <div class="fc-meta-bar">
                                 <span class="fc-badge fc-badge-direct">Bezpośredni</span>
                                 <span class="fc-meta-item">✈ ${flight.id}</span>
                                 <span class="fc-meta-item">${flight.aircraft}</span>
-                                <button class="btn btn-gold btn-sm fc-book">Rezerwuj ten lot</button>
+                                <button class="btn btn-gold btn-sm fc-book" style="margin-left:auto;">Rezerwuj lot</button>
                             </div>
                         </div>
                     `;
@@ -521,12 +611,26 @@
                 `;
 
                 for (const conn of connections) {
-                    const p1 = getClassPrice(conn.leg1, selectedClass, selectedDate);
-                    const p2 = getClassPrice(conn.leg2, selectedClass, selectedDate);
-                    if (!p1 || !p2) continue;
-                    const combined = Math.round((p1 + p2) * 0.8); // -20% discount
-                    const totalPrice = combined * totalPax;
-                    const savings = Math.round((p1 + p2) * 0.2);
+                    const availClasses = getAvailableClasses([conn.leg1, conn.leg2]);
+                    let classCols = '';
+                    for (const cls of availClasses) {
+                        const p1 = getPriceForDate(conn.leg1.classes[cls], selectedDate);
+                        const p2 = getPriceForDate(conn.leg2.classes[cls], selectedDate);
+                        const combined = Math.round((p1 + p2) * 0.8);
+                        const total = combined * totalPax;
+                        const isSelected = cls === selectedClass;
+                        classCols += `
+                            <div class="fc-class-col ${isSelected ? 'selected' : ''}" data-class="${cls}">
+                                <div class="fc-class-top">
+                                    <div class="fc-class-name">${CLASS_NAMES[cls]}</div>
+                                    <div class="fc-class-from">Od</div>
+                                    <div class="fc-class-price">${combined}</div>
+                                    <div class="fc-class-currency">PLN · -20%${totalPax > 1 ? ' · razem ' + total + ' PLN' : ''}</div>
+                                </div>
+                                <div class="fc-class-bottom">˅</div>
+                            </div>
+                        `;
+                    }
 
                     const leg2date = new Date(selectedDate);
                     leg2date.setDate(leg2date.getDate() + nextDayLayover);
@@ -538,23 +642,21 @@
 
                     resultsHTML += `
                         <div class="flight-card">
-                            <div class="flight-card-header">
-                                <div class="fc-route">
-                                    <div><div class="fc-time">${conn.leg1.dep}</div><div class="fc-time-sub">${AIRPORTS[conn.leg1.from]?.city || conn.leg1.from}</div></div>
-                                    <div class="fc-arrow-block">
-                                        <div class="fc-duration">Przesiadka</div>
-                                        <div class="fc-line"></div>
-                                        <div class="fc-type">via CPK</div>
+                            <div class="fc-main">
+                                <div class="fc-route-section">
+                                    <div class="fc-route">
+                                        <div><div class="fc-time">${conn.leg1.dep}</div><div class="fc-time-sub">${AIRPORTS[conn.leg1.from]?.city || conn.leg1.from}</div></div>
+                                        <div class="fc-arrow-block">
+                                            <div class="fc-duration">Przesiadka</div>
+                                            <div class="fc-line"></div>
+                                            <div class="fc-type">via CPK</div>
+                                        </div>
+                                        <div><div class="fc-time">${conn.leg2.arr}</div><div class="fc-time-sub">${AIRPORTS[conn.leg2.to]?.city || conn.leg2.to}</div></div>
                                     </div>
-                                    <div><div class="fc-time">${conn.leg2.arr}</div><div class="fc-time-sub">${AIRPORTS[conn.leg2.to]?.city || conn.leg2.to}</div></div>
                                 </div>
-                                <div class="fc-price-block">
-                                    <div class="fc-price">${totalPrice} PLN</div>
-                                    <div class="fc-price-per">${totalPax > 1 ? combined + ' PLN / os.' : 'za osobę'}</div>
-                                    <div class="fc-price-class">${CLASS_NAMES[selectedClass]} · oszczędzasz ${savings} PLN</div>
-                                </div>
+                                <div class="fc-classes">${classCols}</div>
                             </div>
-                            <div class="fc-connection">
+                            <div class="fc-connection" style="padding:12px 28px;">
                                 <div class="fc-leg">
                                     <span class="fc-leg-times">${conn.leg1.dep} → ${conn.leg1.arr}</span>
                                     <span class="fc-leg-route">${conn.leg1.from} → ${conn.leg1.to}</span>
@@ -569,10 +671,10 @@
                                     <span class="fc-leg-aircraft">${conn.leg2.aircraft}</span>
                                 </div>
                             </div>
-                            <div class="fc-meta" style="margin-top:16px">
+                            <div class="fc-meta-bar">
                                 <span class="fc-badge fc-badge-connect">Przesiadka CPK</span>
                                 <span class="fc-meta-item">✈ ${conn.leg1.id} + ${conn.leg2.id}</span>
-                                <button class="btn btn-gold btn-sm fc-book">Rezerwuj połączenie</button>
+                                <button class="btn btn-gold btn-sm fc-book" style="margin-left:auto;">Rezerwuj połączenie</button>
                             </div>
                         </div>
                     `;
@@ -589,6 +691,14 @@
             }
 
             app.innerHTML = summaryHTML + classNotice + dateStripHTML + resultsHTML;
+
+            // Event: class columns (Lufthansa-style)
+            app.querySelectorAll('.fc-class-col').forEach(col => {
+                col.addEventListener('click', () => {
+                    selectedClass = col.dataset.class;
+                    render();
+                });
+            });
 
             // Event: date strip
             app.querySelectorAll('.date-strip-day[data-date]').forEach(el => {
