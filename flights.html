@@ -1,1 +1,622 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wyniki wyszukiwania — VIS Airlines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 
+    <style>
+        /* === NAV (same as index) === */
+        .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
+        .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
+        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;position:relative;border-radius:0;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
+        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white);background:rgba(255,255,255,.04)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
+        .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
+        .nav-main-links{display:flex;gap:0;align-items:center;height:100%}
+        .nav-main-link{font-size:13px;font-weight:400;color:var(--gray-200);padding:0 18px;height:56px;display:inline-flex;align-items:center;cursor:pointer;transition:all .2s;background:none;border:none;border-bottom:2px solid transparent;font-family:var(--font-body);text-decoration:none}
+        .nav-main-link:hover{color:var(--gold-500);background:rgba(255,255,255,.02);border-bottom-color:var(--gold-600)}
+        .nav-main-link.active{color:var(--gold-500);border-bottom-color:var(--gold-500)}
+
+        /* === MAIN LAYOUT === */
+        .flights-page { padding: 110px 48px 80px; max-width: 1100px; margin: 0 auto; }
+
+        /* Search summary bar */
+        .search-summary {
+            background: var(--navy-700); border: 1px solid rgba(255,255,255,.06);
+            border-radius: var(--radius-md); padding: 20px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+        }
+        .search-summary-route {
+            display: flex; align-items: center; gap: 16px;
+        }
+        .ss-airport { text-align: center; }
+        .ss-code { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--white); }
+        .ss-city { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+        .ss-arrow { color: var(--gold-500); font-size: 20px; margin: 0 4px; }
+        .ss-info { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .ss-tag { padding: 6px 14px; border-radius: var(--radius-full); background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.15); font-size: 12px; color: var(--gold-500); font-weight: 500; }
+        .ss-edit { font-size: 13px; color: var(--gold-500); cursor: pointer; text-decoration: none; font-weight: 500; }
+        .ss-edit:hover { text-decoration: underline; }
+
+        /* Class notice */
+        .class-notice {
+            background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.2);
+            border-radius: var(--radius-md); padding: 16px 24px; margin-bottom: 24px;
+            display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--gold-400);
+        }
+        .class-notice-icon { font-size: 20px; }
+        .class-notice-btns { display: flex; gap: 8px; margin-left: auto; }
+        .class-notice-btn {
+            padding: 6px 16px; border-radius: var(--radius-sm); font-size: 12px;
+            font-weight: 600; cursor: pointer; border: 1px solid rgba(201,168,76,.3);
+            background: none; color: var(--gold-500); font-family: var(--font-body);
+            transition: all .2s;
+        }
+        .class-notice-btn:hover, .class-notice-btn.active { background: var(--gold-600); color: var(--navy-800); border-color: var(--gold-600); }
+
+        /* === DATE STRIP === */
+        .date-strip {
+            display: flex; gap: 0; margin-bottom: 28px; overflow-x: auto;
+            border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,.06);
+            background: var(--navy-700);
+        }
+        .date-strip::-webkit-scrollbar { height: 4px; }
+        .date-strip::-webkit-scrollbar-thumb { background: var(--gold-800); border-radius: 2px; }
+        .date-strip-day {
+            flex: 1; min-width: 100px; padding: 14px 12px; text-align: center;
+            cursor: pointer; border-right: 1px solid rgba(255,255,255,.04);
+            transition: all .2s; position: relative;
+        }
+        .date-strip-day:last-child { border-right: none; }
+        .date-strip-day:hover { background: rgba(201,168,76,.05); }
+        .date-strip-day.active {
+            background: rgba(201,168,76,.1);
+            border-bottom: 3px solid var(--gold-500);
+        }
+        .date-strip-day.active .ds-price { color: var(--gold-400); }
+        .ds-weekday { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); font-weight: 500; }
+        .ds-date { font-size: 15px; font-weight: 600; color: var(--white); margin: 4px 0; }
+        .ds-price { font-size: 13px; color: var(--gray-300); font-weight: 500; font-family: var(--font-mono); }
+
+        /* === FLIGHT RESULTS === */
+        .results-title {
+            font-size: 14px; color: var(--gray-400); margin-bottom: 16px;
+            font-weight: 400; letter-spacing: .5px;
+        }
+        .results-title strong { color: var(--white); font-weight: 600; }
+
+        .flight-card {
+            background: var(--navy-700); border: 1px solid rgba(255,255,255,.06);
+            border-radius: var(--radius-md); padding: 24px 28px; margin-bottom: 16px;
+            transition: all .3s var(--ease); cursor: pointer;
+        }
+        .flight-card:hover { border-color: rgba(201,168,76,.2); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+        .flight-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+
+        /* Route visual */
+        .fc-route { display: flex; align-items: center; gap: 20px; }
+        .fc-time { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--white); }
+        .fc-time-sub { font-size: 11px; color: var(--gray-400); font-family: var(--font-body); font-weight: 400; }
+        .fc-arrow-block { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 100px; }
+        .fc-duration { font-size: 11px; color: var(--gold-500); font-weight: 600; letter-spacing: .5px; }
+        .fc-line { width: 100%; height: 1px; background: var(--gray-500); position: relative; }
+        .fc-line::after { content: '✈'; position: absolute; right: -2px; top: -9px; font-size: 13px; color: var(--gold-500); }
+        .fc-type { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Price */
+        .fc-price-block { text-align: right; }
+        .fc-price { font-family: var(--font-display); font-size: 30px; font-weight: 700; color: var(--gold-500); }
+        .fc-price-per { font-size: 11px; color: var(--gray-400); }
+        .fc-price-class { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+        /* Meta */
+        .fc-meta { display: flex; gap: 20px; font-size: 12px; color: var(--gray-400); align-items: center; flex-wrap: wrap; }
+        .fc-meta-item { display: flex; align-items: center; gap: 5px; }
+        .fc-badge { padding: 3px 10px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+        .fc-badge-direct { background: rgba(46,204,113,.1); color: var(--green); border: 1px solid rgba(46,204,113,.2); }
+        .fc-badge-connect { background: rgba(52,152,219,.1); color: var(--blue); border: 1px solid rgba(52,152,219,.2); }
+
+        /* Connection details */
+        .fc-connection {
+            margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.04);
+        }
+        .fc-leg { display: flex; align-items: center; gap: 16px; padding: 8px 0; font-size: 13px; }
+        .fc-leg-times { font-family: var(--font-mono); color: var(--white); font-weight: 500; min-width: 120px; }
+        .fc-leg-route { color: var(--gray-300); }
+        .fc-leg-aircraft { color: var(--gray-400); font-size: 12px; }
+        .fc-layover {
+            padding: 8px 16px; margin: 4px 0; border-radius: var(--radius-sm);
+            background: rgba(52,152,219,.06); border: 1px solid rgba(52,152,219,.1);
+            font-size: 12px; color: var(--blue); display: flex; align-items: center; gap: 8px;
+        }
+        .fc-layover-next-day {
+            background: rgba(201,168,76,.06); border-color: rgba(201,168,76,.15);
+            color: var(--gold-500);
+        }
+
+        /* Next day option */
+        .next-day-option {
+            background: var(--navy-700); border: 1px solid rgba(201,168,76,.12);
+            border-radius: var(--radius-md); padding: 20px 28px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .ndo-info h4 { font-size: 15px; font-weight: 500; color: var(--white); margin-bottom: 4px; }
+        .ndo-info p { font-size: 13px; color: var(--gray-400); }
+        .ndo-toggle {
+            display: flex; gap: 6px;
+        }
+        .ndo-btn {
+            padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px;
+            font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,.1);
+            background: none; color: var(--gray-300); font-family: var(--font-body); transition: all .2s;
+        }
+        .ndo-btn:hover, .ndo-btn.active { background: var(--gold-600); color: var(--navy-800); border-color: var(--gold-600); }
+
+        /* Book button */
+        .fc-book {
+            display: block; width: 100%; margin-top: 12px; text-align: center;
+        }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: .5; }
+        .empty-state h3 { font-family: var(--font-display); font-size: 24px; color: var(--gray-200); margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; color: var(--gray-400); }
+
+        /* === FOOTER === */
+        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:0}
+        .footer-inner{max-width:1240px;margin:0 auto}
+        .footer-main{padding:60px 48px 40px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:40px}
+        .footer-col-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:20px}
+        .footer-link{display:block;font-size:13px;font-weight:300;color:var(--gray-400);margin-bottom:10px;text-decoration:none;cursor:pointer;transition:color .2s}
+        .footer-link:hover{color:var(--gold-500)}
+        .footer-social{display:flex;gap:10px;margin-top:16px}
+        .footer-social-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gray-300);cursor:pointer;transition:all .2s;text-decoration:none}
+        .footer-social-btn:hover{background:rgba(201,168,76,.15);color:var(--gold-500);border-color:var(--gold-600)}
+        .footer-mid{padding:24px 48px;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px}
+        .footer-mid-section{display:flex;align-items:center;gap:16px}
+        .footer-mid-label{font-size:13px;font-weight:500;color:var(--gray-300);white-space:nowrap}
+        .footer-payment-icons{display:flex;gap:8px;align-items:center}
+        .footer-payment-icon{padding:6px 12px;border-radius:4px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700;color:var(--white);letter-spacing:.5px}
+        .footer-alliance{display:flex;align-items:center;gap:12px}
+        .footer-alliance-badge{padding:8px 16px;border-radius:var(--radius-sm);border:1px solid rgba(201,168,76,.2);background:rgba(201,168,76,.05);font-size:12px;font-weight:600;color:var(--gold-500);letter-spacing:1px;text-transform:uppercase}
+        .footer-bottom-bar{padding:20px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+        .footer-bottom-links{display:flex;gap:20px;flex-wrap:wrap}
+        .footer-bottom-links a{font-size:12px;color:var(--gray-500);text-decoration:none;transition:color .2s}
+        .footer-bottom-links a:hover{color:var(--gray-300)}
+        .footer-copy{font-size:12px;color:var(--gray-600)}
+
+        @media(max-width:768px){
+            .flights-page{padding:110px 16px 60px}
+            .search-summary{flex-direction:column;align-items:flex-start}
+            .fc-route{flex-wrap:wrap}
+            .fc-time{font-size:20px}
+            .date-strip-day{min-width:80px;padding:10px 8px}
+            .nav-main-links{display:none}
+            .nav-top{padding:0 16px}.nav-bottom{padding:0 16px}
+            .footer-main{grid-template-columns:1fr 1fr}
+            .footer-mid{flex-direction:column;align-items:flex-start}
+            .footer-bottom-bar{flex-direction:column;text-align:center}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAV -->
+    <nav class="nav">
+        <div class="nav-top">
+            <button class="nav-top-btn" id="lang-btn">PL Polski ▾</button>
+            <button class="nav-top-btn" id="currency-btn">PLN ▾</button>
+            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+        </div>
+        <div class="nav-bottom">
+            <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
+            <div class="nav-main-links">
+                <a href="index.html" class="nav-main-link active">Zaplanuj podróż</a>
+                <a href="#" class="nav-main-link">Odpraw się</a>
+                <a href="#" class="nav-main-link">Zarządzaj rezerwacją</a>
+                <a href="#" class="nav-main-link">Informacje</a>
+                <a href="#" class="nav-main-link">Pomoc</a>
+            </div>
+            <button class="nav-hamburger" aria-label="Menu">☰</button>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="flights-page" id="app"></main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-main">
+                <div><div class="footer-col-title">O VIS Airlines</div><a href="#" class="footer-link">O nas</a><a href="#" class="footer-link">Kariera</a><a href="#" class="footer-link">Biuro Prasowe</a><a href="#" class="footer-link">Corporate</a><a href="#" class="footer-link">Newsletter</a></div>
+                <div><div class="footer-col-title">Oferta dodatkowa</div><a href="#" class="footer-link">VIS dla Grup</a><a href="#" class="footer-link">VIS dla Firm</a><a href="#" class="footer-link">VIS Cargo</a><a href="#" class="footer-link">VIS Charters</a></div>
+                <div><div class="footer-col-title">Podróż z VIS</div><a href="#" class="footer-link">Usługi dodatkowe</a><a href="#" class="footer-link">Bagaż</a><a href="#" class="footer-link">VIS Upgrade</a><a href="#" class="footer-link">Nasze kierunki</a><a href="#" class="footer-link">VIS Rewards</a></div>
+                <div><div class="footer-col-title">Śledź nas na</div><div class="footer-social"><a href="#" class="footer-social-btn">f</a><a href="#" class="footer-social-btn">▶</a><a href="#" class="footer-social-btn">in</a><a href="#" class="footer-social-btn">✦</a><a href="#" class="footer-social-btn">𝕏</a></div></div>
+            </div>
+            <div class="footer-mid">
+                <div class="footer-mid-section"><span class="footer-mid-label">Metody płatności</span><div class="footer-payment-icons"><span class="footer-payment-icon">VISA</span><span class="footer-payment-icon">MC</span><span class="footer-payment-icon">PayPo</span><span class="footer-payment-icon">Klarna</span><span class="footer-payment-icon">BLIK</span></div></div>
+                <div class="footer-alliance"><span class="footer-mid-label">Jesteśmy członkiem</span><span class="footer-alliance-badge">oneworld ®</span></div>
+            </div>
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-links"><a href="#">Kontakt</a><a href="#">Regulacje lotnicze</a><a href="#">Regulaminy</a><a href="#">Ochrona Danych Osobowych</a><a href="#">Cyberbezpieczeństwo</a></div>
+                <div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+    (function(){
+        /* ============================================
+           BAZA TRAS VIS Airlines
+           Dodawaj nowe trasy tutaj!
+           ============================================ */
+        const ROUTES = [
+            {
+                id: 'VS001',
+                from: 'CPK', to: 'BZG',
+                dep: '07:25', arr: '08:25',
+                duration: '1h 00m',
+                aircraft: 'Embraer 175-E2',
+                classes: {
+                    economy: 100,
+                    business: 600
+                    // brak premium i first!
+                }
+            }
+        ];
+
+        const AIRPORTS = {
+            'CPK': { city: 'Warszawa / CPK', name: 'Centralny Port Komunikacyjny' },
+            'GDN': { city: 'Gdańsk', name: 'Gdańsk im. Lecha Wałęsy' },
+            'SZZ': { city: 'Szczecin', name: 'Szczecin-Goleniów' },
+            'KRK': { city: 'Kraków', name: 'Kraków Balice' },
+            'BZG': { city: 'Bydgoszcz', name: 'Bydgoszcz Szwederowo' },
+            'KTW': { city: 'Katowice', name: 'Katowice-Pyrzowice' },
+            'RZE': { city: 'Rzeszów', name: 'Rzeszów-Jasionka' },
+            'WRO': { city: 'Wrocław', name: 'Wrocław Strachowice' },
+            'POZ': { city: 'Poznań', name: 'Poznań Ławica' },
+            'FRA': { city: 'Frankfurt', name: 'Frankfurt am Main' },
+            'MUC': { city: 'Monachium', name: 'Monachium Franz Josef Strauß' },
+            'DTM': { city: 'Dortmund', name: 'Dortmund' },
+            'BER': { city: 'Berlin', name: 'Berlin Brandenburg' },
+        };
+
+        const MONTHS_PL = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+        const DAYS_PL = ['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+        const CLASS_NAMES = { economy: 'Ekonomiczna', premium: 'Premium', business: 'Biznes', first: 'Pierwsza' };
+
+        /* Parse URL params */
+        const params = new URLSearchParams(window.location.search);
+        const fromCode = params.get('from') || '';
+        const toCode = params.get('to') || '';
+        const depDate = params.get('dep') || '';
+        const tripType = params.get('type') || 'round';
+        let selectedClass = params.get('class') || 'economy';
+        const adults = parseInt(params.get('adults')) || 1;
+        const children = parseInt(params.get('children')) || 0;
+        const infants = parseInt(params.get('infants')) || 0;
+        const totalPax = adults + children;
+
+        let selectedDate = depDate ? new Date(depDate+'T00:00:00') : new Date();
+        let nextDayLayover = 0; // 0 = same day, 1-3 = days of layover
+
+        const app = document.getElementById('app');
+
+        /* ============================================
+           FIND FLIGHTS
+           ============================================ */
+        function findDirectFlights(from, to) {
+            return ROUTES.filter(r => r.from === from && r.to === to);
+        }
+
+        function findConnections(from, to) {
+            // Via CPK hub
+            if (from === 'CPK' || to === 'CPK') return [];
+            const leg1routes = findDirectFlights(from, 'CPK');
+            const leg2routes = findDirectFlights('CPK', to);
+            // Also try reverse via CPK
+            const leg1alt = findDirectFlights('CPK', from); // reverse for return
+            const leg2alt = findDirectFlights(to, 'CPK');
+
+            let connections = [];
+            // from → CPK → to
+            for (const l1 of ROUTES.filter(r => r.from === from && r.to === 'CPK')) {
+                for (const l2 of ROUTES.filter(r => r.from === 'CPK' && r.to === to)) {
+                    connections.push({ leg1: l1, leg2: l2, via: 'CPK' });
+                }
+            }
+            // from → CPK (if route exists as CPK→from, means we can do from→CPK too conceptually)
+            // For now: also check CPK→from reversed
+            for (const l1 of ROUTES.filter(r => r.to === from && r.from === 'CPK')) {
+                for (const l2 of ROUTES.filter(r => r.from === 'CPK' && r.to === to)) {
+                    connections.push({ leg1: {...l1, from: from, to: 'CPK', dep: l1.arr, arr: l1.dep}, leg2: l2, via: 'CPK', reversed1: true });
+                }
+            }
+            for (const l1 of ROUTES.filter(r => r.from === from && r.to === 'CPK')) {
+                for (const l2 of ROUTES.filter(r => r.to === to && r.from === 'CPK')) {
+                    // already captured above
+                }
+                // CPK → to doesn't exist but to → CPK does? reverse
+                for (const l2 of ROUTES.filter(r => r.from === to && r.to === 'CPK')) {
+                    const exists = connections.some(c => c.leg1.id === l1.id);
+                    if (!exists) {
+                        connections.push({ leg1: l1, leg2: {...l2, from: 'CPK', to: to, dep: l2.arr, arr: l2.dep}, via: 'CPK', reversed2: true });
+                    }
+                }
+            }
+            return connections;
+        }
+
+        function getPriceForDate(basePrice, date) {
+            const d = new Date(date);
+            const dow = d.getDay();
+            // Weekend +15%, Tue/Wed -10%
+            if (dow === 0 || dow === 6) return Math.round(basePrice * 1.15);
+            if (dow === 2 || dow === 3) return Math.round(basePrice * 0.90);
+            return basePrice;
+        }
+
+        function getClassPrice(route, cls, date) {
+            if (!route.classes[cls]) return null;
+            return getPriceForDate(route.classes[cls], date);
+        }
+
+        function formatDateShort(d) {
+            return d.getDate() + ' ' + MONTHS_PL[d.getMonth()];
+        }
+        function formatDateFull(d) {
+            return d.getDate() + ' ' + MONTHS_PL[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        /* ============================================
+           CHECK CLASS AVAILABILITY
+           ============================================ */
+        function checkClassAvailability(routes) {
+            for (const r of routes) {
+                if (!r.classes[selectedClass]) return false;
+            }
+            return true;
+        }
+
+        function getAvailableClasses(routes) {
+            const all = ['economy','premium','business','first'];
+            return all.filter(c => routes.every(r => r.classes[c]));
+        }
+
+        /* ============================================
+           RENDER
+           ============================================ */
+        function render() {
+            const from = AIRPORTS[fromCode];
+            const to = AIRPORTS[toCode];
+
+            if (!from || !to) {
+                app.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠</div><h3>Brak danych</h3><p>Nie rozpoznano lotnisk. <a href="index.html" style="color:var(--gold-500)">Wróć do wyszukiwarki</a></p></div>';
+                return;
+            }
+
+            const directFlights = findDirectFlights(fromCode, toCode);
+            const connections = findConnections(fromCode, toCode);
+            const allRoutes = directFlights.length > 0 ? directFlights : (connections.length > 0 ? [connections[0].leg1, connections[0].leg2] : []);
+
+            // Check class
+            let classNotice = '';
+            if (allRoutes.length > 0 && !checkClassAvailability(allRoutes)) {
+                const avail = getAvailableClasses(allRoutes);
+                selectedClass = avail[0] || 'economy';
+                classNotice = `
+                    <div class="class-notice">
+                        <span class="class-notice-icon">⚠</span>
+                        <span>Klasa <strong>${CLASS_NAMES[params.get('class')]}</strong> nie jest dostępna na tej trasie. Dostępne klasy:</span>
+                        <div class="class-notice-btns">
+                            ${avail.map(c => `<button class="class-notice-btn ${c === selectedClass ? 'active' : ''}" data-class="${c}">${CLASS_NAMES[c]}</button>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Date strip (7 days centered on selected)
+            let dateStripHTML = '<div class="date-strip">';
+            for (let i = -3; i <= 3; i++) {
+                const d = new Date(selectedDate);
+                d.setDate(d.getDate() + i);
+                const today = new Date(); today.setHours(0,0,0,0);
+                if (d < today) {
+                    dateStripHTML += `<div class="date-strip-day" style="opacity:0.3;cursor:default"><div class="ds-weekday">${DAYS_PL[d.getDay()]}</div><div class="ds-date">${d.getDate()} ${MONTHS_PL[d.getMonth()]}</div><div class="ds-price">—</div></div>`;
+                    continue;
+                }
+                const isActive = d.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+                let price = '—';
+                if (directFlights.length > 0) {
+                    const p = getClassPrice(directFlights[0], selectedClass, d);
+                    if (p) price = p + ' PLN';
+                } else if (connections.length > 0) {
+                    const c = connections[0];
+                    const p1 = getClassPrice(c.leg1, selectedClass, d);
+                    const p2 = getClassPrice(c.leg2, selectedClass, d);
+                    if (p1 && p2) price = Math.round((p1 + p2) * 0.8) + ' PLN';
+                }
+                dateStripHTML += `<div class="date-strip-day ${isActive ? 'active' : ''}" data-date="${d.toISOString().split('T')[0]}"><div class="ds-weekday">${DAYS_PL[d.getDay()]}</div><div class="ds-date">${d.getDate()} ${MONTHS_PL[d.getMonth()]}</div><div class="ds-price">${price}</div></div>`;
+            }
+            dateStripHTML += '</div>';
+
+            // Summary bar
+            const paxLabel = totalPax + (totalPax === 1 ? ' pasażer' : totalPax < 5 ? ' pasażerów' : ' pasażerów') + (infants ? ' + ' + infants + ' niem.' : '');
+            const summaryHTML = `
+                <div class="search-summary animate-in">
+                    <div class="search-summary-route">
+                        <div class="ss-airport"><div class="ss-code">${fromCode}</div><div class="ss-city">${from.city}</div></div>
+                        <div class="ss-arrow">→</div>
+                        <div class="ss-airport"><div class="ss-code">${toCode}</div><div class="ss-city">${to.city}</div></div>
+                    </div>
+                    <div class="ss-info">
+                        <span class="ss-tag">${formatDateFull(selectedDate)}</span>
+                        <span class="ss-tag">${paxLabel}</span>
+                        <span class="ss-tag">${CLASS_NAMES[selectedClass]}</span>
+                        <a href="index.html" class="ss-edit">Zmień wyszukiwanie</a>
+                    </div>
+                </div>
+            `;
+
+            // Flight results
+            let resultsHTML = '';
+
+            if (directFlights.length > 0) {
+                resultsHTML += `<div class="results-title">Znaleziono <strong>${directFlights.length}</strong> lot${directFlights.length > 1 ? 'ów' : ''} bezpośredni${directFlights.length > 1 ? 'ch' : ''}</div>`;
+                for (const flight of directFlights) {
+                    const price = getClassPrice(flight, selectedClass, selectedDate);
+                    const totalPrice = price * totalPax;
+                    resultsHTML += `
+                        <div class="flight-card">
+                            <div class="flight-card-header">
+                                <div class="fc-route">
+                                    <div><div class="fc-time">${flight.dep}</div><div class="fc-time-sub">${from.city}</div></div>
+                                    <div class="fc-arrow-block">
+                                        <div class="fc-duration">${flight.duration}</div>
+                                        <div class="fc-line"></div>
+                                        <div class="fc-type">Bezpośredni</div>
+                                    </div>
+                                    <div><div class="fc-time">${flight.arr}</div><div class="fc-time-sub">${to.city}</div></div>
+                                </div>
+                                <div class="fc-price-block">
+                                    <div class="fc-price">${totalPrice} PLN</div>
+                                    <div class="fc-price-per">${totalPax > 1 ? price + ' PLN / os.' : 'za osobę'}</div>
+                                    <div class="fc-price-class">${CLASS_NAMES[selectedClass]}</div>
+                                </div>
+                            </div>
+                            <div class="fc-meta">
+                                <span class="fc-badge fc-badge-direct">Bezpośredni</span>
+                                <span class="fc-meta-item">✈ ${flight.id}</span>
+                                <span class="fc-meta-item">${flight.aircraft}</span>
+                                <button class="btn btn-gold btn-sm fc-book">Rezerwuj ten lot</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else if (connections.length > 0) {
+                resultsHTML += `<div class="results-title">Brak lotów bezpośrednich. Znaleziono <strong>${connections.length}</strong> połączeni${connections.length > 1 ? 'a' : 'e'} z przesiadką</div>`;
+
+                // Next day option
+                resultsHTML += `
+                    <div class="next-day-option">
+                        <div class="ndo-info">
+                            <h4>Przesiadka w CPK — wybierz wariant</h4>
+                            <p>Możesz kontynuować tego samego dnia lub zatrzymać się na 1–3 dni</p>
+                        </div>
+                        <div class="ndo-toggle">
+                            <button class="ndo-btn ${nextDayLayover===0?'active':''}" data-days="0">Tego samego dnia</button>
+                            <button class="ndo-btn ${nextDayLayover===1?'active':''}" data-days="1">+1 dzień</button>
+                            <button class="ndo-btn ${nextDayLayover===2?'active':''}" data-days="2">+2 dni</button>
+                            <button class="ndo-btn ${nextDayLayover===3?'active':''}" data-days="3">+3 dni</button>
+                        </div>
+                    </div>
+                `;
+
+                for (const conn of connections) {
+                    const p1 = getClassPrice(conn.leg1, selectedClass, selectedDate);
+                    const p2 = getClassPrice(conn.leg2, selectedClass, selectedDate);
+                    if (!p1 || !p2) continue;
+                    const combined = Math.round((p1 + p2) * 0.8); // -20% discount
+                    const totalPrice = combined * totalPax;
+                    const savings = Math.round((p1 + p2) * 0.2);
+
+                    const leg2date = new Date(selectedDate);
+                    leg2date.setDate(leg2date.getDate() + nextDayLayover);
+
+                    let layoverText = 'Przesiadka w CPK';
+                    if (nextDayLayover > 0) {
+                        layoverText = `Pobyt w CPK: ${nextDayLayover} ${nextDayLayover === 1 ? 'dzień' : 'dni'} — lot dalej ${formatDateShort(leg2date)}`;
+                    }
+
+                    resultsHTML += `
+                        <div class="flight-card">
+                            <div class="flight-card-header">
+                                <div class="fc-route">
+                                    <div><div class="fc-time">${conn.leg1.dep}</div><div class="fc-time-sub">${AIRPORTS[conn.leg1.from]?.city || conn.leg1.from}</div></div>
+                                    <div class="fc-arrow-block">
+                                        <div class="fc-duration">Przesiadka</div>
+                                        <div class="fc-line"></div>
+                                        <div class="fc-type">via CPK</div>
+                                    </div>
+                                    <div><div class="fc-time">${conn.leg2.arr}</div><div class="fc-time-sub">${AIRPORTS[conn.leg2.to]?.city || conn.leg2.to}</div></div>
+                                </div>
+                                <div class="fc-price-block">
+                                    <div class="fc-price">${totalPrice} PLN</div>
+                                    <div class="fc-price-per">${totalPax > 1 ? combined + ' PLN / os.' : 'za osobę'}</div>
+                                    <div class="fc-price-class">${CLASS_NAMES[selectedClass]} · oszczędzasz ${savings} PLN</div>
+                                </div>
+                            </div>
+                            <div class="fc-connection">
+                                <div class="fc-leg">
+                                    <span class="fc-leg-times">${conn.leg1.dep} → ${conn.leg1.arr}</span>
+                                    <span class="fc-leg-route">${conn.leg1.from} → ${conn.leg1.to}</span>
+                                    <span class="fc-leg-aircraft">${conn.leg1.aircraft}</span>
+                                </div>
+                                <div class="fc-layover ${nextDayLayover > 0 ? 'fc-layover-next-day' : ''}">
+                                    <span>🔄</span> ${layoverText}
+                                </div>
+                                <div class="fc-leg">
+                                    <span class="fc-leg-times">${conn.leg2.dep} → ${conn.leg2.arr}</span>
+                                    <span class="fc-leg-route">${conn.leg2.from} → ${conn.leg2.to}${nextDayLayover > 0 ? ' (' + formatDateShort(leg2date) + ')' : ''}</span>
+                                    <span class="fc-leg-aircraft">${conn.leg2.aircraft}</span>
+                                </div>
+                            </div>
+                            <div class="fc-meta" style="margin-top:16px">
+                                <span class="fc-badge fc-badge-connect">Przesiadka CPK</span>
+                                <span class="fc-meta-item">✈ ${conn.leg1.id} + ${conn.leg2.id}</span>
+                                <button class="btn btn-gold btn-sm fc-book">Rezerwuj połączenie</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                resultsHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✈</div>
+                        <h3>Brak połączeń</h3>
+                        <p>Nie znaleźliśmy lotów na trasie ${fromCode} → ${toCode}. Spróbuj inną datę lub kierunek.</p>
+                        <a href="index.html" class="btn btn-gold" style="margin-top:20px">Wróć do wyszukiwarki</a>
+                    </div>
+                `;
+            }
+
+            app.innerHTML = summaryHTML + classNotice + dateStripHTML + resultsHTML;
+
+            // Event: date strip
+            app.querySelectorAll('.date-strip-day[data-date]').forEach(el => {
+                el.addEventListener('click', () => {
+                    selectedDate = new Date(el.dataset.date + 'T00:00:00');
+                    render();
+                });
+            });
+
+            // Event: class notice buttons
+            app.querySelectorAll('.class-notice-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedClass = btn.dataset.class;
+                    render();
+                });
+            });
+
+            // Event: next day layover
+            app.querySelectorAll('.ndo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    nextDayLayover = parseInt(btn.dataset.days);
+                    render();
+                });
+            });
+        }
+
+        render();
+    })();
+    </script>
+</body>
+</html>
