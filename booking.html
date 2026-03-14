@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
         /* NAV */
         .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
@@ -228,6 +231,20 @@
     <script src="js/main.js"></script>
     <script>
     (function(){
+        /* ============ FIREBASE ============ */
+        firebase.initializeApp({
+            apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
+            authDomain:"vis-airlines-b1677.firebaseapp.com",
+            projectId:"vis-airlines-b1677",
+            storageBucket:"vis-airlines-b1677.firebasestorage.app",
+            messagingSenderId:"159896846581",
+            appId:"1:159896846581:web:f7b41f69945004599e05bc"
+        });
+        const fbAuth=firebase.auth();
+        const fbDb=firebase.firestore();
+
+        function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');}
+
         /* ============ DATA ============ */
         const ROUTES=[{id:'VS001',from:'CPK',to:'BZG',dep:'07:25',arr:'08:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},{id:'VS010',from:'CPK',to:'BHX',dep:'13:00',arr:'15:15',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},{id:'VS011',from:'BHX',to:'CPK',dep:'15:55',arr:'18:10',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}}];
         const AIRPORTS={'CPK':{city:'Warszawa / CPK'},'GDN':{city:'Gdańsk'},'SZZ':{city:'Szczecin'},'KRK':{city:'Kraków'},'BZG':{city:'Bydgoszcz'},'KTW':{city:'Katowice'},'RZE':{city:'Rzeszów'},'WRO':{city:'Wrocław'},'POZ':{city:'Poznań'},'FRA':{city:'Frankfurt'},'MUC':{city:'Monachium'},'DTM':{city:'Dortmund'},'BER':{city:'Berlin'},'BHX':{city:'Birmingham'}};
@@ -938,6 +955,23 @@
             const flightTotal=(outPrice+retPrice)*totalPax;
             const extrasTotal=calcExtrasTotal();
             const grandTotal=flightTotal+extrasTotal;
+            const user=fbAuth.currentUser;
+            const allTariffsList=[...TARIFFS.economy,...TARIFFS.business];
+
+            if(!user){
+                app.innerHTML=`
+                    <div style="text-align:center;padding:60px 20px;">
+                        <div style="font-size:48px;margin-bottom:16px;">🔐</div>
+                        <h2 class="step-title">Zaloguj się aby <span class="gold">zapłacić</span></h2>
+                        <p style="color:var(--gray-400);margin-bottom:24px;">Musisz mieć konto żeby dokończyć rezerwację. Twoje dane są bezpieczne.</p>
+                        <div style="display:flex;gap:12px;justify-content:center;">
+                            <a href="login.html" class="btn btn-gold btn-lg">Zaloguj się</a>
+                            <a href="register.html" class="btn btn-outline btn-lg" style="text-decoration:none;">Załóż konto</a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
 
             app.innerHTML=`
                 <h2 class="step-title">Płatność <span class="gold">bezpieczna</span></h2>
@@ -952,7 +986,7 @@
                 <div class="payment-box">
                     <div class="payment-box-icon">🔒</div>
                     <h3>Płatność online</h3>
-                    <p>Tutaj zostanie zintegrowany system płatności Stripe.<br>Obsługiwane metody: karta płatnicza, BLIK, PayPo, Klarna.</p>
+                    <p>Płatność Stripe zostanie aktywowana po konfiguracji Vercel.<br>Na razie możesz potwierdzić rezerwację — zostanie zapisana na Twoim koncie.</p>
                     <div class="payment-methods">
                         <span class="pm-badge">VISA</span>
                         <span class="pm-badge">Mastercard</span>
@@ -960,14 +994,9 @@
                         <span class="pm-badge">PayPo</span>
                         <span class="pm-badge">Klarna</span>
                     </div>
-                    <div class="payment-stripe-placeholder" id="stripe-mount">
-                        <div class="psp-inner">
-                            <div class="psp-text">Stripe Checkout — wkrótce aktywny</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-gold btn-lg" style="width:100%;margin-top:20px;" disabled>Zapłać ${grandTotal.toLocaleString('pl-PL')} PLN</button>
+                    <button class="btn btn-gold btn-lg" style="width:100%;margin-top:20px;" id="pay-btn">Potwierdź rezerwację — ${grandTotal.toLocaleString('pl-PL')} PLN</button>
                     <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-500);">
-                        Klikając „Zapłać" akceptujesz regulamin VIS Airlines i politykę prywatności.
+                        Klikając potwierdzasz akceptację regulaminu VIS Airlines i polityki prywatności.
                     </div>
                 </div>
 
@@ -977,6 +1006,76 @@
             `;
 
             document.getElementById('pay-back').addEventListener('click',()=>{step--;render();});
+
+            document.getElementById('pay-btn').addEventListener('click',async()=>{
+                const payBtn=document.getElementById('pay-btn');
+                payBtn.disabled=true;payBtn.innerHTML='<span style="display:inline-block;width:20px;height:20px;border:2px solid rgba(10,22,40,.3);border-top-color:var(--navy-800);border-radius:50%;animation:spin .6s linear infinite;"></span> Zapisuję rezerwację...';
+
+                const code=genCode();
+                const booking={
+                    code,
+                    userId:user.uid,
+                    userEmail:user.email,
+                    userName:user.displayName||'',
+                    from:flight.from,
+                    to:flight.to,
+                    flightId:flight.id,
+                    dep:flight.dep,
+                    arr:flight.arr,
+                    duration:flight.duration,
+                    aircraft:flight.aircraft,
+                    date:dateStr,
+                    tariff:allTariffsList.find(t=>t.id===outTariff)?.name||'',
+                    outPrice,
+                    pax:totalPax,
+                    adults,children,infants,
+                    extras:JSON.parse(JSON.stringify(extras)),
+                    extrasTotal:calcExtrasTotal(),
+                    totalPrice:grandTotal,
+                    status:'confirmed',
+                    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // Add return info if applicable
+                if(hasReturn&&selectedReturnFlight){
+                    booking.returnFrom=selectedReturnFlight.from;
+                    booking.returnTo=selectedReturnFlight.to;
+                    booking.returnFlightId=selectedReturnFlight.id;
+                    booking.returnDep=selectedReturnFlight.dep;
+                    booking.returnArr=selectedReturnFlight.arr;
+                    booking.returnTariff=allTariffsList.find(t=>t.id===retTariff)?.name||'';
+                    booking.retPrice=retPrice;
+                }
+
+                try{
+                    await fbDb.collection('bookings').add(booking);
+                    renderConfirmation(code,grandTotal);
+                }catch(e){
+                    console.error(e);
+                    payBtn.disabled=false;
+                    payBtn.textContent='Spróbuj ponownie';
+                    alert('Błąd zapisu rezerwacji: '+e.message);
+                }
+            });
+        }
+
+        function renderConfirmation(code,total){
+            app.innerHTML=`
+                <div style="text-align:center;padding:60px 20px;">
+                    <div style="font-size:64px;margin-bottom:20px;">✅</div>
+                    <h2 style="font-family:var(--font-display);font-size:32px;font-weight:700;color:#2ecc71;margin-bottom:8px;">Rezerwacja potwierdzona!</h2>
+                    <p style="color:var(--gray-400);margin-bottom:24px;">Twój kod rezerwacji:</p>
+                    <div style="font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--gold-500);letter-spacing:6px;margin-bottom:8px;">${code}</div>
+                    <p style="color:var(--gray-400);font-size:14px;margin-bottom:8px;">Łączna kwota: <strong style="color:var(--white);">${total.toLocaleString('pl-PL')} PLN</strong></p>
+                    <p style="color:var(--gray-400);font-size:13px;margin-bottom:40px;">Rezerwacja została zapisana na Twoim koncie. Możesz ją zobaczyć w panelu „Zarządzaj rezerwacją".</p>
+                    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                        <a href="rezerwacje.html" class="btn btn-gold btn-lg" style="text-decoration:none;">Moje rezerwacje</a>
+                        <a href="index.html" class="btn btn-outline btn-lg" style="text-decoration:none;">Strona główna</a>
+                    </div>
+                </div>
+            `;
+            // Hide progress bar
+            document.getElementById('progress').style.display='none';
         }
 
         /* ============ RENDER ============ */
