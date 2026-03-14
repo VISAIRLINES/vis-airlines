@@ -429,7 +429,7 @@
         const infants = parseInt(params.get('infants')) || 0;
         const totalPax = adults + children;
 
-        let selectedDate = depDate ? new Date(depDate+'T00:00:00') : new Date();
+        let selectedDate = depDate ? new Date(depDate+'T12:00:00') : new Date();
         let nextDayLayover = 0; // 0 = same day, 1-3 = days of layover
 
         const app = document.getElementById('app');
@@ -437,44 +437,21 @@
         /* ============================================
            FIND FLIGHTS
            ============================================ */
-        function findDirectFlights(from, to) {
-            const dayOfWeek = selectedDate.getDay(); // 0=Sun...6=Sat
+        function findDirectFlights(from, to, forDate) {
+            const d = forDate || selectedDate;
+            const dayOfWeek = d.getDay();
             return ROUTES.filter(r => r.from === from && r.to === to && (!r.days || r.days.includes(dayOfWeek)));
         }
 
         function findConnections(from, to) {
-            // Via CPK hub
             if (from === 'CPK' || to === 'CPK') return [];
-            const leg1routes = findDirectFlights(from, 'CPK');
-            const leg2routes = findDirectFlights('CPK', to);
-            // Also try reverse via CPK
-            const leg1alt = findDirectFlights('CPK', from); // reverse for return
-            const leg2alt = findDirectFlights(to, 'CPK');
-
+            const dayOfWeek = selectedDate.getDay();
             let connections = [];
-            // from → CPK → to
-            for (const l1 of ROUTES.filter(r => r.from === from && r.to === 'CPK')) {
-                for (const l2 of ROUTES.filter(r => r.from === 'CPK' && r.to === to)) {
+            const leg1s = ROUTES.filter(r => r.from === from && r.to === 'CPK' && (!r.days || r.days.includes(dayOfWeek)));
+            const leg2s = ROUTES.filter(r => r.from === 'CPK' && r.to === to && (!r.days || r.days.includes(dayOfWeek)));
+            for (const l1 of leg1s) {
+                for (const l2 of leg2s) {
                     connections.push({ leg1: l1, leg2: l2, via: 'CPK' });
-                }
-            }
-            // from → CPK (if route exists as CPK→from, means we can do from→CPK too conceptually)
-            // For now: also check CPK→from reversed
-            for (const l1 of ROUTES.filter(r => r.to === from && r.from === 'CPK')) {
-                for (const l2 of ROUTES.filter(r => r.from === 'CPK' && r.to === to)) {
-                    connections.push({ leg1: {...l1, from: from, to: 'CPK', dep: l1.arr, arr: l1.dep}, leg2: l2, via: 'CPK', reversed1: true });
-                }
-            }
-            for (const l1 of ROUTES.filter(r => r.from === from && r.to === 'CPK')) {
-                for (const l2 of ROUTES.filter(r => r.to === to && r.from === 'CPK')) {
-                    // already captured above
-                }
-                // CPK → to doesn't exist but to → CPK does? reverse
-                for (const l2 of ROUTES.filter(r => r.from === to && r.to === 'CPK')) {
-                    const exists = connections.some(c => c.leg1.id === l1.id);
-                    if (!exists) {
-                        connections.push({ leg1: l1, leg2: {...l2, from: 'CPK', to: to, dep: l2.arr, arr: l2.dep}, via: 'CPK', reversed2: true });
-                    }
                 }
             }
             return connections;
@@ -560,14 +537,20 @@
                 }
                 const isActive = d.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
                 let price = '—';
-                if (directFlights.length > 0) {
-                    const p = getClassPrice(directFlights[0], selectedClass, d);
+                const dayFlights = findDirectFlights(fromCode, toCode, d);
+                if (dayFlights.length > 0) {
+                    const p = getClassPrice(dayFlights[0], selectedClass, d);
                     if (p) price = p + ' PLN';
-                } else if (connections.length > 0) {
-                    const c = connections[0];
-                    const p1 = getClassPrice(c.leg1, selectedClass, d);
-                    const p2 = getClassPrice(c.leg2, selectedClass, d);
-                    if (p1 && p2) price = Math.round((p1 + p2) * 0.8) + ' PLN';
+                } else {
+                    // Check connections for this day
+                    const dayDow = d.getDay();
+                    const cl1 = ROUTES.filter(r => r.from === fromCode && r.to === 'CPK' && (!r.days || r.days.includes(dayDow)));
+                    const cl2 = ROUTES.filter(r => r.from === 'CPK' && r.to === toCode && (!r.days || r.days.includes(dayDow)));
+                    if (cl1.length > 0 && cl2.length > 0) {
+                        const p1 = getClassPrice(cl1[0], selectedClass, d);
+                        const p2 = getClassPrice(cl2[0], selectedClass, d);
+                        if (p1 && p2) price = Math.round((p1 + p2) * 0.8) + ' PLN';
+                    }
                 }
                 dateStripHTML += `<div class="date-strip-day ${isActive ? 'active' : ''}" data-date="${d.toISOString().split('T')[0]}"><div class="ds-weekday">${DAYS_PL[d.getDay()]}</div><div class="ds-date">${d.getDate()} ${MONTHS_PL[d.getMonth()]}</div><div class="ds-price">${price}</div></div>`;
             }
@@ -637,6 +620,7 @@
                                 <span class="fc-badge fc-badge-direct">Bezpośredni</span>
                                 <span class="fc-meta-item">✈ ${flight.id}</span>
                                 <span class="fc-meta-item">${flight.aircraft}</span>
+                                ${flight.days ? '<span class="fc-meta-item" style="color:var(--gold-500);">📅 ' + flight.days.map(d=>['Nd','Pn','Wt','Śr','Cz','Pt','So'][d]).join(', ') + '</span>' : ''}
                                 <a href="booking.html?flight=${flight.id}&class=${selectedClass}&date=${selectedDate.toISOString().split('T')[0]}&type=${tripType}&adults=${adults}&children=${children}&infants=${infants}" class="btn btn-gold btn-sm fc-book" style="margin-left:auto;text-decoration:none;">Przejdź dalej</a>
                             </div>
                         </div>
@@ -731,11 +715,20 @@
                     `;
                 }
             } else {
+                // Check if route exists on OTHER days
+                const allRoutes = ROUTES.filter(r => r.from === fromCode && r.to === toCode);
+                let dayHint = '';
+                if (allRoutes.length > 0 && allRoutes.some(r => r.days)) {
+                    const dayNames = ['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+                    const allDays = [...new Set(allRoutes.flatMap(r => r.days || [0,1,2,3,4,5,6]))].sort();
+                    dayHint = `<p style="margin-top:12px;color:var(--gold-500);">Ta trasa obsługiwana jest w dni: <strong>${allDays.map(d=>dayNames[d]).join(', ')}</strong></p>`;
+                }
                 resultsHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">✈</div>
-                        <h3>Brak połączeń</h3>
-                        <p>Nie znaleźliśmy lotów na trasie ${fromCode} → ${toCode}. Spróbuj inną datę lub kierunek.</p>
+                        <h3>Brak połączeń w tym dniu</h3>
+                        <p>Nie znaleźliśmy lotów na trasie ${fromCode} → ${toCode} w wybranym dniu. Spróbuj inną datę.</p>
+                        ${dayHint}
                         <a href="index.html" class="btn btn-gold" style="margin-top:20px">Wróć do wyszukiwarki</a>
                     </div>
                 `;
@@ -754,7 +747,7 @@
             // Event: date strip
             app.querySelectorAll('.date-strip-day[data-date]').forEach(el => {
                 el.addEventListener('click', () => {
-                    selectedDate = new Date(el.dataset.date + 'T00:00:00');
+                    selectedDate = new Date(el.dataset.date + 'T12:00:00');
                     render();
                 });
             });
