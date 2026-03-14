@@ -8,98 +8,370 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
     <style>
-        .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
+        .nav{height:auto;flex-direction:column;padding:0;gap:0}
         .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
         .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
         .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
         .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
 
-        .checkin-page{padding:130px 48px 80px;max-width:700px;margin:0 auto}
-        .checkin-page h1{font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;margin-bottom:8px}
-        .checkin-page h1 .gold{color:var(--gold-500)}
-        .checkin-page .subtitle{font-size:15px;color:var(--gray-400);margin-bottom:40px;line-height:1.7}
+        .ci-page{padding:130px 48px 80px;max-width:700px;margin:0 auto}
+        .ci-page h1{font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;margin-bottom:8px}
+        .ci-page h1 .gold{color:var(--gold-500)}
+        .ci-page .subtitle{font-size:15px;color:var(--gray-400);margin-bottom:40px;line-height:1.7}
 
-        .checkin-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:32px;margin-bottom:24px}
-        .checkin-card h3{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:20px}
-        .checkin-form{display:flex;flex-direction:column;gap:18px}
-        .checkin-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-        .checkin-input{padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy-900);border:1px solid rgba(255,255,255,.08);color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;transition:border-color .3s}
-        .checkin-input:focus{border-color:var(--gold-600)}
-        .checkin-input::placeholder{color:var(--gray-500)}
-        .checkin-or{text-align:center;color:var(--gray-500);font-size:13px;padding:8px 0;position:relative}
-        .checkin-or::before,.checkin-or::after{content:'';position:absolute;top:50%;width:calc(50% - 30px);height:1px;background:rgba(255,255,255,.06)}
-        .checkin-or::before{left:0}.checkin-or::after{right:0}
-        .checkin-info{font-size:13px;color:var(--gray-400);line-height:1.7;padding:16px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.1);border-radius:var(--radius-sm)}
+        .ci-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:32px;margin-bottom:24px}
+        .ci-card h3{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:20px}
+        .ci-form{display:flex;flex-direction:column;gap:18px}
+        .ci-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .ci-input{padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy-900);border:1px solid rgba(255,255,255,.08);color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;transition:border-color .3s}
+        .ci-input:focus{border-color:var(--gold-600)}
+        .ci-input::placeholder{color:var(--gray-500)}
+
+        .ci-error{background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.2);color:#e74c3c;padding:14px 20px;border-radius:var(--radius-sm);font-size:14px;display:none;margin-bottom:16px}
+        .ci-error.show{display:flex;align-items:center;gap:10px}
+
+        .ci-timer-box{background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.15);border-radius:var(--radius-md);padding:24px;text-align:center;margin-bottom:24px}
+        .ci-timer-label{font-size:14px;color:var(--gray-300);margin-bottom:12px}
+        .ci-timer{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--gold-500);letter-spacing:2px}
+        .ci-timer-sub{font-size:12px;color:var(--gray-400);margin-top:8px}
+
+        .ci-flight-card{background:var(--navy-700);border:1px solid rgba(201,168,76,.15);border-radius:var(--radius-md);padding:24px;margin-bottom:24px}
+        .ci-flight-route{display:flex;align-items:center;gap:20px;margin-bottom:16px}
+        .ci-iata{font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--white)}
+        .ci-city{font-size:12px;color:var(--gray-400)}
+        .ci-arrow{color:var(--gold-500);font-size:20px}
+        .ci-flight-details{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--gray-400)}
+
+        .ci-checkin-form{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:32px;margin-bottom:24px}
+        .ci-checkin-form h3{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:8px}
+        .ci-checkin-form .hint{font-size:13px;color:var(--gray-400);margin-bottom:24px}
+        .ci-select{padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy-900);border:1px solid rgba(255,255,255,.08);color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;cursor:pointer;-webkit-appearance:none}
+        .ci-select:focus{border-color:var(--gold-600)}
+        .ci-select option{background:var(--navy-800);color:var(--white)}
+
+        .ci-success{background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:var(--radius-md);padding:48px;text-align:center}
+        .ci-success-icon{font-size:56px;margin-bottom:16px}
+        .ci-success h2{font-family:var(--font-display);font-size:28px;color:#2ecc71;margin-bottom:8px}
+        .ci-success .seat-info{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--gold-500);margin:16px 0}
+        .ci-success p{font-size:14px;color:var(--gray-400);margin-bottom:24px}
+
+        .spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(201,168,76,.3);border-top-color:var(--gold-500);border-radius:50%;animation:spin .6s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
 
         .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
         .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
 
-        @media(max-width:768px){
-            .checkin-page{padding:110px 16px 60px}
-            .checkin-row{grid-template-columns:1fr}
-        }
+        @media(max-width:768px){.ci-page{padding:110px 16px 60px}.ci-row{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
     <nav class="nav">
         <div class="nav-top">
-            <button class="nav-top-btn">PL Polski ▾</button>
-            <button class="nav-top-btn">PLN ▾</button>
-            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
-            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+            <button class="nav-top-btn">PL Polski</button>
+            <button class="nav-top-btn">PLN</button>
+            <a href="login.html" class="nav-top-btn" id="nav-auth-1">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent" id="nav-auth-2">Załóż konto</a>
         </div>
         <div class="nav-bottom">
             <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
         </div>
     </nav>
 
-    <main class="checkin-page">
+    <main class="ci-page" id="app">
         <h1 class="animate-in">Odprawa <span class="gold">online</span></h1>
-        <p class="subtitle animate-in animate-in-d1">Odpraw się online od 48 godzin do 1 godziny przed wylotem. Otrzymasz kartę pokładową na e-mail.</p>
+        <p class="subtitle animate-in">Odpraw się od 48 godzin do 1 godziny przed wylotem.</p>
 
-        <div class="checkin-card animate-in animate-in-d2">
+        <div class="ci-error" id="ci-error"></div>
+
+        <div class="ci-card animate-in">
             <h3>Znajdź swoją rezerwację</h3>
-            <div class="checkin-form">
-                <div class="checkin-row">
-                    <input class="checkin-input" placeholder="Kod rezerwacji (np. VS3X7K)" id="ci-code">
-                    <input class="checkin-input" placeholder="Nazwisko" id="ci-name">
+            <div class="ci-form">
+                <div class="ci-row">
+                    <input class="ci-input" placeholder="Kod rezerwacji (np. VS3X7K)" id="ci-code">
+                    <input class="ci-input" placeholder="Nazwisko" id="ci-name">
                 </div>
                 <button class="btn btn-gold btn-lg" style="width:100%;" id="ci-search">Szukaj rezerwacji</button>
             </div>
-
-            <div class="checkin-or">lub</div>
-
-            <div class="checkin-form">
-                <div class="checkin-row">
-                    <input class="checkin-input" placeholder="Numer biletu elektronicznego" id="ci-ticket">
-                    <input class="checkin-input" placeholder="Nazwisko" id="ci-name2">
-                </div>
-                <button class="btn btn-outline btn-lg" style="width:100%;" id="ci-search2">Szukaj po numerze biletu</button>
-            </div>
         </div>
 
-        <div class="checkin-info animate-in animate-in-d3">
-            ✈ Odprawa online jest dostępna od <strong>48h do 1h</strong> przed planowanym wylotem.<br>
-            Po odprawie otrzymasz kartę pokładową na podany adres e-mail. Możesz ją wydrukować lub pokazać na telefonie przy bramce.
+        <div style="font-size:13px;color:var(--gray-400);line-height:1.7;padding:16px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.1);border-radius:var(--radius-sm);">
+            ✈ Odprawa online jest dostępna od <strong>48h do 1h</strong> przed planowanym wylotem.
+            Po odprawie otrzymasz kartę pokładową na koncie w sekcji „Zarządzaj rezerwacją".
         </div>
     </main>
 
     <footer class="footer"><div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone. Członek oneworld®</div></footer>
-    <script src="js/main.js"></script>
+
     <script>
-    document.getElementById('ci-search').addEventListener('click',()=>{
-        const code=document.getElementById('ci-code').value.trim();
+    firebase.initializeApp({
+        apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
+        authDomain:"vis-airlines-b1677.firebaseapp.com",
+        projectId:"vis-airlines-b1677",
+        storageBucket:"vis-airlines-b1677.firebasestorage.app",
+        messagingSenderId:"159896846581",
+        appId:"1:159896846581:web:f7b41f69945004599e05bc"
+    });
+    const auth=firebase.auth();
+    const db=firebase.firestore();
+    const app=document.getElementById('app');
+    const errEl=document.getElementById('ci-error');
+
+    const AIRPORTS={'CPK':'Warszawa / CPK','GDN':'Gdańsk','SZZ':'Szczecin','KRK':'Kraków','BZG':'Bydgoszcz','KTW':'Katowice','RZE':'Rzeszów','WRO':'Wrocław','POZ':'Poznań','FRA':'Frankfurt','MUC':'Monachium','DTM':'Dortmund','BER':'Berlin','BHX':'Birmingham','HEL':'Helsinki','LHR':'Londyn','ALC':'Alicante'};
+
+    // Auth nav
+    auth.onAuthStateChanged(u=>{
+        const a1=document.getElementById('nav-auth-1');
+        const a2=document.getElementById('nav-auth-2');
+        if(u&&a1&&a2){
+            a1.textContent='✈ '+(u.displayName||u.email);a1.href='rezerwacje.html';
+            a2.textContent='Wyloguj się';a2.href='#';a2.style.color='#e74c3c';a2.classList.remove('accent');
+            a2.addEventListener('click',e=>{e.preventDefault();auth.signOut().then(()=>location.reload());});
+        }
+    });
+
+    function showError(msg){errEl.textContent=msg;errEl.classList.add('show');}
+    function hideError(){errEl.classList.remove('show');}
+
+    document.getElementById('ci-search').addEventListener('click',async()=>{
+        hideError();
+        const code=document.getElementById('ci-code').value.trim().toUpperCase();
         const name=document.getElementById('ci-name').value.trim();
-        if(!code||!name){alert('Wprowadź kod rezerwacji i nazwisko');return;}
-        alert('Funkcja odprawy online będzie dostępna wkrótce. Twój kod: '+code);
+        if(!code||!name){showError('Wprowadź kod rezerwacji i nazwisko.');return;}
+
+        const btn=document.getElementById('ci-search');
+        btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Szukam...';
+
+        try{
+            const snap=await db.collection('bookings').where('code','==',code).get();
+            if(snap.empty){
+                showError('Nie znaleziono rezerwacji o kodzie '+code);
+                btn.disabled=false;btn.textContent='Szukaj rezerwacji';
+                return;
+            }
+
+            const booking=snap.docs[0].data();
+            const bookingId=snap.docs[0].id;
+
+            // Check name match (case insensitive, check userName or passenger data)
+            const bookingName=(booking.userName||'').toLowerCase();
+            if(!bookingName.includes(name.toLowerCase())){
+                showError('Nazwisko nie pasuje do tej rezerwacji.');
+                btn.disabled=false;btn.textContent='Szukaj rezerwacji';
+                return;
+            }
+
+            // Check departure time
+            if(!booking.date||!booking.dep){
+                showError('Brak danych o dacie wylotu w rezerwacji.');
+                btn.disabled=false;btn.textContent='Szukaj rezerwacji';
+                return;
+            }
+
+            const depTime=new Date(booking.date+'T'+booking.dep.substring(0,5)+':00');
+            const now=new Date();
+            const hoursUntil=(depTime-now)/(1000*60*60);
+
+            if(hoursUntil<1){
+                showError('Odprawa online jest już zamknięta — wylot za mniej niż 1 godzinę lub już się odbył.');
+                btn.disabled=false;btn.textContent='Szukaj rezerwacji';
+                return;
+            }
+
+            if(hoursUntil>48){
+                // Too early — show timer
+                renderTooEarly(booking,depTime);
+                return;
+            }
+
+            // Within 48h — proceed to check-in
+            renderCheckin(booking,bookingId,depTime);
+
+        }catch(e){
+            console.error(e);
+            showError('Błąd wyszukiwania: '+e.message);
+            btn.disabled=false;btn.textContent='Szukaj rezerwacji';
+        }
     });
-    document.getElementById('ci-search2').addEventListener('click',()=>{
-        const ticket=document.getElementById('ci-ticket').value.trim();
-        const name=document.getElementById('ci-name2').value.trim();
-        if(!ticket||!name){alert('Wprowadź numer biletu i nazwisko');return;}
-        alert('Funkcja odprawy online będzie dostępna wkrótce.');
-    });
+
+    function renderTooEarly(booking,depTime){
+        const fromCity=AIRPORTS[booking.from]||booking.from;
+        const toCity=AIRPORTS[booking.to]||booking.to;
+
+        app.innerHTML=`
+            <h1>Odprawa <span class="gold">online</span></h1>
+
+            <div class="ci-flight-card">
+                <div class="ci-flight-route">
+                    <div><div class="ci-iata">${booking.from}</div><div class="ci-city">${fromCity}</div></div>
+                    <div class="ci-arrow">→</div>
+                    <div><div class="ci-iata">${booking.to}</div><div class="ci-city">${toCity}</div></div>
+                </div>
+                <div class="ci-flight-details">
+                    <span>📅 ${booking.date}</span>
+                    <span>🕐 ${booking.dep} → ${booking.arr}</span>
+                    <span>✈ ${booking.flightId}</span>
+                    <span>🎫 ${booking.code}</span>
+                </div>
+            </div>
+
+            <div class="ci-timer-box">
+                <div class="ci-timer-label">Odprawa online otworzy się za</div>
+                <div class="ci-timer" id="timer">--:--:--</div>
+                <div class="ci-timer-sub">Odprawa dostępna od 48h przed wylotem</div>
+            </div>
+
+            <div style="text-align:center;">
+                <a href="odprawa.html" class="btn btn-outline">← Wróć</a>
+            </div>
+        `;
+
+        // Timer
+        function updateTimer(){
+            const now=new Date();
+            const openTime=new Date(depTime.getTime()-48*60*60*1000);
+            const diff=openTime-now;
+            if(diff<=0){location.reload();return;}
+            const h=Math.floor(diff/(1000*60*60));
+            const m=Math.floor((diff%(1000*60*60))/(1000*60));
+            const s=Math.floor((diff%(1000*60))/1000);
+            document.getElementById('timer').textContent=
+                String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+        }
+        updateTimer();
+        setInterval(updateTimer,1000);
+    }
+
+    function renderCheckin(booking,bookingId,depTime){
+        const fromCity=AIRPORTS[booking.from]||booking.from;
+        const toCity=AIRPORTS[booking.to]||booking.to;
+        const hoursLeft=Math.floor((depTime-new Date())/(1000*60*60));
+        const minsLeft=Math.floor(((depTime-new Date())%(1000*60*60))/(1000*60));
+
+        app.innerHTML=`
+            <h1>Odprawa <span class="gold">online</span></h1>
+            <p class="subtitle">Rezerwacja ${booking.code} — odpraw się teraz</p>
+
+            <div class="ci-flight-card">
+                <div class="ci-flight-route">
+                    <div><div class="ci-iata">${booking.from}</div><div class="ci-city">${fromCity}</div></div>
+                    <div class="ci-arrow">→</div>
+                    <div><div class="ci-iata">${booking.to}</div><div class="ci-city">${toCity}</div></div>
+                </div>
+                <div class="ci-flight-details">
+                    <span>📅 ${booking.date}</span>
+                    <span>🕐 ${booking.dep} → ${booking.arr}</span>
+                    <span>✈ ${booking.flightId} · ${booking.aircraft||''}</span>
+                    <span>👤 ${booking.pax||1} pasażer${(booking.pax||1)>1?'ów':''}</span>
+                    <span>🧳 ${booking.tariff||''}</span>
+                    <span style="color:var(--gold-500);">⏱ Do wylotu: ${hoursLeft}h ${minsLeft}min</span>
+                </div>
+            </div>
+
+            <div class="ci-checkin-form">
+                <h3>Dokumenty podróżne</h3>
+                <div class="hint">Wprowadź dane dokumentu tożsamości</div>
+                <div class="ci-form">
+                    <div class="ci-row">
+                        <select class="ci-select" id="doc-type">
+                            <option value="">Typ dokumentu *</option>
+                            <option value="passport">Paszport</option>
+                            <option value="id">Dowód osobisty</option>
+                        </select>
+                        <input class="ci-input" placeholder="Numer dokumentu *" id="doc-number">
+                    </div>
+                    <div class="ci-row">
+                        <select class="ci-select" id="doc-country">
+                            <option value="">Kraj wydania *</option>
+                            <option value="PL">Polska</option>
+                            <option value="DE">Niemcy</option>
+                            <option value="GB">Wielka Brytania</option>
+                            <option value="FI">Finlandia</option>
+                            <option value="ES">Hiszpania</option>
+                            <option value="other">Inny</option>
+                        </select>
+                        <input class="ci-input" type="date" id="doc-expiry" style="color-scheme:dark;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="ci-checkin-form">
+                <h3>Preferencje</h3>
+                <div class="hint">Opcjonalnie wybierz preferencję miejsca</div>
+                <div class="ci-form">
+                    <select class="ci-select" id="seat-pref">
+                        <option value="any">Bez preferencji — przydziel automatycznie</option>
+                        <option value="window">Okno</option>
+                        <option value="aisle">Przy przejściu</option>
+                        <option value="front">Przód samolotu</option>
+                        <option value="rear">Tył samolotu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+                <a href="odprawa.html" class="btn btn-ghost">← Wróć</a>
+                <button class="btn btn-gold btn-lg" id="checkin-btn">Odpraw się ✈</button>
+            </div>
+        `;
+
+        document.getElementById('checkin-btn').addEventListener('click',async()=>{
+            const docType=document.getElementById('doc-type').value;
+            const docNum=document.getElementById('doc-number').value.trim();
+            const docCountry=document.getElementById('doc-country').value;
+            const docExpiry=document.getElementById('doc-expiry').value;
+            const seatPref=document.getElementById('seat-pref').value;
+
+            if(!docType||!docNum||!docCountry||!docExpiry){
+                alert('Wypełnij wszystkie pola dokumentu.');return;
+            }
+
+            const btn=document.getElementById('checkin-btn');
+            btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Odprawiam...';
+
+            // Generate seat
+            const rows={window:'A',aisle:'C',front:'',rear:'',any:''}[seatPref]||'';
+            const rowNum=seatPref==='front'?Math.floor(Math.random()*8)+1:seatPref==='rear'?Math.floor(Math.random()*8)+22:Math.floor(Math.random()*28)+1;
+            const seatLetter=rows||['A','B','C','D','E','F'][Math.floor(Math.random()*6)];
+            const seat=rowNum+seatLetter;
+
+            try{
+                await db.collection('bookings').doc(bookingId).update({
+                    checkedIn:true,
+                    checkinTime:firebase.firestore.FieldValue.serverTimestamp(),
+                    seat:seat,
+                    document:{type:docType,number:docNum,country:docCountry,expiry:docExpiry}
+                });
+                renderSuccess(booking,seat);
+            }catch(e){
+                console.error(e);
+                btn.disabled=false;btn.textContent='Spróbuj ponownie';
+                alert('Błąd odprawy: '+e.message);
+            }
+        });
+    }
+
+    function renderSuccess(booking,seat){
+        const fromCity=AIRPORTS[booking.from]||booking.from;
+        const toCity=AIRPORTS[booking.to]||booking.to;
+
+        app.innerHTML=`
+            <div class="ci-success">
+                <div class="ci-success-icon">✅</div>
+                <h2>Odprawa zakończona!</h2>
+                <p>${fromCity} → ${toCity} · ${booking.date} · ${booking.dep}</p>
+                <div class="seat-info">Miejsce: ${seat}</div>
+                <p>Karta pokładowa jest dostępna na Twoim koncie w sekcji „Zarządzaj rezerwacją".<br>Pamiętaj o dokumencie tożsamości przy bramce.</p>
+                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                    <a href="rezerwacje.html" class="btn btn-gold btn-lg" style="text-decoration:none;">Moje rezerwacje</a>
+                    <a href="index.html" class="btn btn-outline btn-lg" style="text-decoration:none;">Strona główna</a>
+                </div>
+            </div>
+        `;
+    }
     </script>
 </body>
 </html>
