@@ -32,6 +32,49 @@
         .step-title .gold{color:var(--gold-500)}
         .step-subtitle{font-size:14px;color:var(--gray-400);margin-bottom:32px}
 
+        /* DATE STRIP */
+        .date-strip{display:flex;gap:0;margin-bottom:24px;overflow-x:auto;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,.06);background:var(--navy-700)}
+        .date-strip::-webkit-scrollbar{height:4px}.date-strip::-webkit-scrollbar-thumb{background:var(--gold-800);border-radius:2px}
+        .date-strip-day{flex:1;min-width:90px;padding:12px 10px;text-align:center;cursor:pointer;border-right:1px solid rgba(255,255,255,.04);transition:all .2s;position:relative}
+        .date-strip-day:last-child{border-right:none}
+        .date-strip-day:hover{background:rgba(201,168,76,.05)}
+        .date-strip-day.active{background:rgba(201,168,76,.1);border-bottom:3px solid var(--gold-500)}
+        .date-strip-day.active .ds-price{color:var(--gold-400)}
+        .date-strip-day.past{opacity:.3;cursor:default}
+        .ds-weekday{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray-400);font-weight:500}
+        .ds-date{font-size:14px;font-weight:600;color:var(--white);margin:3px 0}
+        .ds-price{font-size:12px;color:var(--gray-300);font-weight:500;font-family:var(--font-mono)}
+
+        /* FLIGHT CARD (Lufthansa style) */
+        .fc{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);margin-bottom:16px;overflow:hidden;transition:all .3s}
+        .fc:hover{border-color:rgba(201,168,76,.15);box-shadow:0 12px 40px rgba(0,0,0,.25)}
+        .fc-main{display:grid;grid-template-columns:1fr auto;min-height:90px}
+        .fc-route-section{padding:20px 24px;display:flex;align-items:center;gap:20px}
+        .fc-time{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white)}
+        .fc-time-sub{font-size:11px;color:var(--gray-400)}
+        .fc-arrow-block{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:90px}
+        .fc-duration{font-size:11px;color:var(--gold-500);font-weight:600}
+        .fc-line{width:100%;height:1px;background:var(--gray-500);position:relative}
+        .fc-line::after{content:'✈';position:absolute;right:-2px;top:-9px;font-size:13px;color:var(--gold-500)}
+        .fc-type{font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px}
+        .fc-classes{display:flex;border-left:1px solid rgba(255,255,255,.06)}
+        .fc-class-col{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;min-width:140px;cursor:pointer;transition:all .2s;border-left:1px solid rgba(255,255,255,.06);position:relative}
+        .fc-class-col:first-child{border-left:none}
+        .fc-class-col:hover{background:rgba(201,168,76,.04)}
+        .fc-class-col.selected{background:rgba(201,168,76,.08)}
+        .fc-class-top{padding:16px 20px 12px;display:flex;flex-direction:column;align-items:center;width:100%;flex:1}
+        .fc-class-name{font-size:14px;font-weight:600;color:var(--gray-200);margin-bottom:8px}
+        .fc-class-col.selected .fc-class-name{color:var(--gold-500)}
+        .fc-class-from{font-size:11px;color:var(--gray-500);margin-bottom:2px}
+        .fc-class-price{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--white);line-height:1}
+        .fc-class-col.selected .fc-class-price{color:var(--gold-400)}
+        .fc-class-currency{font-size:12px;color:var(--gray-400);margin-top:3px}
+        .fc-class-bottom{width:100%;padding:8px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gray-500);transition:all .2s}
+        .fc-class-col:hover .fc-class-bottom{color:var(--gold-500)}
+        .fc-class-col.selected .fc-class-bottom{color:var(--gold-500);background:rgba(201,168,76,.06)}
+        .fc-meta-bar{padding:10px 24px;border-top:1px solid rgba(255,255,255,.04);display:flex;gap:16px;font-size:12px;color:var(--gray-400);align-items:center;background:rgba(0,0,0,.1)}
+        .fc-meta-item{display:flex;align-items:center;gap:4px}
+
         /* TARIFF GRID */
         .tariff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
         .tariff-card{background:var(--navy-700);border:2px solid rgba(255,255,255,.06);border-radius:var(--radius-md);overflow:hidden;transition:all .3s;cursor:pointer;display:flex;flex-direction:column}
@@ -154,6 +197,10 @@
             .pax-form-grid{grid-template-columns:1fr}
             .pax-form-grid .full{grid-column:span 1}
             .progress-bar{padding:16px;overflow-x:auto}
+            .fc-main{grid-template-columns:1fr}
+            .fc-classes{border-left:none;border-top:1px solid rgba(255,255,255,.04)}
+            .fc-class-col{min-width:0;padding:0}
+            .date-strip-day{min-width:75px;padding:10px 6px}
         }
         @media(max-width:600px){
             .tariff-grid{grid-template-columns:1fr}
@@ -374,58 +421,103 @@
         }
 
         /* ============ STEP: RETURN FLIGHT SELECTION ============ */
+        let retSelectedDate=retDate||new Date(depDate.getTime()+86400000); // default: day after departure
+        let retSelectedClass='economy';
+
+        function getPriceForDate(basePrice,date){
+            const dow=date.getDay();
+            if(dow===0||dow===6) return Math.round(basePrice*1.15);
+            if(dow===2||dow===3) return Math.round(basePrice*0.90);
+            return basePrice;
+        }
+
         function renderReturnFlights(){
-            const retDateLabel=retDate?fmtDate(retDate):'Lot powrotny';
+            const MONTHS_S=['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+            const DAYS_SHORT=['Nd','Pn','Wt','Śr','Cz','Pt','So'];
 
             let html=`
                 <h2 class="step-title">Wybierz lot <span class="gold">powrotny</span></h2>
-                <div class="step-subtitle">${toA.city} → ${fromA.city} · ${retDateLabel}</div>
+                <div class="step-subtitle">${toA.city} → ${fromA.city}</div>
             `;
 
+            // Date strip — 7 days from departure date
+            const todayD=new Date();todayD.setHours(0,0,0,0);
+            const minRetDate=new Date(depDate.getTime()+86400000); // min = day after outbound
+
+            html+='<div class="date-strip">';
+            for(let i=-3;i<=3;i++){
+                const d=new Date(retSelectedDate);
+                d.setDate(d.getDate()+i);
+                const isPast=d<minRetDate;
+                const isActive=d.toDateString()===retSelectedDate.toDateString();
+                let price='—';
+                if(!isPast && returnFlights.length>0){
+                    const rf=returnFlights[0];
+                    const p=rf.classes.economy?getPriceForDate(rf.classes.economy,d):null;
+                    if(p) price=p+' PLN';
+                }
+                html+=`<div class="date-strip-day ${isActive?'active':''} ${isPast?'past':''}" ${isPast?'':'data-ret-date="'+d.toISOString().split("T")[0]+'"'}>
+                    <div class="ds-weekday">${DAYS_SHORT[d.getDay()]}</div>
+                    <div class="ds-date">${d.getDate()} ${MONTHS_S[d.getMonth()]}</div>
+                    <div class="ds-price">${price}</div>
+                </div>`;
+            }
+            html+='</div>';
+
+            // Flight cards with class columns
             if(returnFlights.length===0){
-                html+=`<div style="text-align:center;padding:40px;color:var(--gray-400);">Brak dostępnych lotów powrotnych.</div>`;
+                html+='<div style="text-align:center;padding:40px;color:var(--gray-400);">Brak dostępnych lotów powrotnych na ten dzień.</div>';
             } else {
+                html+=`<div style="font-size:13px;color:var(--gray-400);margin-bottom:14px;">Znaleziono <strong style="color:var(--white);">${returnFlights.length}</strong> lot${returnFlights.length>1?'ów':''} powrotn${returnFlights.length>1?'ych':'y'}</div>`;
+
                 returnFlights.forEach(rf=>{
                     const isSel=selectedReturnFlight&&selectedReturnFlight.id===rf.id;
-                    const ecoPrice=rf.classes.economy||'—';
-                    const bizPrice=rf.classes.business||'—';
+                    const availClasses=Object.keys(rf.classes);
+
+                    let classCols='';
+                    availClasses.forEach(cls=>{
+                        const price=getPriceForDate(rf.classes[cls],retSelectedDate);
+                        const total=price*totalPax;
+                        const isClsSel=isSel&&retSelectedClass===cls;
+                        const clsNames={economy:'Ekonomiczna',business:'Biznes'};
+                        classCols+=`
+                            <div class="fc-class-col ${isClsSel?'selected':''}" data-rf="${rf.id}" data-cls="${cls}">
+                                <div class="fc-class-top">
+                                    <div class="fc-class-name">${clsNames[cls]||cls}</div>
+                                    <div class="fc-class-from">Od</div>
+                                    <div class="fc-class-price">${price}</div>
+                                    <div class="fc-class-currency">PLN${totalPax>1?' · razem '+total+' PLN':''}</div>
+                                </div>
+                                <div class="fc-class-bottom">˅</div>
+                            </div>
+                        `;
+                    });
+
                     html+=`
-                        <div class="ret-flight-card ${isSel?'selected':''}" data-rf-id="${rf.id}" style="
-                            background:var(--navy-700);border:2px solid ${isSel?'var(--gold-500)':'rgba(255,255,255,.06)'};
-                            border-radius:var(--radius-md);padding:24px 28px;margin-bottom:16px;cursor:pointer;
-                            transition:all .3s;display:flex;align-items:center;justify-content:space-between;gap:20px;
-                        ">
-                            <div style="display:flex;align-items:center;gap:24px;">
-                                <div>
-                                    <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white);">${rf.dep}</div>
-                                    <div style="font-size:11px;color:var(--gray-400);">${rf.from}</div>
+                        <div class="fc" style="${isSel?'border-color:var(--gold-500);box-shadow:0 0 0 1px var(--gold-500);':''}">
+                            <div class="fc-main">
+                                <div class="fc-route-section">
+                                    <div>
+                                        <div class="fc-time">${rf.dep}</div>
+                                        <div class="fc-time-sub">${AIRPORTS[rf.from]?.city||rf.from}</div>
+                                    </div>
+                                    <div class="fc-arrow-block">
+                                        <div class="fc-duration">${rf.duration}</div>
+                                        <div class="fc-line"></div>
+                                        <div class="fc-type">Bezpośredni</div>
+                                    </div>
+                                    <div>
+                                        <div class="fc-time">${rf.arr}</div>
+                                        <div class="fc-time-sub">${AIRPORTS[rf.to]?.city||rf.to}</div>
+                                    </div>
                                 </div>
-                                <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:80px;">
-                                    <div style="font-size:11px;color:var(--gold-500);font-weight:600;">${rf.duration}</div>
-                                    <div style="width:60px;height:1px;background:var(--gray-500);"></div>
-                                    <div style="font-size:10px;color:var(--gray-400);">Bezpośredni</div>
-                                </div>
-                                <div>
-                                    <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white);">${rf.arr}</div>
-                                    <div style="font-size:11px;color:var(--gray-400);">${rf.to}</div>
-                                </div>
+                                <div class="fc-classes">${classCols}</div>
                             </div>
-                            <div style="display:flex;gap:16px;align-items:center;">
-                                <div style="text-align:center;">
-                                    <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;">Ekonomi</div>
-                                    <div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--white);">od ${ecoPrice} PLN</div>
-                                </div>
-                                <div style="width:1px;height:32px;background:rgba(255,255,255,.06);"></div>
-                                <div style="text-align:center;">
-                                    <div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;">Biznes</div>
-                                    <div style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--white);">od ${bizPrice} PLN</div>
-                                </div>
+                            <div class="fc-meta-bar">
+                                <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:rgba(46,204,113,.1);color:#2ecc71;border:1px solid rgba(46,204,113,.2);">Bezpośredni</span>
+                                <span class="fc-meta-item">✈ ${rf.id}</span>
+                                <span class="fc-meta-item">${rf.aircraft}</span>
                             </div>
-                            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray-400);">
-                                <span>✈ ${rf.id}</span>
-                                <span>· ${rf.aircraft}</span>
-                            </div>
-                            ${isSel?'<div style="color:var(--gold-500);font-size:20px;">✓</div>':''}
                         </div>
                     `;
                 });
@@ -434,16 +526,25 @@
             html+=`
                 <div class="action-bar">
                     <button class="btn btn-ghost" id="ret-back">← Wróć</button>
-                    <button class="btn btn-gold btn-lg" id="ret-next" ${selectedReturnFlight?'':'disabled'}>Wybierz taryfę powrotną →</button>
+                    <button class="btn btn-gold btn-lg" id="ret-next" ${selectedReturnFlight?'':'disabled'}>Przejdź dalej →</button>
                 </div>`;
 
             app.innerHTML=html;
 
-            app.querySelectorAll('[data-rf-id]').forEach(card=>{
-                card.addEventListener('click',()=>{
-                    const rfId=card.dataset.rfId;
-                    selectedReturnFlight=returnFlights.find(r=>r.id===rfId);
-                    renderReturnFlights(); // re-render to show selection
+            // Date strip click
+            app.querySelectorAll('.date-strip-day[data-ret-date]').forEach(el=>{
+                el.addEventListener('click',()=>{
+                    retSelectedDate=new Date(el.dataset.retDate+'T12:00:00');
+                    renderReturnFlights();
+                });
+            });
+
+            // Class column click — selects flight AND class
+            app.querySelectorAll('.fc-class-col[data-rf]').forEach(col=>{
+                col.addEventListener('click',()=>{
+                    selectedReturnFlight=returnFlights.find(r=>r.id===col.dataset.rf);
+                    retSelectedClass=col.dataset.cls;
+                    renderReturnFlights();
                 });
             });
 
