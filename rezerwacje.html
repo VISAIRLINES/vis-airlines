@@ -1,1 +1,232 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje rezerwacje — VIS Airlines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <style>
+        .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
+        .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
+        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
+        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
+        .nav-top-btn.danger{color:#e74c3c}
+        .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
 
+        .rez-page{padding:120px 48px 80px;max-width:1000px;margin:0 auto}
+        .rez-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px}
+        .rez-header h1{font-family:var(--font-display);font-size:clamp(28px,3.5vw,40px);font-weight:600}
+        .rez-header h1 .gold{color:var(--gold-500)}
+        .rez-welcome{font-size:14px;color:var(--gray-400);margin-top:4px}
+
+        .rez-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+        .rez-stat{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:20px 24px}
+        .rez-stat-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-400);font-weight:500}
+        .rez-stat-value{font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--gold-500);margin-top:6px}
+
+        .rez-section-title{font-size:16px;font-weight:600;color:var(--white);margin-bottom:16px}
+
+        .rez-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:24px;margin-bottom:16px;transition:all .3s}
+        .rez-card:hover{border-color:rgba(201,168,76,.15)}
+        .rez-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+        .rez-code{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500);letter-spacing:2px}
+        .rez-status{padding:5px 14px;border-radius:100px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+        .rez-status-confirmed{background:rgba(46,204,113,.12);color:#2ecc71;border:1px solid rgba(46,204,113,.2)}
+        .rez-status-pending{background:rgba(201,168,76,.12);color:var(--gold-500);border:1px solid rgba(201,168,76,.2)}
+
+        .rez-route{display:flex;align-items:center;gap:20px;margin-bottom:12px}
+        .rez-airport{text-align:center}
+        .rez-iata{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white)}
+        .rez-city{font-size:11px;color:var(--gray-400);margin-top:2px}
+        .rez-arrow{color:var(--gold-500);font-size:18px}
+
+        .rez-details{display:flex;gap:24px;flex-wrap:wrap;font-size:13px;color:var(--gray-400)}
+        .rez-detail{display:flex;align-items:center;gap:6px}
+
+        .rez-price{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--gold-500);text-align:right}
+
+        .rez-empty{text-align:center;padding:60px 20px}
+        .rez-empty-icon{font-size:48px;margin-bottom:16px;opacity:.5}
+        .rez-empty h3{font-family:var(--font-display);font-size:22px;color:var(--gray-200);margin-bottom:8px}
+        .rez-empty p{font-size:14px;color:var(--gray-400);margin-bottom:24px}
+
+        .rez-loading{text-align:center;padding:60px 20px}
+        .rez-loading .spinner-lg{width:40px;height:40px;border:3px solid rgba(201,168,76,.25);border-top-color:var(--gold-500);border-radius:50%;display:inline-block;animation:spin .6s linear infinite}
+
+        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
+        .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
+
+        @media(max-width:768px){
+            .rez-page{padding:110px 16px 60px}
+            .rez-stats{grid-template-columns:1fr}
+            .rez-route{flex-wrap:wrap}
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-top">
+            <span class="nav-top-btn" id="user-name" style="border-left:none;color:var(--gray-200);font-weight:500;"></span>
+            <a href="index.html" class="nav-top-btn">Strona główna</a>
+            <button class="nav-top-btn danger" id="logout-btn">Wyloguj się</button>
+        </div>
+        <div class="nav-bottom">
+            <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
+        </div>
+    </nav>
+
+    <main class="rez-page" id="app">
+        <div class="rez-loading"><div class="spinner-lg"></div><p style="color:var(--gray-400);margin-top:16px;">Ładowanie rezerwacji...</p></div>
+    </main>
+
+    <footer class="footer"><div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone. Członek oneworld®</div></footer>
+
+    <script>
+    firebase.initializeApp({
+        apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
+        authDomain:"vis-airlines-b1677.firebaseapp.com",
+        projectId:"vis-airlines-b1677",
+        storageBucket:"vis-airlines-b1677.firebasestorage.app",
+        messagingSenderId:"159896846581",
+        appId:"1:159896846581:web:f7b41f69945004599e05bc"
+    });
+    const auth=firebase.auth();
+    const db=firebase.firestore();
+    const app=document.getElementById('app');
+
+    const AIRPORTS={'CPK':{city:'Warszawa / CPK'},'GDN':{city:'Gdańsk'},'SZZ':{city:'Szczecin'},'KRK':{city:'Kraków'},'BZG':{city:'Bydgoszcz'},'KTW':{city:'Katowice'},'RZE':{city:'Rzeszów'},'WRO':{city:'Wrocław'},'POZ':{city:'Poznań'},'FRA':{city:'Frankfurt'},'MUC':{city:'Monachium'},'DTM':{city:'Dortmund'},'BER':{city:'Berlin'},'BHX':{city:'Birmingham'}};
+
+    // Auth check
+    auth.onAuthStateChanged(async user=>{
+        if(!user){window.location.href='login.html';return;}
+
+        document.getElementById('user-name').textContent='✈ '+user.displayName||user.email;
+
+        // Load bookings
+        try{
+            const snap=await db.collection('bookings').where('userId','==',user.uid).orderBy('createdAt','desc').get();
+            const bookings=snap.docs.map(d=>({id:d.id,...d.data()}));
+            renderDashboard(user,bookings);
+        }catch(e){
+            console.error(e);
+            // If index not ready yet, try without orderBy
+            try{
+                const snap=await db.collection('bookings').where('userId','==',user.uid).get();
+                const bookings=snap.docs.map(d=>({id:d.id,...d.data()}));
+                renderDashboard(user,bookings);
+            }catch(e2){
+                renderDashboard(user,[]);
+            }
+        }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click',async()=>{
+        await auth.signOut();
+        window.location.href='index.html';
+    });
+
+    function renderDashboard(user,bookings){
+        const name=user.displayName||user.email;
+        const totalSpent=bookings.reduce((s,b)=>s+(b.totalPrice||0),0);
+        const confirmed=bookings.filter(b=>b.status==='confirmed').length;
+
+        let html=`
+            <div class="rez-header">
+                <div>
+                    <h1>Moje <span class="gold">rezerwacje</span></h1>
+                    <p class="rez-welcome">Witaj, ${name}!</p>
+                </div>
+                <a href="index.html" class="btn btn-gold">+ Nowa rezerwacja</a>
+            </div>
+
+            <div class="rez-stats">
+                <div class="rez-stat">
+                    <div class="rez-stat-label">Rezerwacje</div>
+                    <div class="rez-stat-value">${bookings.length}</div>
+                </div>
+                <div class="rez-stat">
+                    <div class="rez-stat-label">Potwierdzone</div>
+                    <div class="rez-stat-value">${confirmed}</div>
+                </div>
+                <div class="rez-stat">
+                    <div class="rez-stat-label">Wydano łącznie</div>
+                    <div class="rez-stat-value">${totalSpent.toLocaleString('pl-PL')} PLN</div>
+                </div>
+            </div>
+        `;
+
+        if(bookings.length===0){
+            html+=`
+                <div class="rez-empty">
+                    <div class="rez-empty-icon">🎫</div>
+                    <h3>Brak rezerwacji</h3>
+                    <p>Nie masz jeszcze żadnych rezerwacji. Czas to zmienić!</p>
+                    <a href="index.html" class="btn btn-gold btn-lg">Szukaj lotów</a>
+                </div>
+            `;
+        }else{
+            html+='<div class="rez-section-title">Twoje rezerwacje</div>';
+            bookings.forEach(b=>{
+                const fromCity=AIRPORTS[b.from]?.city||b.from;
+                const toCity=AIRPORTS[b.to]?.city||b.to;
+                const statusClass=b.status==='confirmed'?'rez-status-confirmed':'rez-status-pending';
+                const statusText=b.status==='confirmed'?'Potwierdzona':'Oczekuje';
+                const date=b.date||'';
+                html+=`
+                    <div class="rez-card">
+                        <div class="rez-card-top">
+                            <div>
+                                <div class="rez-code">${b.code||'---'}</div>
+                                <span style="font-size:12px;color:var(--gray-500);">Kod rezerwacji</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:16px;">
+                                <div class="rez-price">${(b.totalPrice||0).toLocaleString('pl-PL')} PLN</div>
+                                <span class="rez-status ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="rez-route">
+                            <div class="rez-airport">
+                                <div class="rez-iata">${b.from||''}</div>
+                                <div class="rez-city">${fromCity}</div>
+                            </div>
+                            <div class="rez-arrow">→</div>
+                            <div class="rez-airport">
+                                <div class="rez-iata">${b.to||''}</div>
+                                <div class="rez-city">${toCity}</div>
+                            </div>
+                            ${b.returnFrom?`
+                                <div class="rez-arrow" style="margin-left:12px;">↩</div>
+                                <div class="rez-airport">
+                                    <div class="rez-iata">${b.returnFrom}</div>
+                                    <div class="rez-city">${AIRPORTS[b.returnFrom]?.city||b.returnFrom}</div>
+                                </div>
+                                <div class="rez-arrow">→</div>
+                                <div class="rez-airport">
+                                    <div class="rez-iata">${b.returnTo}</div>
+                                    <div class="rez-city">${AIRPORTS[b.returnTo]?.city||b.returnTo}</div>
+                                </div>
+                            `:''}
+                        </div>
+                        <div class="rez-details">
+                            <div class="rez-detail">📅 ${date}</div>
+                            <div class="rez-detail">✈ ${b.flightId||''}</div>
+                            <div class="rez-detail">🧳 ${b.tariff||''}</div>
+                            <div class="rez-detail">👤 ${b.pax||1} ${(b.pax||1)===1?'pasażer':'pasażerów'}</div>
+                            ${b.aircraft?`<div class="rez-detail">🛩 ${b.aircraft}</div>`:''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        app.innerHTML=html;
+    }
+    </script>
+</body>
+</html>
