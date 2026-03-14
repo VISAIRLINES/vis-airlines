@@ -194,6 +194,34 @@
         .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
         .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
 
+        /* SEAT MAP */
+        .seatmap-modal{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(8px)}
+        .seatmap-modal.show{display:flex}
+        .seatmap-box{background:var(--navy-700);border:1px solid rgba(201,168,76,.15);border-radius:var(--radius-lg);width:95%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+        .seatmap-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between}
+        .seatmap-header h3{font-family:var(--font-display);font-size:20px;font-weight:600}
+        .seatmap-close{background:none;border:none;color:var(--gray-400);font-size:22px;cursor:pointer;padding:4px 8px}
+        .seatmap-close:hover{color:var(--white)}
+        .seatmap-legend{padding:12px 24px;display:flex;gap:16px;font-size:11px;color:var(--gray-400);border-bottom:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
+        .seatmap-legend-item{display:flex;align-items:center;gap:6px}
+        .seatmap-legend-dot{width:16px;height:16px;border-radius:3px}
+        .seatmap-body{padding:20px 24px;overflow-y:auto;flex:1}
+        .seatmap-plane{display:flex;flex-direction:column;align-items:center;gap:2px}
+        .seatmap-row{display:flex;align-items:center;gap:0}
+        .seatmap-rownum{width:28px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--gray-500);flex-shrink:0}
+        .seatmap-seat{width:30px;height:30px;border-radius:4px;margin:1px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent}
+        .seat-available{background:rgba(46,204,113,.15);color:#2ecc71;border-color:rgba(46,204,113,.3)}
+        .seat-available:hover{background:rgba(46,204,113,.3);transform:scale(1.1)}
+        .seat-occupied{background:rgba(255,255,255,.05);color:var(--gray-600);cursor:default}
+        .seat-selected{background:var(--gold-600) !important;color:var(--navy-800) !important;border-color:var(--gold-500) !important;transform:scale(1.1)}
+        .seat-biz{background:rgba(52,152,219,.15);color:var(--blue);border-color:rgba(52,152,219,.3)}
+        .seat-biz:hover{background:rgba(52,152,219,.3)}
+        .seat-exit{border-color:rgba(231,76,60,.4) !important}
+        .seat-aisle{width:20px;height:30px;margin:1px}
+        .seatmap-footer{padding:16px 24px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between}
+        .seatmap-selected-info{font-size:14px;color:var(--gray-300)}
+        .seatmap-selected-seat{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500)}
+
         @media(max-width:900px){
             .tariff-grid{grid-template-columns:1fr 1fr}
             .booking-page{padding:24px 16px 60px}
@@ -759,8 +787,17 @@
 
         /* ============ STEP: SERVICES ============ */
         /* ============ EXTRAS STATE ============ */
-        let extras={seat:false,bag12:0,bag10:0,bag15:0,bag20:0,bag23:0,bag40:0,bagOversized:0,priority:false,fasttrack:false,lounge:false};
+        let extras={seat:null,bag12:0,bag10:0,bag15:0,bag20:0,bag23:0,bag40:0,bagOversized:0,priority:false,fasttrack:false,lounge:false};
         const EXTRAS_PRICES={seat:25,bag12:49,bag10:59,bag15:89,bag20:119,bag23:149,bag40:249,bagOversized:199,priority:35,fasttrack:49,lounge:129};
+
+        // Seat map configs per aircraft
+        const SEAT_CONFIGS={
+            'Embraer 175-E2':{cols:['A','B','','C','D'],rows:22,biz:3,exitRows:[10,11]},
+            'A320neo':{cols:['A','B','C','','D','E','F'],rows:30,biz:4,exitRows:[12,13]},
+            'A321neo':{cols:['A','B','C','','D','E','F'],rows:36,biz:4,exitRows:[14,15,30]},
+            'A321XLR':{cols:['A','B','C','','D','E','F'],rows:36,biz:4,exitRows:[14,15]},
+            'Boeing 777-8':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:42,biz:6,exitRows:[20,21,35]},
+        };
 
         function calcExtrasTotal(){
             let t=0;
@@ -797,13 +834,14 @@
                         </div>
                     </div>
                     <div class="extras-options">
-                        <div class="extras-toggle ${extras.seat?'active':''}" data-extra="seat">
-                            <div class="et-info">
-                                <div class="et-name">Rezerwacja miejsca</div>
-                                <div class="et-desc">${EXTRAS_PRICES.seat} PLN / os.</div>
+                        <div class="extras-seat-pick" id="seat-pick-btn" style="padding:16px 20px;cursor:pointer;border-radius:var(--radius-sm);border:1px solid ${extras.seat?'var(--gold-500)':'rgba(255,255,255,.08)'};background:${extras.seat?'rgba(201,168,76,.08)':'transparent'};transition:all .3s;display:flex;align-items:center;justify-content:space-between;">
+                            <div>
+                                <div style="font-size:14px;font-weight:500;color:var(--white);">Wybierz miejsce na planie samolotu</div>
+                                <div style="font-size:12px;color:var(--gray-400);margin-top:3px;">${EXTRAS_PRICES.seat} PLN / os. · ${flight.aircraft}</div>
                             </div>
-                            <div class="et-switch">
-                                <div class="et-switch-track"><div class="et-switch-thumb"></div></div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                ${extras.seat?`<span style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500);">${extras.seat}</span>`:''}
+                                <span class="btn btn-outline" style="padding:8px 16px;font-size:13px;">${extras.seat?'Zmień':'Wybierz →'}</span>
                             </div>
                         </div>
                     </div>
@@ -938,6 +976,121 @@
 
             document.getElementById('svc-back').addEventListener('click',()=>{step--;render();});
             document.getElementById('svc-pay').addEventListener('click',()=>{step++;render();});
+
+            // Seat map
+            document.getElementById('seat-pick-btn').addEventListener('click',()=>openSeatMap());
+        }
+
+        function openSeatMap(){
+            const ac=flight.aircraft;
+            const cfg=SEAT_CONFIGS[ac]||SEAT_CONFIGS['A321neo'];
+            const cols=cfg.cols;
+            const rows=cfg.rows;
+            const bizRows=cfg.biz;
+            const exitRows=cfg.exitRows||[];
+
+            // Generate random occupied seats (30-50%)
+            const occupied=new Set();
+            const totalSeats=rows*cols.filter(c=>c!=='').length;
+            const occCount=Math.floor(totalSeats*(.3+Math.random()*.2));
+            for(let i=0;i<occCount;i++){
+                const r=Math.floor(Math.random()*rows)+1;
+                const c=cols.filter(c=>c!=='')[Math.floor(Math.random()*cols.filter(c=>c!=='').length)];
+                occupied.add(r+c);
+            }
+            // Keep selected seat available
+            if(extras.seat)occupied.delete(extras.seat);
+
+            let modal=document.createElement('div');
+            modal.className='seatmap-modal show';
+            modal.innerHTML=`
+                <div class="seatmap-box">
+                    <div class="seatmap-header">
+                        <h3>Wybierz miejsce · ${ac}</h3>
+                        <button class="seatmap-close" id="sm-close">✕</button>
+                    </div>
+                    <div class="seatmap-legend">
+                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-available"></div> Dostępne</div>
+                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-biz"></div> Business</div>
+                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-occupied"></div> Zajęte</div>
+                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-selected"></div> Twój wybór</div>
+                    </div>
+                    <div class="seatmap-body" id="sm-body"></div>
+                    <div class="seatmap-footer">
+                        <div><span class="seatmap-selected-info">Wybrane: </span><span class="seatmap-selected-seat" id="sm-selected">${extras.seat||'—'}</span></div>
+                        <button class="btn btn-gold" id="sm-confirm" ${extras.seat?'':'disabled'}>Potwierdź — ${EXTRAS_PRICES.seat} PLN</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Build seat rows
+            const body=document.getElementById('sm-body');
+            let html='<div class="seatmap-plane">';
+
+            // Column headers
+            html+='<div class="seatmap-row"><div class="seatmap-rownum"></div>';
+            cols.forEach(c=>{
+                if(c==='') html+='<div class="seat-aisle"></div>';
+                else html+='<div class="seatmap-seat" style="background:none;cursor:default;font-size:11px;color:var(--gray-400);font-weight:600;">'+c+'</div>';
+            });
+            html+='</div>';
+
+            for(let r=1;r<=rows;r++){
+                html+='<div class="seatmap-row"><div class="seatmap-rownum">'+r+'</div>';
+                cols.forEach(c=>{
+                    if(c===''){html+='<div class="seat-aisle"></div>';return;}
+                    const seatId=r+c;
+                    const isBiz=r<=bizRows;
+                    const isOcc=occupied.has(seatId);
+                    const isSel=extras.seat===seatId;
+                    const isExit=exitRows.includes(r);
+                    let cls='seatmap-seat ';
+                    if(isSel) cls+='seat-selected';
+                    else if(isOcc) cls+='seat-occupied';
+                    else if(isBiz) cls+='seat-biz';
+                    else cls+='seat-available';
+                    if(isExit&&!isOcc&&!isSel) cls+=' seat-exit';
+                    html+='<div class="'+cls+'" data-seat="'+(isOcc&&!isSel?'':''+seatId)+'">'+(isSel?'✓':isOcc?'✕':c)+'</div>';
+                });
+                html+='</div>';
+                // Exit row marker
+                if(exitRows.includes(r)){
+                    html+='<div style="width:100%;text-align:center;font-size:9px;color:var(--gray-500);padding:2px 0;letter-spacing:2px;">EXIT</div>';
+                }
+            }
+            html+='</div>';
+            body.innerHTML=html;
+
+            // Seat click
+            body.querySelectorAll('.seatmap-seat[data-seat]').forEach(s=>{
+                if(!s.dataset.seat)return;
+                s.addEventListener('click',()=>{
+                    body.querySelectorAll('.seat-selected').forEach(p=>{
+                        const isBiz2=parseInt(p.dataset.seat)<=bizRows;
+                        p.className='seatmap-seat '+(isBiz2?'seat-biz':'seat-available');
+                        p.textContent=p.dataset.seat.replace(/[0-9]/g,'');
+                    });
+                    s.className='seatmap-seat seat-selected';
+                    s.textContent='✓';
+                    document.getElementById('sm-selected').textContent=s.dataset.seat;
+                    document.getElementById('sm-confirm').disabled=false;
+                });
+            });
+
+            // Close
+            document.getElementById('sm-close').addEventListener('click',()=>{modal.remove();});
+            modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+
+            // Confirm
+            document.getElementById('sm-confirm').addEventListener('click',()=>{
+                const sel=document.getElementById('sm-selected').textContent;
+                if(sel&&sel!=='—'){
+                    extras.seat=sel;
+                    modal.remove();
+                    renderServices();
+                }
+            });
         }
 
         function updateExtrasTotals(){
