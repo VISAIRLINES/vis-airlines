@@ -106,7 +106,22 @@
     auth.onAuthStateChanged(async user=>{
         if(!user){window.location.href='login.html';return;}
 
-        document.getElementById('user-name').textContent='✈ '+user.displayName||user.email;
+        document.getElementById('user-name').textContent='✈ '+(user.displayName||user.email);
+
+        // Check if returning from Stripe payment
+        const urlParams=new URLSearchParams(window.location.search);
+        const paidCode=urlParams.get('paid');
+        if(paidCode){
+            // Update booking status to confirmed
+            try{
+                const snap=await db.collection('bookings').where('code','==',paidCode).where('userId','==',user.uid).get();
+                if(!snap.empty){
+                    await snap.docs[0].ref.update({status:'confirmed'});
+                }
+            }catch(e){console.error('Status update error:',e);}
+            // Clean URL
+            window.history.replaceState({},'',window.location.pathname);
+        }
 
         // Load bookings
         try{
@@ -136,7 +151,18 @@
         const totalSpent=bookings.reduce((s,b)=>s+(b.totalPrice||0),0);
         const confirmed=bookings.filter(b=>b.status==='confirmed').length;
 
-        let html=`
+        // Check if just paid
+        const urlParams=new URLSearchParams(window.location.search);
+        const justPaid=urlParams.get('paid');
+        let paidBanner='';
+        if(justPaid){
+            paidBanner=`<div style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);border-radius:var(--radius-md);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:24px;">✅</span>
+                <div><strong style="color:#2ecc71;">Płatność potwierdzona!</strong><br><span style="font-size:13px;color:var(--gray-300);">Rezerwacja ${justPaid} została opłacona i potwierdzona.</span></div>
+            </div>`;
+        }
+
+        let html=paidBanner+`
             <div class="rez-header">
                 <div>
                     <h1>Moje <span class="gold">rezerwacje</span></h1>
