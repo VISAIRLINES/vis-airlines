@@ -985,8 +985,8 @@
 
                 <div class="payment-box">
                     <div class="payment-box-icon">🔒</div>
-                    <h3>Płatność online</h3>
-                    <p>Płatność Stripe zostanie aktywowana po konfiguracji Vercel.<br>Na razie możesz potwierdzić rezerwację — zostanie zapisana na Twoim koncie.</p>
+                    <h3>Płatność online — Stripe</h3>
+                    <p>Po kliknięciu zostaniesz przekierowany na bezpieczną stronę płatności Stripe. Po opłaceniu rezerwacja zostanie potwierdzona automatycznie.</p>
                     <div class="payment-methods">
                         <span class="pm-badge">VISA</span>
                         <span class="pm-badge">Mastercard</span>
@@ -994,9 +994,9 @@
                         <span class="pm-badge">PayPo</span>
                         <span class="pm-badge">Klarna</span>
                     </div>
-                    <button class="btn btn-gold btn-lg" style="width:100%;margin-top:20px;" id="pay-btn">Potwierdź rezerwację — ${grandTotal.toLocaleString('pl-PL')} PLN</button>
+                    <button class="btn btn-gold btn-lg" style="width:100%;margin-top:20px;" id="pay-btn">Zapłać ${grandTotal.toLocaleString('pl-PL')} PLN</button>
                     <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-500);">
-                        Klikając potwierdzasz akceptację regulaminu VIS Airlines i polityki prywatności.
+                        Płatność obsługiwana przez Stripe. Klikając akceptujesz regulamin VIS Airlines.
                     </div>
                 </div>
 
@@ -1009,9 +1009,10 @@
 
             document.getElementById('pay-btn').addEventListener('click',async()=>{
                 const payBtn=document.getElementById('pay-btn');
-                payBtn.disabled=true;payBtn.innerHTML='<span style="display:inline-block;width:20px;height:20px;border:2px solid rgba(10,22,40,.3);border-top-color:var(--navy-800);border-radius:50%;animation:spin .6s linear infinite;"></span> Zapisuję rezerwację...';
+                payBtn.disabled=true;payBtn.innerHTML='<span style="display:inline-block;width:20px;height:20px;border:2px solid rgba(10,22,40,.3);border-top-color:var(--navy-800);border-radius:50%;animation:spin .6s linear infinite;"></span> Przekierowanie do płatności...';
 
                 const code=genCode();
+                const route=flight.from+' → '+flight.to+(hasReturn&&selectedReturnFlight?' ↩ '+selectedReturnFlight.from+' → '+selectedReturnFlight.to:'');
                 const booking={
                     code,
                     userId:user.uid,
@@ -1032,11 +1033,10 @@
                     extras:JSON.parse(JSON.stringify(extras)),
                     extrasTotal:calcExtrasTotal(),
                     totalPrice:grandTotal,
-                    status:'confirmed',
+                    status:'pending',
                     createdAt:firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                // Add return info if applicable
                 if(hasReturn&&selectedReturnFlight){
                     booking.returnFrom=selectedReturnFlight.from;
                     booking.returnTo=selectedReturnFlight.to;
@@ -1048,13 +1048,34 @@
                 }
 
                 try{
+                    // 1. Save booking to Firestore as pending
                     await fbDb.collection('bookings').add(booking);
-                    renderConfirmation(code,grandTotal);
+
+                    // 2. Call Vercel to create Stripe Checkout session
+                    const resp=await fetch('https://vis-payments.vercel.app/api/checkout',{
+                        method:'POST',
+                        headers:{'Content-Type':'application/json'},
+                        body:JSON.stringify({
+                            amount:grandTotal*100, // Stripe uses grosze (cents)
+                            bookingCode:code,
+                            route:route,
+                            email:user.email
+                        })
+                    });
+
+                    const data=await resp.json();
+
+                    if(data.url){
+                        // 3. Redirect to Stripe Checkout
+                        window.location.href=data.url;
+                    }else{
+                        throw new Error(data.error||'Błąd tworzenia sesji płatności');
+                    }
                 }catch(e){
                     console.error(e);
                     payBtn.disabled=false;
                     payBtn.textContent='Spróbuj ponownie';
-                    alert('Błąd zapisu rezerwacji: '+e.message);
+                    alert('Błąd: '+e.message);
                 }
             });
         }
