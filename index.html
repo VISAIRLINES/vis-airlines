@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
     <style>
         /* ============================================
@@ -475,8 +477,8 @@
                     <div class="popup-option" data-cur="GBP">GBP — Funt</div>
                 </div>
             </div>
-            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
-            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+            <a href="login.html" class="nav-top-btn" id="nav-auth-1">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent" id="nav-auth-2">Załóż konto</a>
         </div>
         <div class="nav-bottom">
             <a href="index.html" class="nav-logo">
@@ -829,6 +831,30 @@
     <script src="js/main.js"></script>
 
     <script>
+    // Firebase auth for nav
+    firebase.initializeApp({
+        apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
+        authDomain:"vis-airlines-b1677.firebaseapp.com",
+        projectId:"vis-airlines-b1677",
+        storageBucket:"vis-airlines-b1677.firebasestorage.app",
+        messagingSenderId:"159896846581",
+        appId:"1:159896846581:web:f7b41f69945004599e05bc"
+    });
+    firebase.auth().onAuthStateChanged(u=>{
+        const a1=document.getElementById('nav-auth-1');
+        const a2=document.getElementById('nav-auth-2');
+        if(u){
+            a1.textContent='✈ '+(u.displayName||u.email);
+            a1.href='rezerwacje.html';
+            a1.style.color='var(--gray-200)';
+            a2.textContent='Wyloguj się';
+            a2.href='#';
+            a2.style.color='#e74c3c';
+            a2.classList.remove('accent');
+            a2.addEventListener('click',e=>{e.preventDefault();firebase.auth().signOut().then(()=>location.reload());});
+        }
+    });
+
     (function() {
         const airports = [
             { country: '🇵🇱 Polska', cities: [
