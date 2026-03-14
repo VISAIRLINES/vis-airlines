@@ -333,39 +333,15 @@
            Dodawaj nowe trasy tutaj!
            ============================================ */
         const ROUTES = [
-            {
-                id: 'VS001',
-                from: 'CPK', to: 'BZG',
-                dep: '07:25', arr: '08:25',
-                duration: '1h 00m',
-                aircraft: 'Embraer 175-E2',
-                classes: {
-                    economy: 100,
-                    business: 600
-                }
-            },
-            {
-                id: 'VS010',
-                from: 'CPK', to: 'BHX',
-                dep: '13:00', arr: '15:15',
-                duration: '2h 15m',
-                aircraft: 'A320neo',
-                classes: {
-                    economy: 200,
-                    business: 800
-                }
-            },
-            {
-                id: 'VS011',
-                from: 'BHX', to: 'CPK',
-                dep: '15:55', arr: '18:10',
-                duration: '2h 15m',
-                aircraft: 'A320neo',
-                classes: {
-                    economy: 200,
-                    business: 800
-                }
-            }
+            {id:'VS001',from:'CPK',to:'BZG',dep:'07:25',arr:'08:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},
+            {id:'VS010',from:'CPK',to:'BHX',dep:'13:00',arr:'15:15',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},
+            {id:'VS011',from:'BHX',to:'CPK',dep:'15:55',arr:'18:10',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},
+            {id:'VS020',from:'CPK',to:'HEL',dep:'06:50',arr:'08:15',duration:'1h 25m',aircraft:'A321neo',classes:{economy:149,business:749}},
+            {id:'VS021',from:'HEL',to:'CPK',dep:'08:55',arr:'10:20',duration:'1h 25m',aircraft:'A321neo',classes:{economy:149,business:749}},
+            {id:'VS030',from:'CPK',to:'LHR',dep:'11:00',arr:'13:20',duration:'2h 20m',aircraft:'A321neo',classes:{economy:129,business:699}},
+            {id:'VS031',from:'LHR',to:'CPK',dep:'14:00',arr:'16:20',duration:'2h 20m',aircraft:'A321neo',classes:{economy:129,business:699}},
+            {id:'VS040',from:'CPK',to:'ALC',dep:'17:00',arr:'20:10',duration:'3h 10m',aircraft:'A321neo',classes:{economy:1,business:499}},
+            {id:'VS041',from:'ALC',to:'CPK',dep:'20:50',arr:'01:00+1',duration:'4h 10m',aircraft:'A321neo',classes:{economy:1,business:499}}
         ];
 
         const AIRPORTS = {
@@ -383,6 +359,9 @@
             'DTM': { city: 'Dortmund', name: 'Dortmund' },
             'BER': { city: 'Berlin', name: 'Berlin Brandenburg' },
             'BHX': { city: 'Birmingham', name: 'Birmingham' },
+            'HEL': { city: 'Helsinki', name: 'Helsinki-Vantaa' },
+            'LHR': { city: 'Londyn', name: 'London Heathrow' },
+            'ALC': { city: 'Alicante', name: 'Alicante-Elche' },
         };
 
         const MONTHS_PL = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
