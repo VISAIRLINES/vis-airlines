@@ -1,1 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odprawa online — VIS Airlines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
+        .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
+        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
+        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
+        .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
 
+        .checkin-page{padding:130px 48px 80px;max-width:700px;margin:0 auto}
+        .checkin-page h1{font-family:var(--font-display);font-size:clamp(28px,4vw,44px);font-weight:600;margin-bottom:8px}
+        .checkin-page h1 .gold{color:var(--gold-500)}
+        .checkin-page .subtitle{font-size:15px;color:var(--gray-400);margin-bottom:40px;line-height:1.7}
+
+        .checkin-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:32px;margin-bottom:24px}
+        .checkin-card h3{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:20px}
+        .checkin-form{display:flex;flex-direction:column;gap:18px}
+        .checkin-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .checkin-input{padding:14px 16px;border-radius:var(--radius-sm);background:var(--navy-900);border:1px solid rgba(255,255,255,.08);color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;transition:border-color .3s}
+        .checkin-input:focus{border-color:var(--gold-600)}
+        .checkin-input::placeholder{color:var(--gray-500)}
+        .checkin-or{text-align:center;color:var(--gray-500);font-size:13px;padding:8px 0;position:relative}
+        .checkin-or::before,.checkin-or::after{content:'';position:absolute;top:50%;width:calc(50% - 30px);height:1px;background:rgba(255,255,255,.06)}
+        .checkin-or::before{left:0}.checkin-or::after{right:0}
+        .checkin-info{font-size:13px;color:var(--gray-400);line-height:1.7;padding:16px;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.1);border-radius:var(--radius-sm)}
+
+        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
+        .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
+
+        @media(max-width:768px){
+            .checkin-page{padding:110px 16px 60px}
+            .checkin-row{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-top">
+            <button class="nav-top-btn">PL Polski ▾</button>
+            <button class="nav-top-btn">PLN ▾</button>
+            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+        </div>
+        <div class="nav-bottom">
+            <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
+        </div>
+    </nav>
+
+    <main class="checkin-page">
+        <h1 class="animate-in">Odprawa <span class="gold">online</span></h1>
+        <p class="subtitle animate-in animate-in-d1">Odpraw się online od 48 godzin do 1 godziny przed wylotem. Otrzymasz kartę pokładową na e-mail.</p>
+
+        <div class="checkin-card animate-in animate-in-d2">
+            <h3>Znajdź swoją rezerwację</h3>
+            <div class="checkin-form">
+                <div class="checkin-row">
+                    <input class="checkin-input" placeholder="Kod rezerwacji (np. VS3X7K)" id="ci-code">
+                    <input class="checkin-input" placeholder="Nazwisko" id="ci-name">
+                </div>
+                <button class="btn btn-gold btn-lg" style="width:100%;" id="ci-search">Szukaj rezerwacji</button>
+            </div>
+
+            <div class="checkin-or">lub</div>
+
+            <div class="checkin-form">
+                <div class="checkin-row">
+                    <input class="checkin-input" placeholder="Numer biletu elektronicznego" id="ci-ticket">
+                    <input class="checkin-input" placeholder="Nazwisko" id="ci-name2">
+                </div>
+                <button class="btn btn-outline btn-lg" style="width:100%;" id="ci-search2">Szukaj po numerze biletu</button>
+            </div>
+        </div>
+
+        <div class="checkin-info animate-in animate-in-d3">
+            ✈ Odprawa online jest dostępna od <strong>48h do 1h</strong> przed planowanym wylotem.<br>
+            Po odprawie otrzymasz kartę pokładową na podany adres e-mail. Możesz ją wydrukować lub pokazać na telefonie przy bramce.
+        </div>
+    </main>
+
+    <footer class="footer"><div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone. Członek oneworld®</div></footer>
+    <script src="js/main.js"></script>
+    <script>
+    document.getElementById('ci-search').addEventListener('click',()=>{
+        const code=document.getElementById('ci-code').value.trim();
+        const name=document.getElementById('ci-name').value.trim();
+        if(!code||!name){alert('Wprowadź kod rezerwacji i nazwisko');return;}
+        alert('Funkcja odprawy online będzie dostępna wkrótce. Twój kod: '+code);
+    });
+    document.getElementById('ci-search2').addEventListener('click',()=>{
+        const ticket=document.getElementById('ci-ticket').value.trim();
+        const name=document.getElementById('ci-name2').value.trim();
+        if(!ticket||!name){alert('Wprowadź numer biletu i nazwisko');return;}
+        alert('Funkcja odprawy online będzie dostępna wkrótce.');
+    });
+    </script>
+</body>
+</html>
