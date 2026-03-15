@@ -293,10 +293,18 @@
             <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
             <div class="nav-main-links">
                 <a href="index.html" class="nav-main-link active">Zaplanuj podróż</a>
-                <a href="#" class="nav-main-link">Odpraw się</a>
-                <a href="rezerwacje.html" class="nav-main-link">Zarządzaj rezerwacją</a>
-                <a href="#" class="nav-main-link">Informacje</a>
-                <a href="#" class="nav-main-link">Pomoc</a>
+                <a href="odprawa.html" class="nav-main-link">Odpraw się</a>
+                <a href="rezerwacje.html" class="nav-main-link" onclick="window.location.href='rezerwacje.html';return false;">Zarządzaj rezerwacją</a>
+                <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
+                    <button class="nav-main-link" id="helpnav-btn" style="cursor:pointer;">Pomoc i informacje ▾</button>
+                    <div id="helpnav-panel" style="position:absolute;top:100%;right:0;background:var(--navy-700);border:1px solid rgba(201,168,76,.15);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:24px 28px;min-width:680px;z-index:200;display:none;grid-template-columns:repeat(5,1fr);gap:20px;">
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Flota</div><a href="fleet.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Przegląd floty</a><a href="fleet-e175.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Embraer 175-E2</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Bagaż</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Zasady i wymiary</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Bagaż specjalny</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Na pokładzie</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Posiłki i napoje</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Klasy podróży</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Na lotnisku</div><a href="odprawa.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Odprawa</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Fast Track</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Obsługa</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Zmiana i zwrot</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Kontakt</a></div>
+                    </div>
+                </div>
             </div>
             <button class="nav-hamburger" aria-label="Menu">☰</button>
         </div>
@@ -327,6 +335,11 @@
 
     <script src="js/main.js"></script>
     <script>
+    // Nav dropdown
+    (function(){
+        var hb=document.getElementById('helpnav-btn'),hp=document.getElementById('helpnav-panel');
+        if(hb&&hp){hb.addEventListener('click',function(e){e.stopPropagation();var v=hp.style.display==='grid'?'none':'grid';hp.style.display=v;});document.addEventListener('click',function(){hp.style.display='none';});hp.addEventListener('click',function(e){e.stopPropagation();});}
+    })();
     (function(){
         /* ============================================
            BAZA TRAS VIS Airlines
