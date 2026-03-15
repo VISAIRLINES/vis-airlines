@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 
     <style>
         /* === NAV (same as index) === */
@@ -280,6 +282,7 @@
     </style>
 </head>
 <body>
+    <script src="js/nav.js"></script>
 
     <!-- NAV -->
     <nav class="nav">
@@ -335,11 +338,6 @@
 
     <script src="js/main.js"></script>
     <script>
-    // Nav dropdown
-    (function(){
-        var hb=document.getElementById('helpnav-btn'),hp=document.getElementById('helpnav-panel');
-        if(hb&&hp){hb.addEventListener('click',function(e){e.stopPropagation();var v=hp.style.display==='grid'?'none':'grid';hp.style.display=v;});document.addEventListener('click',function(){hp.style.display='none';});hp.addEventListener('click',function(e){e.stopPropagation();});}
-    })();
     (function(){
         /* ============================================
            BAZA TRAS VIS Airlines
