@@ -455,6 +455,7 @@
     </style>
 </head>
 <body>
+    <script src="js/nav.js"></script>
 
     <!-- ===== NAWIGACJA ===== -->
     <nav class="nav">
@@ -833,28 +834,6 @@
         messagingSenderId:"159896846581",
         appId:"1:159896846581:web:f7b41f69945004599e05bc"
     });
-    firebase.auth().onAuthStateChanged(u=>{
-        const a1=document.getElementById('nav-auth-1');
-        const a2=document.getElementById('nav-auth-2');
-        if(!a1||!a2)return;
-        if(u){
-            // Replace login link with profile link
-            const newA1=a1.cloneNode(true);
-            a1.parentNode.replaceChild(newA1,a1);
-            newA1.textContent='✈ '+(u.displayName||u.email);
-            newA1.href='rezerwacje.html';
-            newA1.style.color='var(--gray-200)';
-
-            // Replace register link with logout
-            const newA2=a2.cloneNode(true);
-            a2.parentNode.replaceChild(newA2,a2);
-            newA2.textContent='Wyloguj się';
-            newA2.href='#';
-            newA2.style.color='#e74c3c';
-            newA2.className='nav-top-btn';
-            newA2.onclick=function(e){e.preventDefault();firebase.auth().signOut().then(function(){location.reload();});};
-        }
-    });
 
     (function() {
         const airports = [
@@ -988,21 +967,6 @@
         function closeAll(){document.querySelectorAll('.dropdown-menu.show,.calendar-panel.show,.pax-panel.show,.class-panel.show,.popup-panel.show,.nav-info-panel.show,.nav-mega-panel.show').forEach(e=>e.classList.remove('show'));document.querySelectorAll('.dropdown-trigger.open,.calendar-trigger.open,.pax-trigger.open').forEach(e=>e.classList.remove('open'));}
         document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrapper,.popup-panel,.pax-panel,.nav-dropdown-wrapper,[id$="-btn"]'))closeAll();});
 
-        // Informacje dropdown
-        const helpBtn=document.getElementById('help-btn'), helpPanel=document.getElementById('help-panel');
-        helpBtn.addEventListener('click',e=>{e.stopPropagation();closeAll();helpPanel.classList.toggle('show');});
-
-        // Mobile drawer
-        const hamburger=document.getElementById('hamburger-btn');
-        const mobileDrawer=document.getElementById('mobile-drawer');
-        const mobileOverlay=document.getElementById('mobile-overlay');
-        const mobileClose=document.getElementById('mobile-close');
-        function openDrawer(){mobileDrawer.classList.add('show');mobileOverlay.classList.add('show');document.body.style.overflow='hidden';}
-        function closeDrawer(){mobileDrawer.classList.remove('show');mobileOverlay.classList.remove('show');document.body.style.overflow='';}
-        if(hamburger){hamburger.addEventListener('click',e=>{e.stopPropagation();openDrawer();});}
-        if(mobileClose){mobileClose.addEventListener('click',closeDrawer);}
-        if(mobileOverlay){mobileOverlay.addEventListener('click',closeDrawer);}
-
         document.getElementById('search-btn').addEventListener('click',()=>{
             const f=document.querySelector('#dd-from .dropdown-trigger').dataset.value, t=document.querySelector('#dd-to .dropdown-trigger').dataset.value, dd=calD.getDate(), rd=calR.getDate(), tc=cb.dataset.value||'economy';
             if(!f){alert('Wybierz lotnisko wylotu');return;} if(!t){alert('Wybierz lotnisko docelowe');return;} if(f===t){alert('Lotnisko wylotu i docelowe nie mogą być takie same');return;} if(!dd){alert('Wybierz datę wylotu');return;} if(tripType==='round'&&!rd){alert('Wybierz datę powrotu');return;} if(tripType==='round'&&rd&&dd&&rd<=dd){alert('Data powrotu musi być po dacie wylotu');return;}
@@ -1013,4 +977,4 @@
     })();
     </script>
 </body>
-</html> 
+</html>
