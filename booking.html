@@ -788,31 +788,75 @@
 
         /* ============ STEP: SERVICES ============ */
         /* ============ EXTRAS STATE ============ */
-        let extras={seat:null,bag12:0,bag10:0,bag15:0,bag20:0,bag23:0,bag40:0,bagOversized:0,priority:false,fasttrack:false,lounge:false};
-        const EXTRAS_PRICES={seat:25,bag12:49,bag10:59,bag15:89,bag20:119,bag23:149,bag40:249,bagOversized:199,priority:35,fasttrack:49,lounge:129};
+        let extras={seat:null,seatClass:'economy',bag8:0,bag12:0,bag10:0,bag15:0,bag20:0,bag25:0,bag40:0,bagOversized:0,wifi:false,priority:false,fasttrack:false,lounge:false,loungePremium:false};
+
+        // Duration-based pricing: [0-2h, 2-4h, 4-6h, 6-19h]
+        const PRICE_TABLE={
+            bag8:[80,100,120,140],
+            bag12:[100,120,140,160],
+            bag10:[90,110,130,150],
+            bag15:[120,140,160,180],
+            bag20:[130,150,170,190],
+            bag25:[150,180,210,240],
+            bag40:[200,250,300,320],
+            seatBiz:[40,60,80,100],
+            seatEco:[20,40,60,60],
+            bagOversized:[100,160,220,280],
+            wifi:[20,40,60,60],
+            priority:[15,15,30,30],
+            fasttrack:[60,60,60,60],
+            lounge:[200,200,200,200],
+            loungePremium:[250,250,250,250]
+        };
+
+        // Determine duration category from flight
+        function getDurationHours(f){
+            const parts=f.duration.match(/(\d+)h\s*(\d+)?m?/);
+            if(!parts)return 1;
+            return parseInt(parts[1])+(parseInt(parts[2]||0)/60);
+        }
+        function getDurationCategory(){
+            const h=getDurationHours(flight);
+            if(h<=2) return 0;
+            if(h<=4) return 1;
+            if(h<=6) return 2;
+            return 3;
+        }
+        const durCat=getDurationCategory();
+        function getPrice(key){ return PRICE_TABLE[key][durCat]; }
 
         // Seat map configs per aircraft
         const SEAT_CONFIGS={
-            'Embraer 175-E2':{cols:['A','B','','C','D'],rows:22,biz:3,exitRows:[10,11]},
+            'Embraer 175-E2':{cols:['A','B','','C','D'],rows:20,biz:4,exitRows:[4,10]},
+            'A220-100':{colsBiz:['A','B','','C','D'],colsEco:['A','B','','C','D','E'],rows:26,biz:4,exitRows:[4,12]},
             'A320neo':{cols:['A','B','C','','D','E','F'],rows:30,biz:4,exitRows:[12,13]},
             'A321neo':{cols:['A','B','C','','D','E','F'],rows:36,biz:4,exitRows:[14,15,30]},
             'A321XLR':{cols:['A','B','C','','D','E','F'],rows:36,biz:4,exitRows:[14,15]},
-            'Boeing 777-8':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:42,biz:6,exitRows:[20,21,35]},
+            'A330-900neo':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:40,biz:7,exitRows:[7,25]},
+            'Boeing 787-9':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:38,biz:6,exitRows:[6,22]},
+            'Boeing 777-8':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:42,biz:6,exitRows:[6,20,35]},
+            'Boeing 777-9':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:44,biz:7,exitRows:[7,22,37]},
         };
 
         function calcExtrasTotal(){
             let t=0;
-            if(extras.seat) t+=EXTRAS_PRICES.seat*totalPax;
-            t+=extras.bag12*EXTRAS_PRICES.bag12;
-            t+=extras.bag10*EXTRAS_PRICES.bag10;
-            t+=extras.bag15*EXTRAS_PRICES.bag15;
-            t+=extras.bag20*EXTRAS_PRICES.bag20;
-            t+=extras.bag23*EXTRAS_PRICES.bag23;
-            t+=extras.bag40*EXTRAS_PRICES.bag40;
-            t+=extras.bagOversized*EXTRAS_PRICES.bagOversized;
-            if(extras.priority) t+=EXTRAS_PRICES.priority*totalPax;
-            if(extras.fasttrack) t+=EXTRAS_PRICES.fasttrack*totalPax;
-            if(extras.lounge) t+=EXTRAS_PRICES.lounge*totalPax;
+            if(extras.seat){
+                const seatPrice=extras.seatClass==='business'?getPrice('seatBiz'):getPrice('seatEco');
+                t+=seatPrice*totalPax;
+            }
+            t+=extras.bag8*getPrice('bag8');
+            t+=extras.bag12*getPrice('bag12');
+            t+=extras.bag10*getPrice('bag10');
+            t+=extras.bag15*getPrice('bag15');
+            t+=extras.bag20*getPrice('bag20');
+            t+=extras.bag25*getPrice('bag25');
+            t+=extras.bag40*getPrice('bag40');
+            t+=extras.bagOversized*getPrice('bagOversized');
+            if(extras.wifi) t+=getPrice('wifi')*totalPax;
+            if(extras.priority) t+=getPrice('priority')*totalPax;
+            if(extras.fasttrack) t+=getPrice('fasttrack')*totalPax;
+            if(extras.lounge) t+=getPrice('lounge')*totalPax;
+            if(extras.loungePremium) t+=getPrice('loungePremium')*totalPax;
             return t;
         }
 
@@ -820,10 +864,12 @@
             const flightTotal=(outPrice+retPrice)*totalPax;
             const extrasTotal=calcExtrasTotal();
             const grandTotal=flightTotal+extrasTotal;
+            const durLabel=['0-2h','2-4h','4-6h','6-19h'][durCat];
+            const seatPrice=getPrice('seatEco');
 
             let html=`
                 <h2 class="step-title">Usługi <span class="gold">dodatkowe</span></h2>
-                <div class="step-subtitle">Uzupełnij swoją podróż — każda usługa jest opcjonalna</div>
+                <div class="step-subtitle">Czas lotu: ${flight.duration} (cennik: ${durLabel}) · Każda usługa jest opcjonalna</div>
 
                 <!-- WYBÓR MIEJSCA -->
                 <div class="extras-section">
@@ -831,17 +877,17 @@
                         <div class="extras-section-icon">💺</div>
                         <div>
                             <div class="extras-section-title">Wybór miejsca</div>
-                            <div class="extras-section-desc">Wybierz preferowane miejsce w samolocie</div>
+                            <div class="extras-section-desc">Ekonomi: ${getPrice('seatEco')} PLN · Biznes: ${getPrice('seatBiz')} PLN / os.</div>
                         </div>
                     </div>
                     <div class="extras-options">
-                        <div class="extras-seat-pick" id="seat-pick-btn" style="padding:16px 20px;cursor:pointer;border-radius:var(--radius-sm);border:1px solid ${extras.seat?'var(--gold-500)':'rgba(255,255,255,.08)'};background:${extras.seat?'rgba(201,168,76,.08)':'transparent'};transition:all .3s;display:flex;align-items:center;justify-content:space-between;">
+                        <div id="seat-pick-btn" style="padding:16px 20px;cursor:pointer;border-radius:var(--radius-sm);border:1px solid ${extras.seat?'var(--gold-500)':'rgba(255,255,255,.08)'};background:${extras.seat?'rgba(201,168,76,.08)':'transparent'};transition:all .3s;display:flex;align-items:center;justify-content:space-between;">
                             <div>
                                 <div style="font-size:14px;font-weight:500;color:var(--white);">Wybierz miejsce na planie samolotu</div>
-                                <div style="font-size:12px;color:var(--gray-400);margin-top:3px;">${EXTRAS_PRICES.seat} PLN / os. · ${flight.aircraft}</div>
+                                <div style="font-size:12px;color:var(--gray-400);margin-top:3px;">${flight.aircraft}</div>
                             </div>
                             <div style="display:flex;align-items:center;gap:10px;">
-                                ${extras.seat?`<span style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500);">${extras.seat}</span>`:''}
+                                ${extras.seat?`<span style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500);">${extras.seat}</span><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#e74c3c;" id="seat-remove-btn">✕ Usuń</button>`:''}
                                 <span class="btn btn-outline" style="padding:8px 16px;font-size:13px;">${extras.seat?'Zmień':'Wybierz →'}</span>
                             </div>
                         </div>
@@ -852,20 +898,13 @@
                 <div class="extras-section">
                     <div class="extras-section-header">
                         <div class="extras-section-icon">🧳</div>
-                        <div>
-                            <div class="extras-section-title">Bagaż podręczny</div>
-                            <div class="extras-section-desc">Dodaj cięższy bagaż podręczny</div>
-                        </div>
+                        <div><div class="extras-section-title">Bagaż podręczny</div><div class="extras-section-desc">Dodatkowy bagaż do kabiny</div></div>
                     </div>
                     <div class="extras-options">
-                        <div class="extras-counter" data-extra="bag12">
-                            <div class="et-info"><div class="et-name">Bagaż podręczny 12 kg</div><div class="et-desc">${EXTRAS_PRICES.bag12} PLN / szt.</div></div>
-                            <div class="et-counter">
-                                <button class="et-counter-btn" data-action="minus">−</button>
-                                <span class="et-counter-val">${extras.bag12}</span>
-                                <button class="et-counter-btn" data-action="plus">+</button>
-                            </div>
-                        </div>
+                        ${[{k:'bag8',l:'8 kg'},{k:'bag12',l:'12 kg'}].map(b=>`<div class="extras-counter" data-extra="${b.k}">
+                            <div class="et-info"><div class="et-name">Bagaż podręczny ${b.l}</div><div class="et-desc">${getPrice(b.k)} PLN / szt.</div></div>
+                            <div class="et-counter"><button class="et-counter-btn" data-action="minus">−</button><span class="et-counter-val">${extras[b.k]}</span><button class="et-counter-btn" data-action="plus">+</button></div>
+                        </div>`).join('')}
                     </div>
                 </div>
 
@@ -873,23 +912,13 @@
                 <div class="extras-section">
                     <div class="extras-section-header">
                         <div class="extras-section-icon">📦</div>
-                        <div>
-                            <div class="extras-section-title">Bagaż rejestrowany</div>
-                            <div class="extras-section-desc">Dodaj bagaż oddawany przy odprawie</div>
-                        </div>
+                        <div><div class="extras-section-title">Bagaż rejestrowany</div><div class="extras-section-desc">Bagaż oddawany przy odprawie</div></div>
                     </div>
                     <div class="extras-options">
-                        ${['bag10','bag15','bag20','bag23','bag40'].map(k=>{
-                            const kg=k.replace('bag','');
-                            return `<div class="extras-counter" data-extra="${k}">
-                                <div class="et-info"><div class="et-name">Bagaż ${kg} kg</div><div class="et-desc">${EXTRAS_PRICES[k]} PLN / szt.</div></div>
-                                <div class="et-counter">
-                                    <button class="et-counter-btn" data-action="minus">−</button>
-                                    <span class="et-counter-val">${extras[k]}</span>
-                                    <button class="et-counter-btn" data-action="plus">+</button>
-                                </div>
-                            </div>`;
-                        }).join('')}
+                        ${[{k:'bag10',l:'10 kg'},{k:'bag15',l:'15 kg'},{k:'bag20',l:'20 kg'},{k:'bag25',l:'25 kg'},{k:'bag40',l:'40 kg'}].map(b=>`<div class="extras-counter" data-extra="${b.k}">
+                            <div class="et-info"><div class="et-name">Bagaż ${b.l}</div><div class="et-desc">${getPrice(b.k)} PLN / szt.</div></div>
+                            <div class="et-counter"><button class="et-counter-btn" data-action="minus">−</button><span class="et-counter-val">${extras[b.k]}</span><button class="et-counter-btn" data-action="plus">+</button></div>
+                        </div>`).join('')}
                     </div>
                 </div>
 
@@ -897,19 +926,26 @@
                 <div class="extras-section">
                     <div class="extras-section-header">
                         <div class="extras-section-icon">🎿</div>
-                        <div>
-                            <div class="extras-section-title">Bagaż niestandardowy</div>
-                            <div class="extras-section-desc">Sprzęt sportowy, instrumenty muzyczne, itp.</div>
-                        </div>
+                        <div><div class="extras-section-title">Bagaż niestandardowy</div><div class="extras-section-desc">Sprzęt sportowy, instrumenty muzyczne</div></div>
                     </div>
                     <div class="extras-options">
                         <div class="extras-counter" data-extra="bagOversized">
-                            <div class="et-info"><div class="et-name">Bagaż niestandardowy</div><div class="et-desc">${EXTRAS_PRICES.bagOversized} PLN / szt.</div></div>
-                            <div class="et-counter">
-                                <button class="et-counter-btn" data-action="minus">−</button>
-                                <span class="et-counter-val">${extras.bagOversized}</span>
-                                <button class="et-counter-btn" data-action="plus">+</button>
-                            </div>
+                            <div class="et-info"><div class="et-name">Bagaż niestandardowy</div><div class="et-desc">${getPrice('bagOversized')} PLN / szt.</div></div>
+                            <div class="et-counter"><button class="et-counter-btn" data-action="minus">−</button><span class="et-counter-val">${extras.bagOversized}</span><button class="et-counter-btn" data-action="plus">+</button></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WIFI -->
+                <div class="extras-section">
+                    <div class="extras-section-header">
+                        <div class="extras-section-icon">📶</div>
+                        <div><div class="extras-section-title">Wi-Fi na pokładzie</div><div class="extras-section-desc">Internet podczas lotu</div></div>
+                    </div>
+                    <div class="extras-options">
+                        <div class="extras-toggle ${extras.wifi?'active':''}" data-extra="wifi">
+                            <div class="et-info"><div class="et-name">Pakiet Wi-Fi</div><div class="et-desc">${getPrice('wifi')} PLN / os.</div></div>
+                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
                         </div>
                     </div>
                 </div>
@@ -918,22 +954,23 @@
                 <div class="extras-section">
                     <div class="extras-section-header">
                         <div class="extras-section-icon">⭐</div>
-                        <div>
-                            <div class="extras-section-title">Usługi premium</div>
-                            <div class="extras-section-desc">Podróżuj wygodniej</div>
-                        </div>
+                        <div><div class="extras-section-title">Usługi premium</div><div class="extras-section-desc">Podróżuj wygodniej</div></div>
                     </div>
                     <div class="extras-options">
                         <div class="extras-toggle ${extras.priority?'active':''}" data-extra="priority">
-                            <div class="et-info"><div class="et-name">Pierwszeństwo wejścia na pokład</div><div class="et-desc">${EXTRAS_PRICES.priority} PLN / os.</div></div>
+                            <div class="et-info"><div class="et-name">Pierwszeństwo wejścia na pokład</div><div class="et-desc">${getPrice('priority')} PLN / os.</div></div>
                             <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
                         </div>
                         <div class="extras-toggle ${extras.fasttrack?'active':''}" data-extra="fasttrack">
-                            <div class="et-info"><div class="et-name">Fast Track</div><div class="et-desc">${EXTRAS_PRICES.fasttrack} PLN / os. · przyspieszona kontrola bezpieczeństwa</div></div>
+                            <div class="et-info"><div class="et-name">Fast Track</div><div class="et-desc">${getPrice('fasttrack')} PLN / os. · szybka kontrola bezpieczeństwa</div></div>
                             <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
                         </div>
                         <div class="extras-toggle ${extras.lounge?'active':''}" data-extra="lounge">
-                            <div class="et-info"><div class="et-name">Business Lounge VIS Airlines</div><div class="et-desc">${EXTRAS_PRICES.lounge} PLN / os. · napoje, przekąski, Wi-Fi, prysznic</div></div>
+                            <div class="et-info"><div class="et-name">Salonik Business</div><div class="et-desc">${getPrice('lounge')} PLN / os. · napoje, przekąski, Wi-Fi</div></div>
+                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
+                        </div>
+                        <div class="extras-toggle ${extras.loungePremium?'active':''}" data-extra="loungePremium">
+                            <div class="et-info"><div class="et-name">Salonik Pierwszej Klasy</div><div class="et-desc">${getPrice('loungePremium')} PLN / os. · pełen serwis, prysznic</div></div>
                             <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
                         </div>
                     </div>
@@ -979,27 +1016,40 @@
             document.getElementById('svc-pay').addEventListener('click',()=>{step++;render();});
 
             // Seat map
-            document.getElementById('seat-pick-btn').addEventListener('click',()=>openSeatMap());
+            document.getElementById('seat-pick-btn').addEventListener('click',e=>{
+                if(e.target.id==='seat-remove-btn')return;
+                openSeatMap();
+            });
+
+            // Seat remove
+            const rmBtn=document.getElementById('seat-remove-btn');
+            if(rmBtn) rmBtn.addEventListener('click',e=>{
+                e.stopPropagation();
+                extras.seat=null;
+                extras.seatClass='economy';
+                renderServices();
+            });
         }
 
         function openSeatMap(){
             const ac=flight.aircraft;
             const cfg=SEAT_CONFIGS[ac]||SEAT_CONFIGS['A321neo'];
-            const cols=cfg.cols;
+            const cols=cfg.cols||cfg.colsEco||['A','B','C','','D','E','F'];
+            const colsBiz=cfg.colsBiz||cols;
+            const colsEco=cfg.colsEco||cols;
             const rows=cfg.rows;
             const bizRows=cfg.biz;
             const exitRows=cfg.exitRows||[];
 
-            // Generate random occupied seats (30-50%)
             const occupied=new Set();
-            const totalSeats=rows*cols.filter(c=>c!=='').length;
-            const occCount=Math.floor(totalSeats*(.3+Math.random()*.2));
+            const allCols=[...new Set([...colsBiz,...colsEco].filter(c=>c!==''))];
+            const occCount=Math.floor(rows*allCols.length*(.3+Math.random()*.2));
             for(let i=0;i<occCount;i++){
                 const r=Math.floor(Math.random()*rows)+1;
-                const c=cols.filter(c=>c!=='')[Math.floor(Math.random()*cols.filter(c=>c!=='').length)];
+                const cArr=r<=bizRows?colsBiz.filter(c=>c!==''):colsEco.filter(c=>c!=='');
+                const c=cArr[Math.floor(Math.random()*cArr.length)];
                 occupied.add(r+c);
             }
-            // Keep selected seat available
             if(extras.seat)occupied.delete(extras.seat);
 
             let modal=document.createElement('div');
@@ -1011,55 +1061,71 @@
                         <button class="seatmap-close" id="sm-close">✕</button>
                     </div>
                     <div class="seatmap-legend">
-                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-available"></div> Dostępne</div>
-                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-biz"></div> Business</div>
+                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-biz"></div> Business ${getPrice('seatBiz')} PLN</div>
+                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-available"></div> Economy ${getPrice('seatEco')} PLN</div>
                         <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-occupied"></div> Zajęte</div>
                         <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-selected"></div> Twój wybór</div>
                     </div>
                     <div class="seatmap-body" id="sm-body"></div>
                     <div class="seatmap-footer">
                         <div><span class="seatmap-selected-info">Wybrane: </span><span class="seatmap-selected-seat" id="sm-selected">${extras.seat||'—'}</span></div>
-                        <button class="btn btn-gold" id="sm-confirm" ${extras.seat?'':'disabled'}>Potwierdź — ${EXTRAS_PRICES.seat} PLN</button>
+                        <button class="btn btn-gold" id="sm-confirm" ${extras.seat?'':'disabled'}>Potwierdź</button>
                     </div>
-                </div>
-            `;
+                </div>`;
             document.body.appendChild(modal);
 
-            // Build seat rows
             const body=document.getElementById('sm-body');
             let html='<div class="seatmap-plane">';
 
-            // Column headers
+            // Header for biz columns
+            html+='<div style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-400);padding:6px 0;font-weight:600;">Business Class</div>';
             html+='<div class="seatmap-row"><div class="seatmap-rownum"></div>';
-            cols.forEach(c=>{
+            colsBiz.forEach(c=>{
                 if(c==='') html+='<div class="seat-aisle"></div>';
                 else html+='<div class="seatmap-seat" style="background:none;cursor:default;font-size:11px;color:var(--gray-400);font-weight:600;">'+c+'</div>';
             });
             html+='</div>';
 
-            for(let r=1;r<=rows;r++){
+            // Business rows
+            for(let r=1;r<=bizRows;r++){
                 html+='<div class="seatmap-row"><div class="seatmap-rownum">'+r+'</div>';
-                cols.forEach(c=>{
+                colsBiz.forEach(c=>{
                     if(c===''){html+='<div class="seat-aisle"></div>';return;}
-                    const seatId=r+c;
-                    const isBiz=r<=bizRows;
-                    const isOcc=occupied.has(seatId);
-                    const isSel=extras.seat===seatId;
-                    const isExit=exitRows.includes(r);
-                    let cls='seatmap-seat ';
-                    if(isSel) cls+='seat-selected';
-                    else if(isOcc) cls+='seat-occupied';
-                    else if(isBiz) cls+='seat-biz';
-                    else cls+='seat-available';
-                    if(isExit&&!isOcc&&!isSel) cls+=' seat-exit';
-                    html+='<div class="'+cls+'" data-seat="'+(isOcc&&!isSel?'':''+seatId)+'">'+(isSel?'✓':isOcc?'✕':c)+'</div>';
+                    const sid=r+c;
+                    const isOcc=occupied.has(sid);
+                    const isSel=extras.seat===sid;
+                    let cls='seatmap-seat '+(isSel?'seat-selected':isOcc?'seat-occupied':'seat-biz');
+                    html+='<div class="'+cls+'" data-seat="'+(isOcc&&!isSel?'':sid)+'" data-class="business">'+(isSel?'✓':isOcc?'✕':c)+'</div>';
                 });
                 html+='</div>';
-                // Exit row marker
-                if(exitRows.includes(r)){
-                    html+='<div style="width:100%;text-align:center;font-size:9px;color:var(--gray-500);padding:2px 0;letter-spacing:2px;">EXIT</div>';
-                }
+                if(exitRows.includes(r)) html+='<div style="width:100%;text-align:center;font-size:9px;color:#e74c3c;padding:2px 0;letter-spacing:2px;">← EXIT ·················· EXIT →</div>';
             }
+
+            // Economy header
+            html+='<div style="height:1px;background:rgba(255,255,255,.06);margin:10px 0;"></div>';
+            html+='<div style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-400);padding:6px 0;font-weight:600;">Economy Class</div>';
+            html+='<div class="seatmap-row"><div class="seatmap-rownum"></div>';
+            colsEco.forEach(c=>{
+                if(c==='') html+='<div class="seat-aisle"></div>';
+                else html+='<div class="seatmap-seat" style="background:none;cursor:default;font-size:11px;color:var(--gray-400);font-weight:600;">'+c+'</div>';
+            });
+            html+='</div>';
+
+            // Economy rows
+            for(let r=bizRows+1;r<=rows;r++){
+                html+='<div class="seatmap-row"><div class="seatmap-rownum">'+r+'</div>';
+                colsEco.forEach(c=>{
+                    if(c===''){html+='<div class="seat-aisle"></div>';return;}
+                    const sid=r+c;
+                    const isOcc=occupied.has(sid);
+                    const isSel=extras.seat===sid;
+                    let cls='seatmap-seat '+(isSel?'seat-selected':isOcc?'seat-occupied':'seat-available');
+                    html+='<div class="'+cls+'" data-seat="'+(isOcc&&!isSel?'':sid)+'" data-class="economy">'+(isSel?'✓':isOcc?'✕':c)+'</div>';
+                });
+                html+='</div>';
+                if(exitRows.includes(r)) html+='<div style="width:100%;text-align:center;font-size:9px;color:#e74c3c;padding:2px 0;letter-spacing:2px;">← EXIT ·················· EXIT →</div>';
+            }
+
             html+='</div>';
             body.innerHTML=html;
 
@@ -1068,26 +1134,27 @@
                 if(!s.dataset.seat)return;
                 s.addEventListener('click',()=>{
                     body.querySelectorAll('.seat-selected').forEach(p=>{
-                        const isBiz2=parseInt(p.dataset.seat)<=bizRows;
-                        p.className='seatmap-seat '+(isBiz2?'seat-biz':'seat-available');
+                        const pClass=p.dataset.class;
+                        p.className='seatmap-seat '+(pClass==='business'?'seat-biz':'seat-available');
                         p.textContent=p.dataset.seat.replace(/[0-9]/g,'');
                     });
                     s.className='seatmap-seat seat-selected';
                     s.textContent='✓';
                     document.getElementById('sm-selected').textContent=s.dataset.seat;
                     document.getElementById('sm-confirm').disabled=false;
+                    document.getElementById('sm-confirm').textContent='Potwierdź — '+(s.dataset.class==='business'?getPrice('seatBiz'):getPrice('seatEco'))+' PLN';
                 });
             });
 
-            // Close
             document.getElementById('sm-close').addEventListener('click',()=>{modal.remove();});
             modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
 
-            // Confirm
             document.getElementById('sm-confirm').addEventListener('click',()=>{
-                const sel=document.getElementById('sm-selected').textContent;
-                if(sel&&sel!=='—'){
-                    extras.seat=sel;
+                const selText=document.getElementById('sm-selected').textContent;
+                if(selText&&selText!=='—'){
+                    extras.seat=selText;
+                    const selEl=body.querySelector('.seat-selected');
+                    extras.seatClass=selEl?selEl.dataset.class:'economy';
                     modal.remove();
                     renderServices();
                 }
