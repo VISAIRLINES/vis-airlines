@@ -109,8 +109,8 @@
             position: absolute; top: 100%; right: 0;
             background: var(--navy-700); border: 1px solid rgba(201,168,76,0.15);
             border-radius: var(--radius-md); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            padding: 24px 28px; min-width: 560px; z-index: 200;
-            display: none; grid-template-columns: repeat(4,1fr); gap: 24px;
+            padding: 24px 28px; min-width: 680px; z-index: 200;
+            display: none; grid-template-columns: repeat(5,1fr); gap: 20px;
         }
         .nav-mega-panel.show { display: grid; animation: scaleIn 0.15s var(--ease-out); }
         .nav-mega-col-title { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 12px; }
@@ -488,38 +488,15 @@
             <div class="nav-main-links">
                 <a href="flights.html" class="nav-main-link active">Zaplanuj podróż</a>
                 <a href="odprawa.html" class="nav-main-link">Odpraw się</a>
-                <a href="rezerwacje.html" class="nav-main-link" id="nav-manage-link">Zarządzaj rezerwacją</a>
+                <a href="rezerwacje.html" class="nav-main-link" onclick="window.location.href='rezerwacje.html';return false;">Zarządzaj rezerwacją</a>
                 <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
-                    <button class="nav-main-link" id="info-btn" style="cursor:pointer;">Informacje ▾</button>
-                    <div class="nav-mega-panel" id="info-panel">
+                    <button class="nav-main-link" id="help-btn" style="cursor:pointer;">Pomoc i informacje ▾</button>
+                    <div class="nav-mega-panel" id="help-panel">
                         <div class="nav-mega-col">
                             <div class="nav-mega-col-title">Flota</div>
                             <a href="fleet.html" class="nav-mega-link">Przegląd floty</a>
                             <a href="fleet-e175.html" class="nav-mega-link">Embraer 175-E2</a>
                         </div>
-                        <div class="nav-mega-col">
-                            <div class="nav-mega-col-title">Podróż</div>
-                            <a href="#" class="nav-mega-link">Klasy podróży</a>
-                            <a href="#" class="nav-mega-link">Posiłki i napoje</a>
-                            <a href="#" class="nav-mega-link">Rozrywka na pokładzie</a>
-                        </div>
-                        <div class="nav-mega-col">
-                            <div class="nav-mega-col-title">Hub CPK</div>
-                            <a href="#" class="nav-mega-link">O porcie CPK</a>
-                            <a href="#" class="nav-mega-link">Mapa terminalu</a>
-                            <a href="#" class="nav-mega-link">Dojazd</a>
-                        </div>
-                        <div class="nav-mega-col">
-                            <div class="nav-mega-col-title">O nas</div>
-                            <a href="#" class="nav-mega-link">O VIS Airlines</a>
-                            <a href="#" class="nav-mega-link">Kariera</a>
-                            <a href="#" class="nav-mega-link">Partnerzy</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
-                    <button class="nav-main-link" id="help-btn" style="cursor:pointer;">Pomoc ▾</button>
-                    <div class="nav-mega-panel" id="help-panel">
                         <div class="nav-mega-col">
                             <div class="nav-mega-col-title">Bagaż</div>
                             <a href="#" class="nav-mega-link">Zasady i wymiary</a>
@@ -1012,9 +989,6 @@
         document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrapper,.popup-panel,.pax-panel,.nav-dropdown-wrapper,[id$="-btn"]'))closeAll();});
 
         // Informacje dropdown
-        const infoBtn=document.getElementById('info-btn'), infoPanel=document.getElementById('info-panel');
-        infoBtn.addEventListener('click',e=>{e.stopPropagation();closeAll();infoPanel.classList.toggle('show');});
-
         const helpBtn=document.getElementById('help-btn'), helpPanel=document.getElementById('help-panel');
         helpBtn.addEventListener('click',e=>{e.stopPropagation();closeAll();helpPanel.classList.toggle('show');});
 
