@@ -69,6 +69,7 @@
     </style>
 </head>
 <body>
+    <script src="js/nav.js"></script>
     <nav class="nav">
         <div class="nav-top">
             <button class="nav-top-btn">PL Polski</button>
@@ -121,17 +122,6 @@
     const errEl=document.getElementById('ci-error');
 
     const AIRPORTS={'CPK':'Warszawa / CPK','GDN':'Gdańsk','SZZ':'Szczecin','KRK':'Kraków','BZG':'Bydgoszcz','KTW':'Katowice','RZE':'Rzeszów','WRO':'Wrocław','POZ':'Poznań','FRA':'Frankfurt','MUC':'Monachium','DTM':'Dortmund','BER':'Berlin','BHX':'Birmingham','HEL':'Helsinki','LHR':'Londyn','ALC':'Alicante','MAN':'Manchester','EDI':'Edynburg','NCL':'Newcastle','AAR':'Aarhus','AAL':'Aalborg','BRN':'Brno','LEJ':'Lipsk','SYD':'Sydney','YYZ':'Toronto','PER':'Perth','PEK':'Pekin'};
-
-    // Auth nav
-    auth.onAuthStateChanged(u=>{
-        const a1=document.getElementById('nav-auth-1');
-        const a2=document.getElementById('nav-auth-2');
-        if(u&&a1&&a2){
-            a1.textContent='✈ '+(u.displayName||u.email);a1.href='rezerwacje.html';
-            a2.textContent='Wyloguj się';a2.href='#';a2.style.color='#e74c3c';a2.classList.remove('accent');
-            a2.addEventListener('click',e=>{e.preventDefault();auth.signOut().then(()=>location.reload());});
-        }
-    });
 
     function showError(msg){errEl.textContent=msg;errEl.classList.add('show');}
     function hideError(){errEl.classList.remove('show');}
