@@ -488,17 +488,33 @@
             <div class="nav-main-links">
                 <a href="flights.html" class="nav-main-link active">Zaplanuj podróż</a>
                 <a href="odprawa.html" class="nav-main-link">Odpraw się</a>
-                <a href="rezerwacje.html" class="nav-main-link">Zarządzaj rezerwacją</a>
+                <a href="rezerwacje.html" class="nav-main-link" id="nav-manage-link">Zarządzaj rezerwacją</a>
                 <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
                     <button class="nav-main-link" id="info-btn" style="cursor:pointer;">Informacje ▾</button>
-                    <div class="nav-info-panel" id="info-panel">
-                        <a href="fleet.html" class="nav-info-link">
-                            <span class="nav-info-icon">✈</span>
-                            <div>
-                                <div class="nav-info-title">Flota</div>
-                                <div class="nav-info-desc">Poznaj nasze samoloty</div>
-                            </div>
-                        </a>
+                    <div class="nav-mega-panel" id="info-panel">
+                        <div class="nav-mega-col">
+                            <div class="nav-mega-col-title">Flota</div>
+                            <a href="fleet.html" class="nav-mega-link">Przegląd floty</a>
+                            <a href="fleet-e175.html" class="nav-mega-link">Embraer 175-E2</a>
+                        </div>
+                        <div class="nav-mega-col">
+                            <div class="nav-mega-col-title">Podróż</div>
+                            <a href="#" class="nav-mega-link">Klasy podróży</a>
+                            <a href="#" class="nav-mega-link">Posiłki i napoje</a>
+                            <a href="#" class="nav-mega-link">Rozrywka na pokładzie</a>
+                        </div>
+                        <div class="nav-mega-col">
+                            <div class="nav-mega-col-title">Hub CPK</div>
+                            <a href="#" class="nav-mega-link">O porcie CPK</a>
+                            <a href="#" class="nav-mega-link">Mapa terminalu</a>
+                            <a href="#" class="nav-mega-link">Dojazd</a>
+                        </div>
+                        <div class="nav-mega-col">
+                            <div class="nav-mega-col-title">O nas</div>
+                            <a href="#" class="nav-mega-link">O VIS Airlines</a>
+                            <a href="#" class="nav-mega-link">Kariera</a>
+                            <a href="#" class="nav-mega-link">Partnerzy</a>
+                        </div>
                     </div>
                 </div>
                 <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
@@ -843,16 +859,23 @@
     firebase.auth().onAuthStateChanged(u=>{
         const a1=document.getElementById('nav-auth-1');
         const a2=document.getElementById('nav-auth-2');
+        if(!a1||!a2)return;
         if(u){
-            a1.textContent='✈ '+(u.displayName||u.email);
-            a1.href='rezerwacje.html';
-            a1.style.color='var(--gray-200)';
-            a1.addEventListener('click',e=>{e.preventDefault();window.location.href='rezerwacje.html';});
-            a2.textContent='Wyloguj się';
-            a2.href='#';
-            a2.style.color='#e74c3c';
-            a2.classList.remove('accent');
-            a2.addEventListener('click',e=>{e.preventDefault();firebase.auth().signOut().then(()=>location.reload());});
+            // Replace login link with profile link
+            const newA1=a1.cloneNode(true);
+            a1.parentNode.replaceChild(newA1,a1);
+            newA1.textContent='✈ '+(u.displayName||u.email);
+            newA1.href='rezerwacje.html';
+            newA1.style.color='var(--gray-200)';
+
+            // Replace register link with logout
+            const newA2=a2.cloneNode(true);
+            a2.parentNode.replaceChild(newA2,a2);
+            newA2.textContent='Wyloguj się';
+            newA2.href='#';
+            newA2.style.color='#e74c3c';
+            newA2.className='nav-top-btn';
+            newA2.onclick=function(e){e.preventDefault();firebase.auth().signOut().then(function(){location.reload();});};
         }
     });
 
