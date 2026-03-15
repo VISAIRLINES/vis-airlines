@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embraer 175-E2 — Flota VIS Airlines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .nav{height:auto;flex-direction:column;padding:0;gap:0}
+        .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
+        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
+        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
+        .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
 
+        .detail-hero{padding:120px 48px 40px;max-width:1200px;margin:0 auto}
+        .detail-hero h1{font-family:var(--font-display);font-size:clamp(32px,5vw,56px);font-weight:700;margin-bottom:4px}
+        .detail-hero h1 .gold{color:var(--gold-500)}
+        .detail-hero .tagline{font-size:16px;color:var(--gray-400);margin-bottom:40px}
+
+        .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:0 48px 60px;max-width:1200px;margin:0 auto}
+
+        /* SPECS TABLE */
+        .specs-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);overflow:hidden}
+        .specs-card h2{font-family:var(--font-display);font-size:22px;font-weight:600;padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.04)}
+        .specs-card h2 .gold{color:var(--gold-500)}
+        .specs-table{width:100%}
+        .specs-row{display:flex;border-bottom:1px solid rgba(255,255,255,.03);transition:background .15s}
+        .specs-row:hover{background:rgba(201,168,76,.03)}
+        .specs-row:last-child{border-bottom:none}
+        .specs-label{flex:1;padding:14px 28px;font-size:13px;color:var(--gray-400)}
+        .specs-value{flex:1;padding:14px 28px;font-size:14px;color:var(--white);font-weight:500;text-align:right}
+
+        /* AIRCRAFT IMAGE */
+        .aircraft-img{width:100%;border-radius:var(--radius-md);margin-bottom:32px;border:1px solid rgba(255,255,255,.06)}
+
+        /* SEAT MAP */
+        .seatmap-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);overflow:hidden}
+        .seatmap-card h2{font-family:var(--font-display);font-size:22px;font-weight:600;padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.04)}
+        .seatmap-card h2 .gold{color:var(--gold-500)}
+
+        .sm-legend{display:flex;gap:20px;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
+        .sm-legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray-300)}
+        .sm-legend-dot{width:20px;height:20px;border-radius:4px}
+        .sm-legend-biz{background:#c9882c}
+        .sm-legend-eco{background:#2980b9}
+        .sm-legend-exit{background:transparent;border:2px solid #e74c3c}
+
+        .sm-body{padding:24px;display:flex;justify-content:center}
+        .sm-fuselage{background:linear-gradient(180deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.01) 100%);border:2px solid rgba(255,255,255,.08);border-radius:80px 80px 20px 20px;padding:32px 24px 24px;position:relative;max-width:280px;width:100%}
+        .sm-fuselage::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:60px;height:24px;background:var(--navy-700);border:2px solid rgba(255,255,255,.08);border-bottom:none;border-radius:30px 30px 0 0}
+
+        .sm-class-label{text-align:center;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--gray-400);padding:8px 0 12px;margin-top:8px}
+
+        .sm-col-headers{display:flex;justify-content:center;gap:0;margin-bottom:8px}
+        .sm-col-header{width:36px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gray-400)}
+        .sm-col-aisle{width:28px}
+
+        .sm-row{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:3px}
+        .sm-rownum{width:24px;text-align:center;font-family:var(--font-mono);font-size:10px;color:var(--gray-500)}
+        .sm-seat{width:36px;height:32px;border-radius:6px 6px 3px 3px;margin:1px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;position:relative}
+        .sm-seat-biz{background:#c9882c;color:var(--navy-800)}
+        .sm-seat-eco{background:#2980b9;color:var(--white)}
+        .sm-aisle{width:28px;height:32px}
+        .sm-exit-row{position:relative}
+        .sm-exit-marker{display:flex;align-items:center;justify-content:space-between;padding:4px 0;margin:6px 0}
+        .sm-exit-arrow{font-size:12px;color:#e74c3c;font-weight:700}
+        .sm-exit-line{flex:1;height:1px;background:rgba(231,76,60,.3);margin:0 8px}
+
+        .sm-divider{height:1px;background:rgba(255,255,255,.06);margin:12px 0}
+
+        /* CABIN INFO */
+        .cabin-info{padding:0 48px 80px;max-width:1200px;margin:0 auto}
+        .cabin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .cabin-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:24px;text-align:center}
+        .cabin-card-icon{font-size:32px;margin-bottom:12px}
+        .cabin-card-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:6px}
+        .cabin-card-desc{font-size:13px;color:var(--gray-400);line-height:1.6}
+
+        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
+        .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
+
+        @media(max-width:900px){
+            .detail-grid{grid-template-columns:1fr;padding:0 16px 40px}
+            .detail-hero{padding:110px 16px 30px}
+            .cabin-grid{grid-template-columns:1fr}
+            .cabin-info{padding:0 16px 60px}
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-top">
+            <button class="nav-top-btn">PL Polski</button>
+            <button class="nav-top-btn">PLN</button>
+            <a href="login.html" class="nav-top-btn">Zaloguj się</a>
+            <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
+        </div>
+        <div class="nav-bottom">
+            <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
+        </div>
+    </nav>
+
+    <div class="detail-hero">
+        <div style="font-size:13px;color:var(--gray-400);margin-bottom:12px;"><a href="fleet.html" style="color:var(--gold-500);text-decoration:none;">← Flota</a> / Embraer 175-E2</div>
+        <h1>Embraer <span class="gold">175-E2</span></h1>
+        <p class="tagline">Nowoczesny samolot regionalny nowej generacji — cichy, komfortowy, efektywny</p>
+    </div>
+
+    <div class="detail-grid">
+        <!-- LEFT: Image + Specs -->
+        <div>
+            <img class="aircraft-img" src="img/fleet/E175E2.PNG" alt="Embraer 175-E2">
+
+            <div class="specs-card">
+                <h2>Dane <span class="gold">techniczne</span></h2>
+                <div class="specs-table">
+                    <div class="specs-row"><div class="specs-label">Długość</div><div class="specs-value">31.68 m</div></div>
+                    <div class="specs-row"><div class="specs-label">Wysokość</div><div class="specs-value">10.97 m</div></div>
+                    <div class="specs-row"><div class="specs-label">Rozpiętość skrzydeł</div><div class="specs-value">31.00 m</div></div>
+                    <div class="specs-row"><div class="specs-label">Średnica kadłuba</div><div class="specs-value">3.01 m</div></div>
+                    <div class="specs-row"><div class="specs-label">Max. masa startowa</div><div class="specs-value">44 800 kg</div></div>
+                    <div class="specs-row"><div class="specs-label">Liczba miejsc</div><div class="specs-value">80 (2-klasowa)</div></div>
+                    <div class="specs-row"><div class="specs-label">Silniki</div><div class="specs-value">2× PW1700G</div></div>
+                    <div class="specs-row"><div class="specs-label">Prędkość przelotowa</div><div class="specs-value">870 km/h</div></div>
+                    <div class="specs-row"><div class="specs-label">Zasięg</div><div class="specs-value">3 735 km</div></div>
+                    <div class="specs-row"><div class="specs-label">Pułap</div><div class="specs-value">12 500 m</div></div>
+                    <div class="specs-row"><div class="specs-label">Sztuk w flocie</div><div class="specs-value">40</div></div>
+                    <div class="specs-row"><div class="specs-label">Zamówione</div><div class="specs-value" style="color:var(--gold-500);">10</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Seat Map -->
+        <div>
+            <div class="seatmap-card">
+                <h2>Mapa <span class="gold">siedzeń</span></h2>
+                <div class="sm-legend">
+                    <div class="sm-legend-item"><div class="sm-legend-dot sm-legend-biz"></div> Business · RECARO R5 · 38" pitch</div>
+                    <div class="sm-legend-item"><div class="sm-legend-dot sm-legend-eco"></div> Economy · RECARO R2 · 30" pitch</div>
+                </div>
+
+                <div class="sm-body">
+                    <div class="sm-fuselage">
+                        <!-- Column headers -->
+                        <div class="sm-col-headers">
+                            <div class="sm-rownum"></div>
+                            <div class="sm-col-header">A</div>
+                            <div class="sm-col-header">B</div>
+                            <div class="sm-col-aisle"></div>
+                            <div class="sm-col-header">C</div>
+                            <div class="sm-col-header">D</div>
+                        </div>
+
+                        <!-- BUSINESS CLASS -->
+                        <div class="sm-class-label">Business Class</div>
+
+                        <div class="sm-row"><div class="sm-rownum">1</div><div class="sm-seat sm-seat-biz">A</div><div class="sm-seat sm-seat-biz">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-biz">C</div><div class="sm-seat sm-seat-biz">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">2</div><div class="sm-seat sm-seat-biz">A</div><div class="sm-seat sm-seat-biz">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-biz">C</div><div class="sm-seat sm-seat-biz">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">3</div><div class="sm-seat sm-seat-biz">A</div><div class="sm-seat sm-seat-biz">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-biz">C</div><div class="sm-seat sm-seat-biz">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">4</div><div class="sm-seat sm-seat-biz">A</div><div class="sm-seat sm-seat-biz">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-biz">C</div><div class="sm-seat sm-seat-biz">D</div></div>
+
+                        <div class="sm-divider"></div>
+
+                        <!-- EXIT -->
+                        <div class="sm-exit-marker"><span class="sm-exit-arrow">← EXIT</span><div class="sm-exit-line"></div><span class="sm-exit-arrow">EXIT →</span></div>
+
+                        <!-- ECONOMY CLASS -->
+                        <div class="sm-class-label">Economy Class</div>
+
+                        <div class="sm-row"><div class="sm-rownum">5</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">6</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">7</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">8</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">9</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">10</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+
+                        <!-- MID EXIT -->
+                        <div class="sm-exit-marker"><span class="sm-exit-arrow">← EXIT</span><div class="sm-exit-line"></div><span class="sm-exit-arrow">EXIT →</span></div>
+
+                        <div class="sm-row"><div class="sm-rownum">11</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">12</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">13</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">14</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">15</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">16</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">17</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">18</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">19</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                        <div class="sm-row"><div class="sm-rownum">20</div><div class="sm-seat sm-seat-eco">A</div><div class="sm-seat sm-seat-eco">B</div><div class="sm-aisle"></div><div class="sm-seat sm-seat-eco">C</div><div class="sm-seat sm-seat-eco">D</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CABIN INFO -->
+    <div class="cabin-info">
+        <div class="cabin-grid">
+            <div class="cabin-card">
+                <div class="cabin-card-icon">💺</div>
+                <div class="cabin-card-title">Fotele RECARO</div>
+                <div class="cabin-card-desc">Business: RECARO R5 z rozstawem 38"<br>Economy: RECARO R2 z rozstawem 30"<br>Ergonomiczne, lekkie, z portem USB</div>
+            </div>
+            <div class="cabin-card">
+                <div class="cabin-card-icon">🔇</div>
+                <div class="cabin-card-title">Najcichsza kabina</div>
+                <div class="cabin-card-desc">Silniki PW1700G GTF o 75% cichsze od poprzedniej generacji. Zaawansowana izolacja akustyczna kadłuba.</div>
+            </div>
+            <div class="cabin-card">
+                <div class="cabin-card-icon">🧳</div>
+                <div class="cabin-card-title">Przestrzeń bagażowa</div>
+                <div class="cabin-card-desc">Schowki górne mieszczą standardowe walizki kabinowe. Luk bagażowy na pełnowymiarowe torby.</div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer"><div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone. Członek oneworld®</div></footer>
+    <script src="js/main.js"></script>
+</body>
+</html>
