@@ -2,7 +2,7 @@
 // Include this on every page: <script src="js/nav.js"></script>
 // It will inject the nav, mobile drawer, and handle auth state.
 
-(function(){
+document.addEventListener('DOMContentLoaded', function(){
     // Firebase config
     const FB_CONFIG = {
         apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
@@ -217,4 +217,4 @@
             }
         }
     });
-})();
+});
