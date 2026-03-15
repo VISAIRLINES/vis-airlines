@@ -298,21 +298,18 @@
             </a>
             <div class="nav-main-links">
                 <a href="flights.html" class="nav-main-link">Zaplanuj podróż</a>
-                <a href="#" class="nav-main-link">Odpraw się</a>
-                <a href="rezerwacje.html" class="nav-main-link">Zarządzaj rezerwacją</a>
+                <a href="odprawa.html" class="nav-main-link">Odpraw się</a>
+                <a href="rezerwacje.html" class="nav-main-link" onclick="window.location.href='rezerwacje.html';return false;">Zarządzaj rezerwacją</a>
                 <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
-                    <button class="nav-main-link active" id="info-btn" style="cursor:pointer;">Informacje ▾</button>
-                    <div class="nav-info-panel" id="info-panel">
-                        <a href="fleet.html" class="nav-info-link">
-                            <span class="nav-info-icon">✈</span>
-                            <div>
-                                <div class="nav-info-title">Flota</div>
-                                <div class="nav-info-desc">Poznaj nasze samoloty</div>
-                            </div>
-                        </a>
+                    <button class="nav-main-link active" id="info-btn" style="cursor:pointer;">Pomoc i informacje ▾</button>
+                    <div class="nav-info-panel" id="info-panel" style="min-width:680px;display:none;grid-template-columns:repeat(5,1fr);gap:20px;padding:24px 28px;">
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Flota</div><a href="fleet.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Przegląd floty</a><a href="fleet-e175.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Embraer 175-E2</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Bagaż</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Zasady i wymiary</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Bagaż specjalny</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Na pokładzie</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Posiłki i napoje</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Klasy podróży</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Wybór miejsca</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Na lotnisku</div><a href="odprawa.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Odprawa</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Status lotu</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Fast Track</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Saloniki biznesowe</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Obsługa pasażera</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Zmiana i zwrot biletu</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Programy lojalnościowe</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Kontakt</a></div>
                     </div>
                 </div>
-                <a href="#" class="nav-main-link">Pomoc</a>
             </div>
             <button class="nav-hamburger" aria-label="Menu">☰</button>
         </div>
@@ -569,7 +566,9 @@
 
         // Informacje dropdown
         const infoBtn=document.getElementById('info-btn'),infoPanel=document.getElementById('info-panel');
-        infoBtn.addEventListener('click',e=>{e.stopPropagation();closeAll();infoPanel.classList.toggle('show');});
+        infoBtn.addEventListener('click',e=>{e.stopPropagation();const v=infoPanel.style.display==='grid'?'none':'grid';infoPanel.style.display=v;});
+        document.addEventListener('click',()=>{infoPanel.style.display='none';});
+        infoPanel.addEventListener('click',e=>e.stopPropagation());
 
         function closeAll(){document.querySelectorAll('.popup-panel.show,.nav-info-panel.show').forEach(e=>e.classList.remove('show'));}
         document.addEventListener('click',e=>{if(!e.target.closest('.nav-dropdown-wrapper,.popup-panel,[id$="-btn"]'))closeAll();});
