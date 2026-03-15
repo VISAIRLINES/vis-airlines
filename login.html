@@ -50,6 +50,10 @@
                 <input class="auth-input" type="password" placeholder="Hasło" id="password" autocomplete="current-password">
                 <button class="auth-btn" id="login-btn">Zaloguj się</button>
             </div>
+            <div style="text-align:center;margin-top:12px;">
+                <a href="#" id="forgot-btn" style="font-size:13px;color:var(--gold-500);text-decoration:none;">Nie pamiętam hasła</a>
+            </div>
+            <div class="auth-success" id="success-msg" style="display:none;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.2);color:#2ecc71;padding:12px 16px;border-radius:8px;font-size:13px;margin-top:12px;text-align:center;"></div>
             <div class="auth-switch">
                 Nie masz konta? <a href="register.html">Zarejestruj się</a>
             </div>
@@ -97,6 +101,23 @@
 
     // Enter key
     document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')btn.click();});
+
+    // Forgot password
+    document.getElementById('forgot-btn').addEventListener('click',async(e)=>{
+        e.preventDefault();
+        hideError();
+        const email=document.getElementById('email').value.trim();
+        if(!email){showError('Wpisz adres e-mail, a potem kliknij „Nie pamiętam hasła".');return;}
+        try{
+            await auth.sendPasswordResetEmail(email);
+            const suc=document.getElementById('success-msg');
+            suc.textContent='Link do zmiany hasła został wysłany na '+email+'. Sprawdź skrzynkę pocztową.';
+            suc.style.display='block';
+        }catch(e){
+            const msgs={'auth/user-not-found':'Nie znaleziono konta z tym e-mailem.','auth/invalid-email':'Nieprawidłowy format e-mail.'};
+            showError(msgs[e.code]||'Błąd wysyłania. Spróbuj ponownie.');
+        }
+    });
     </script>
 </body>
 </html>
