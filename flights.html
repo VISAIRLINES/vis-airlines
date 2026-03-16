@@ -3,1339 +3,861 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rezerwacja — VIS Airlines</title>
+    <title>Wyniki wyszukiwania — VIS Airlines</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
     <style>
-        /* NAV */
+        /* === NAV (same as index) === */
         .nav{height:auto;flex-direction:column;padding:0;gap:0}.nav.scrolled{height:auto}
         .nav-top{width:100%;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;height:38px;background:rgba(4,10,20,.98);border-bottom:1px solid rgba(255,255,255,.05);font-size:12px;gap:0}
-        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
-        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
+        .nav-top-btn{background:none;border:none;color:var(--gray-300);font-size:12px;font-family:var(--font-body);padding:0 14px;height:38px;cursor:pointer;transition:color .2s;display:inline-flex;align-items:center;gap:5px;position:relative;border-radius:0;border-left:1px solid rgba(255,255,255,.06);text-decoration:none;white-space:nowrap}
+        .nav-top-btn:first-child{border-left:none}.nav-top-btn:hover{color:var(--white);background:rgba(255,255,255,.04)}.nav-top-btn.accent{color:var(--gold-500);font-weight:500}
         .nav-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:56px;border-bottom:1px solid rgba(255,255,255,.04)}
+        .nav-main-links{display:flex;gap:0;align-items:center;height:100%}
+        .nav-main-link{font-size:13px;font-weight:400;color:var(--gray-200);padding:0 18px;height:56px;display:inline-flex;align-items:center;cursor:pointer;transition:all .2s;background:none;border:none;border-bottom:2px solid transparent;font-family:var(--font-body);text-decoration:none}
+        .nav-main-link:hover{color:var(--gold-500);background:rgba(255,255,255,.02);border-bottom-color:var(--gold-600)}
+        .nav-main-link.active{color:var(--gold-500);border-bottom-color:var(--gold-500)}
 
-        /* PROGRESS BAR */
-        .progress-bar{display:flex;align-items:center;justify-content:center;gap:0;padding:20px 48px;background:var(--navy-700);border-bottom:1px solid rgba(255,255,255,.04)}
-        .progress-step{display:flex;align-items:center;gap:8px;padding:10px 20px;font-size:13px;color:var(--gray-500);font-weight:400;position:relative}
-        .progress-step.active{color:var(--gold-500);font-weight:600}
-        .progress-step.done{color:var(--green)}
-        .progress-step-num{width:28px;height:28px;border-radius:50%;border:2px solid var(--gray-600);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:var(--font-mono)}
-        .progress-step.active .progress-step-num{border-color:var(--gold-500);color:var(--gold-500)}
-        .progress-step.done .progress-step-num{border-color:var(--green);background:var(--green);color:var(--navy-800)}
-        .progress-sep{width:40px;height:1px;background:var(--gray-600);margin:0 4px}
+        /* === MAIN LAYOUT === */
+        .flights-page { padding: 110px 48px 80px; max-width: 1100px; margin: 0 auto; }
 
-        /* MAIN */
-        .booking-page{padding:32px 48px 80px;max-width:1100px;margin:0 auto}
-        .step-title{font-family:var(--font-display);font-size:clamp(24px,3vw,36px);font-weight:600;margin-bottom:8px}
-        .step-title .gold{color:var(--gold-500)}
-        .step-subtitle{font-size:14px;color:var(--gray-400);margin-bottom:32px}
+        /* Search summary bar */
+        .search-summary {
+            background: var(--navy-700); border: 1px solid rgba(255,255,255,.06);
+            border-radius: var(--radius-md); padding: 20px 28px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+        }
+        .search-summary-route {
+            display: flex; align-items: center; gap: 16px;
+        }
+        .ss-airport { text-align: center; }
+        .ss-code { font-family: var(--font-mono); font-size: 28px; font-weight: 700; color: var(--white); }
+        .ss-city { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+        .ss-arrow { color: var(--gold-500); font-size: 20px; margin: 0 4px; }
+        .ss-info { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .ss-tag { padding: 6px 14px; border-radius: var(--radius-full); background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.15); font-size: 12px; color: var(--gold-500); font-weight: 500; }
+        .ss-edit { font-size: 13px; color: var(--gold-500); cursor: pointer; text-decoration: none; font-weight: 500; }
+        .ss-edit:hover { text-decoration: underline; }
 
-        /* DATE STRIP */
-        .date-strip{display:flex;gap:0;margin-bottom:24px;overflow-x:auto;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,.06);background:var(--navy-700)}
-        .date-strip::-webkit-scrollbar{height:4px}.date-strip::-webkit-scrollbar-thumb{background:var(--gold-800);border-radius:2px}
-        .date-strip-day{flex:1;min-width:90px;padding:12px 10px;text-align:center;cursor:pointer;border-right:1px solid rgba(255,255,255,.04);transition:all .2s;position:relative}
-        .date-strip-day:last-child{border-right:none}
-        .date-strip-day:hover{background:rgba(201,168,76,.05)}
-        .date-strip-day.active{background:rgba(201,168,76,.1);border-bottom:3px solid var(--gold-500)}
-        .date-strip-day.active .ds-price{color:var(--gold-400)}
-        .date-strip-day.past{opacity:.3;cursor:default}
-        .ds-weekday{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray-400);font-weight:500}
-        .ds-date{font-size:14px;font-weight:600;color:var(--white);margin:3px 0}
-        .ds-price{font-size:12px;color:var(--gray-300);font-weight:500;font-family:var(--font-mono)}
+        /* Class notice */
+        .class-notice {
+            background: rgba(201,168,76,.08); border: 1px solid rgba(201,168,76,.2);
+            border-radius: var(--radius-md); padding: 16px 24px; margin-bottom: 24px;
+            display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--gold-400);
+        }
+        .class-notice-icon { font-size: 20px; }
+        .class-notice-btns { display: flex; gap: 8px; margin-left: auto; }
+        .class-notice-btn {
+            padding: 6px 16px; border-radius: var(--radius-sm); font-size: 12px;
+            font-weight: 600; cursor: pointer; border: 1px solid rgba(201,168,76,.3);
+            background: none; color: var(--gold-500); font-family: var(--font-body);
+            transition: all .2s;
+        }
+        .class-notice-btn:hover, .class-notice-btn.active { background: var(--gold-600); color: var(--navy-800); border-color: var(--gold-600); }
 
-        /* FLIGHT CARD (Lufthansa style) */
-        .fc{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);margin-bottom:16px;overflow:hidden;transition:all .3s}
-        .fc:hover{border-color:rgba(201,168,76,.15);box-shadow:0 12px 40px rgba(0,0,0,.25)}
-        .fc-main{display:grid;grid-template-columns:1fr auto;min-height:90px}
-        .fc-route-section{padding:20px 24px;display:flex;align-items:center;gap:20px}
-        .fc-time{font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white)}
-        .fc-time-sub{font-size:11px;color:var(--gray-400)}
-        .fc-arrow-block{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:90px}
-        .fc-duration{font-size:11px;color:var(--gold-500);font-weight:600}
-        .fc-line{width:100%;height:1px;background:var(--gray-500);position:relative}
-        .fc-line::after{content:'✈';position:absolute;right:-2px;top:-9px;font-size:13px;color:var(--gold-500)}
-        .fc-type{font-size:10px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px}
-        .fc-classes{display:flex;border-left:1px solid rgba(255,255,255,.06)}
-        .fc-class-col{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;min-width:140px;cursor:pointer;transition:all .2s;border-left:1px solid rgba(255,255,255,.06);position:relative}
-        .fc-class-col:first-child{border-left:none}
-        .fc-class-col:hover{background:rgba(201,168,76,.04)}
-        .fc-class-col.selected{background:rgba(201,168,76,.08)}
-        .fc-class-top{padding:16px 20px 12px;display:flex;flex-direction:column;align-items:center;width:100%;flex:1}
-        .fc-class-name{font-size:14px;font-weight:600;color:var(--gray-200);margin-bottom:8px}
-        .fc-class-col.selected .fc-class-name{color:var(--gold-500)}
-        .fc-class-from{font-size:11px;color:var(--gray-500);margin-bottom:2px}
-        .fc-class-price{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--white);line-height:1}
-        .fc-class-col.selected .fc-class-price{color:var(--gold-400)}
-        .fc-class-currency{font-size:12px;color:var(--gray-400);margin-top:3px}
-        .fc-class-bottom{width:100%;padding:8px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gray-500);transition:all .2s}
-        .fc-class-col:hover .fc-class-bottom{color:var(--gold-500)}
-        .fc-class-col.selected .fc-class-bottom{color:var(--gold-500);background:rgba(201,168,76,.06)}
-        .fc-meta-bar{padding:10px 24px;border-top:1px solid rgba(255,255,255,.04);display:flex;gap:16px;font-size:12px;color:var(--gray-400);align-items:center;background:rgba(0,0,0,.1)}
-        .fc-meta-item{display:flex;align-items:center;gap:4px}
+        /* === DATE STRIP === */
+        .date-strip {
+            display: flex; gap: 0; margin-bottom: 28px; overflow-x: auto;
+            border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,.06);
+            background: var(--navy-700);
+        }
+        .date-strip::-webkit-scrollbar { height: 4px; }
+        .date-strip::-webkit-scrollbar-thumb { background: var(--gold-800); border-radius: 2px; }
+        .date-strip-day {
+            flex: 1; min-width: 100px; padding: 14px 12px; text-align: center;
+            cursor: pointer; border-right: 1px solid rgba(255,255,255,.04);
+            transition: all .2s; position: relative;
+        }
+        .date-strip-day:last-child { border-right: none; }
+        .date-strip-day:hover { background: rgba(201,168,76,.05); }
+        .date-strip-day.active {
+            background: rgba(201,168,76,.1);
+            border-bottom: 3px solid var(--gold-500);
+        }
+        .date-strip-day.active .ds-price { color: var(--gold-400); }
+        .ds-weekday { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400); font-weight: 500; }
+        .ds-date { font-size: 15px; font-weight: 600; color: var(--white); margin: 4px 0; }
+        .ds-price { font-size: 13px; color: var(--gray-300); font-weight: 500; font-family: var(--font-mono); }
 
-        /* TARIFF GRID */
-        .tariff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
-        .tariff-card{background:var(--navy-700);border:2px solid rgba(255,255,255,.06);border-radius:var(--radius-md);overflow:hidden;transition:all .3s;cursor:pointer;display:flex;flex-direction:column}
-        .tariff-card:hover{border-color:rgba(201,168,76,.2);transform:translateY(-2px)}
-        .tariff-card.selected{border-color:var(--gold-500);box-shadow:0 0 0 1px var(--gold-500)}
-        .tariff-card.recommended{border-color:var(--gold-600)}
-        .tariff-header{padding:20px 20px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
-        .tariff-price{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white)}
-        .tariff-card.selected .tariff-price{color:var(--gold-400)}
-        .tariff-currency{font-size:14px;color:var(--gray-400);font-weight:400}
-        .tariff-name{font-size:14px;font-weight:600;color:var(--gray-200);margin-top:8px}
-        .tariff-card.selected .tariff-name{color:var(--gold-500)}
-        .tariff-rec-badge{display:inline-block;padding:4px 12px;border-radius:var(--radius-full);background:var(--gold-600);color:var(--navy-800);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:6px}
-        .tariff-features{padding:16px 20px;flex:1;display:flex;flex-direction:column;gap:14px}
-        .tariff-feature{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--gray-300);line-height:1.5}
-        .tariff-feature-icon{font-size:14px;flex-shrink:0;margin-top:1px}
-        .tariff-feature strong{color:var(--white);font-weight:500}
-        .tariff-btn-wrap{padding:16px 20px;border-top:1px solid rgba(255,255,255,.04)}
-        .tariff-btn{width:100%;padding:12px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font-body);text-align:center}
-        .tariff-btn-outline{background:none;border:1.5px solid rgba(255,255,255,.15);color:var(--gray-200)}
-        .tariff-btn-outline:hover{border-color:var(--gold-500);color:var(--gold-500)}
-        .tariff-card.selected .tariff-btn-outline{background:var(--gold-600);border-color:var(--gold-600);color:var(--navy-800)}
+        /* === FLIGHT RESULTS === */
+        .results-title {
+            font-size: 14px; color: var(--gray-400); margin-bottom: 16px;
+            font-weight: 400; letter-spacing: .5px;
+        }
+        .results-title strong { color: var(--white); font-weight: 600; }
 
-        /* SUMMARY CARD */
-        .summary-card{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:28px;margin-bottom:24px}
-        .summary-card h3{font-family:var(--font-display);font-size:18px;font-weight:600;margin-bottom:4px}
-        .summary-card .route-date{font-size:13px;color:var(--gray-400);margin-bottom:20px}
-        .summary-flight{display:flex;align-items:center;gap:24px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.04)}
-        .summary-flight:last-child{border-bottom:none}
-        .sf-time{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--white)}
-        .sf-code{font-size:11px;color:var(--gray-400)}
-        .sf-arrow{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:80px}
-        .sf-arrow-line{width:60px;height:1px;background:var(--gray-500)}
-        .sf-arrow-dur{font-size:10px;color:var(--gold-500);font-weight:500}
-        .sf-details{font-size:12px;color:var(--gray-400);display:flex;flex-direction:column;gap:2px}
-        .sf-tariff-badge{display:inline-block;padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:600;margin-left:auto}
-        .sf-tariff-eco{background:rgba(201,168,76,.1);color:var(--gold-500);border:1px solid rgba(201,168,76,.2)}
-        .sf-tariff-biz{background:rgba(52,152,219,.1);color:var(--blue);border:1px solid rgba(52,152,219,.2)}
-        .summary-total{display:flex;justify-content:flex-end;align-items:baseline;gap:8px;padding-top:20px;margin-top:12px;border-top:1px solid rgba(255,255,255,.06)}
-        .summary-total-label{font-size:14px;color:var(--gray-400)}
-        .summary-total-price{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--gold-500)}
-        .summary-total-cur{font-size:14px;color:var(--gray-400)}
+        .flight-card {
+            background: var(--navy-700); border: 1px solid rgba(255,255,255,.06);
+            border-radius: var(--radius-md); margin-bottom: 16px;
+            transition: all .3s var(--ease); overflow: hidden;
+        }
+        .flight-card:hover { border-color: rgba(201,168,76,.15); box-shadow: 0 12px 40px rgba(0,0,0,.25); }
 
-        /* PASSENGER FORM */
-        .pax-form-section{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:28px;margin-bottom:24px}
-        .pax-form-section h3{font-family:var(--font-display);font-size:20px;font-weight:600;margin-bottom:4px}
-        .pax-form-section .form-hint{font-size:12px;color:var(--gray-400);margin-bottom:24px}
-        .pax-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-        .pax-form-grid .full{grid-column:span 2}
-        .form-input-line{padding:14px 0 10px;border:none;border-bottom:2px solid rgba(255,255,255,.1);border-radius:0;background:transparent;color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;transition:border-color .3s}
-        .form-input-line:focus{border-bottom-color:var(--gold-500)}
-        .form-input-line::placeholder{color:var(--gray-500)}
-        .form-input-line.error{border-bottom-color:var(--red)}
-        .form-error-text{font-size:11px;color:var(--red);margin-top:4px;display:none}
-        .form-error-text.show{display:block}
-        .form-select-line{padding:14px 0 10px;border:none;border-bottom:2px solid rgba(255,255,255,.1);border-radius:0;background:transparent;color:var(--white);font-size:15px;font-family:var(--font-body);font-weight:300;outline:none;width:100%;cursor:pointer;-webkit-appearance:none}
-        .form-select-line:focus{border-bottom-color:var(--gold-500)}
-        .form-select-line option{background:var(--navy-800);color:var(--white)}
+        .fc-main {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            min-height: 100px;
+        }
 
-        /* ACTION BAR */
-        .action-bar{display:flex;align-items:center;justify-content:space-between;padding:20px 0;margin-top:12px;gap:16px;flex-wrap:wrap}
-        .action-bar-price{text-align:right}
-        .action-bar-total{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--gold-500)}
-        .action-bar-sub{font-size:12px;color:var(--gray-400)}
+        /* Left — route info */
+        .fc-route-section {
+            padding: 24px 28px;
+            display: flex; align-items: center; gap: 20px;
+        }
 
-        /* EXTRAS SECTIONS */
-        .extras-section{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);margin-bottom:20px;overflow:hidden}
-        .extras-section-header{display:flex;align-items:center;gap:16px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.04)}
-        .extras-section-icon{font-size:28px;flex-shrink:0}
-        .extras-section-title{font-size:16px;font-weight:600;color:var(--white)}
-        .extras-section-desc{font-size:12px;color:var(--gray-400);margin-top:2px}
-        .extras-options{padding:4px 0}
+        /* Route visual */
+        .fc-route { display: flex; align-items: center; gap: 20px; }
+        .fc-time { font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--white); }
+        .fc-time-sub { font-size: 11px; color: var(--gray-400); font-family: var(--font-body); font-weight: 400; }
+        .fc-arrow-block { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 100px; }
+        .fc-duration { font-size: 11px; color: var(--gold-500); font-weight: 600; letter-spacing: .5px; }
+        .fc-line { width: 100%; height: 1px; background: var(--gray-500); position: relative; }
+        .fc-line::after { content: '✈'; position: absolute; right: -2px; top: -9px; font-size: 13px; color: var(--gold-500); }
+        .fc-type { font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Toggle item (on/off) */
-        .extras-toggle{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;cursor:pointer;transition:background .2s;border-bottom:1px solid rgba(255,255,255,.02)}
-        .extras-toggle:last-child{border-bottom:none}
-        .extras-toggle:hover{background:rgba(255,255,255,.02)}
-        .extras-toggle.active{background:rgba(201,168,76,.04)}
-        .et-info{}
-        .et-name{font-size:14px;font-weight:500;color:var(--white)}
-        .et-desc{font-size:12px;color:var(--gray-400);margin-top:2px}
-        .et-switch{flex-shrink:0;margin-left:16px}
-        .et-switch-track{width:44px;height:24px;border-radius:12px;background:rgba(255,255,255,.1);position:relative;transition:background .2s}
-        .extras-toggle.active .et-switch-track{background:var(--gold-600)}
-        .et-switch-thumb{width:18px;height:18px;border-radius:50%;background:var(--white);position:absolute;top:3px;left:3px;transition:transform .2s}
-        .extras-toggle.active .et-switch-thumb{transform:translateX(20px)}
+        /* Right — class columns (styl Lufthansa) */
+        .fc-classes {
+            display: flex;
+            border-left: 1px solid rgba(255,255,255,.06);
+        }
+        .fc-class-col {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 0; min-width: 150px;
+            cursor: pointer; transition: all .2s;
+            border-left: 1px solid rgba(255,255,255,.06);
+            position: relative;
+        }
+        .fc-class-col:first-child { border-left: none; }
+        .fc-class-col:hover { background: rgba(201,168,76,.04); }
+        .fc-class-col.selected { background: rgba(201,168,76,.08); }
 
-        /* Counter item */
-        .extras-counter{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,.02)}
-        .extras-counter:last-child{border-bottom:none}
-        .et-counter{display:flex;align-items:center;gap:14px}
-        .et-counter-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--gold-500);font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);transition:all .2s}
-        .et-counter-btn:hover{background:rgba(201,168,76,.15);border-color:var(--gold-600)}
-        .et-counter-val{font-family:var(--font-mono);font-size:16px;font-weight:600;color:var(--white);width:24px;text-align:center}
+        /* Górna część — klasa + cena */
+        .fc-class-top {
+            padding: 18px 24px 14px;
+            display: flex; flex-direction: column;
+            align-items: center; width: 100%;
+            flex: 1;
+        }
+        .fc-class-name {
+            font-size: 14px; font-weight: 600;
+            color: var(--gray-200); margin-bottom: 10px;
+            letter-spacing: 0.3px;
+        }
+        .fc-class-col.selected .fc-class-name { color: var(--gold-500); }
+        .fc-class-from {
+            font-size: 11px; color: var(--gray-500);
+            margin-bottom: 2px;
+        }
+        .fc-class-price {
+            font-family: var(--font-display);
+            font-size: 26px; font-weight: 700;
+            color: var(--white); line-height: 1;
+        }
+        .fc-class-col.selected .fc-class-price { color: var(--gold-400); }
+        .fc-class-currency {
+            font-size: 12px; color: var(--gray-400);
+            margin-top: 4px; font-weight: 400;
+        }
 
-        /* Extras summary */
-        .extras-summary{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:20px 24px;margin-top:24px;margin-bottom:8px}
-        .extras-summary-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;color:var(--gray-300);border-bottom:1px solid rgba(255,255,255,.03)}
-        .extras-summary-row:last-child{border-bottom:none}
-        .extras-summary-total{font-size:18px;font-weight:700;color:var(--gold-500);padding-top:14px;margin-top:6px;border-top:2px solid rgba(201,168,76,.2) !important;border-bottom:none !important}
+        /* Dolna część — strzałka */
+        .fc-class-bottom {
+            width: 100%;
+            padding: 10px;
+            border-top: 1px solid rgba(255,255,255,.04);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: var(--gray-500);
+            transition: all .2s;
+        }
+        .fc-class-col:hover .fc-class-bottom { color: var(--gold-500); }
+        .fc-class-col.selected .fc-class-bottom {
+            color: var(--gold-500);
+            background: rgba(201,168,76,.06);
+        }
 
-        /* Payment */
-        .payment-box{background:var(--navy-700);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius-md);padding:40px;text-align:center}
-        .payment-box-icon{font-size:40px;margin-bottom:16px}
-        .payment-box h3{font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:8px}
-        .payment-box p{font-size:14px;color:var(--gray-400);line-height:1.7;max-width:420px;margin:0 auto 20px}
-        .payment-methods{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
-        .pm-badge{padding:6px 14px;border-radius:4px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700;color:var(--white);letter-spacing:.5px}
-        .payment-stripe-placeholder{border:2px dashed rgba(201,168,76,.2);border-radius:var(--radius-md);padding:40px;margin:0 auto;max-width:500px}
-        .psp-inner{text-align:center}
-        .psp-text{font-size:14px;color:var(--gray-400)}
+        /* Meta bar at bottom */
+        .fc-meta-bar {
+            padding: 12px 28px;
+            border-top: 1px solid rgba(255,255,255,.04);
+            display: flex; gap: 20px; font-size: 12px; color: var(--gray-400);
+            align-items: center; flex-wrap: wrap;
+            background: rgba(0,0,0,.1);
+        }
+        .fc-meta-item { display: flex; align-items: center; gap: 5px; }
+        .fc-badge { padding: 3px 10px; border-radius: var(--radius-full); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+        .fc-badge-direct { background: rgba(46,204,113,.1); color: var(--green); border: 1px solid rgba(46,204,113,.2); }
+        .fc-badge-connect { background: rgba(52,152,219,.1); color: var(--blue); border: 1px solid rgba(52,152,219,.2); }
 
-        /* FOOTER (compact) */
-        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:24px 48px}
-        .footer-copy{font-size:12px;color:var(--gray-600);text-align:center}
+        /* Connection details */
+        .fc-connection {
+            margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.04);
+        }
+        .fc-leg { display: flex; align-items: center; gap: 16px; padding: 8px 0; font-size: 13px; }
+        .fc-leg-times { font-family: var(--font-mono); color: var(--white); font-weight: 500; min-width: 120px; }
+        .fc-leg-route { color: var(--gray-300); }
+        .fc-leg-aircraft { color: var(--gray-400); font-size: 12px; }
+        .fc-layover {
+            padding: 8px 16px; margin: 4px 0; border-radius: var(--radius-sm);
+            background: rgba(52,152,219,.06); border: 1px solid rgba(52,152,219,.1);
+            font-size: 12px; color: var(--blue); display: flex; align-items: center; gap: 8px;
+        }
+        .fc-layover-next-day {
+            background: rgba(201,168,76,.06); border-color: rgba(201,168,76,.15);
+            color: var(--gold-500);
+        }
 
-        /* SEAT MAP */
-        .seatmap-modal{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(8px)}
-        .seatmap-modal.show{display:flex}
-        .seatmap-box{background:var(--navy-700);border:1px solid rgba(201,168,76,.15);border-radius:var(--radius-lg);width:95%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
-        .seatmap-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between}
-        .seatmap-header h3{font-family:var(--font-display);font-size:20px;font-weight:600}
-        .seatmap-close{background:none;border:none;color:var(--gray-400);font-size:22px;cursor:pointer;padding:4px 8px}
-        .seatmap-close:hover{color:var(--white)}
-        .seatmap-legend{padding:12px 24px;display:flex;gap:16px;font-size:11px;color:var(--gray-400);border-bottom:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
-        .seatmap-legend-item{display:flex;align-items:center;gap:6px}
-        .seatmap-legend-dot{width:16px;height:16px;border-radius:3px}
-        .seatmap-body{padding:20px 24px;overflow-y:auto;flex:1}
-        .seatmap-plane{display:flex;flex-direction:column;align-items:center;gap:2px}
-        .seatmap-row{display:flex;align-items:center;gap:0}
-        .seatmap-rownum{width:28px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--gray-500);flex-shrink:0}
-        .seatmap-seat{width:30px;height:30px;border-radius:4px;margin:1px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent}
-        .seat-available{background:rgba(46,204,113,.15);color:#2ecc71;border-color:rgba(46,204,113,.3)}
-        .seat-available:hover{background:rgba(46,204,113,.3);transform:scale(1.1)}
-        .seat-occupied{background:rgba(255,255,255,.05);color:var(--gray-600);cursor:default}
-        .seat-selected{background:var(--gold-600) !important;color:var(--navy-800) !important;border-color:var(--gold-500) !important;transform:scale(1.1)}
-        .seat-biz{background:rgba(52,152,219,.15);color:var(--blue);border-color:rgba(52,152,219,.3)}
-        .seat-biz:hover{background:rgba(52,152,219,.3)}
-        .seat-exit{border-color:rgba(231,76,60,.4) !important}
-        .seat-aisle{width:20px;height:30px;margin:1px}
-        .seatmap-footer{padding:16px 24px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between}
-        .seatmap-selected-info{font-size:14px;color:var(--gray-300)}
-        .seatmap-selected-seat{font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500)}
+        /* Next day option */
+        .next-day-option {
+            background: var(--navy-700); border: 1px solid rgba(201,168,76,.12);
+            border-radius: var(--radius-md); padding: 20px 28px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        }
+        .ndo-info h4 { font-size: 15px; font-weight: 500; color: var(--white); margin-bottom: 4px; }
+        .ndo-info p { font-size: 13px; color: var(--gray-400); }
+        .ndo-toggle {
+            display: flex; gap: 6px;
+        }
+        .ndo-btn {
+            padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px;
+            font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,.1);
+            background: none; color: var(--gray-300); font-family: var(--font-body); transition: all .2s;
+        }
+        .ndo-btn:hover, .ndo-btn.active { background: var(--gold-600); color: var(--navy-800); border-color: var(--gold-600); }
 
-        @media(max-width:900px){
-            .tariff-grid{grid-template-columns:1fr 1fr}
-            .booking-page{padding:24px 16px 60px}
-            .pax-form-grid{grid-template-columns:1fr}
-            .pax-form-grid .full{grid-column:span 1}
-            .progress-bar{padding:16px;overflow-x:auto}
+        /* Book button */
+        .fc-book {
+            display: block; width: 100%; margin-top: 12px; text-align: center;
+        }
+
+        /* Empty state */
+        .empty-state { text-align: center; padding: 80px 20px; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: .5; }
+        .empty-state h3 { font-family: var(--font-display); font-size: 24px; color: var(--gray-200); margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; color: var(--gray-400); }
+
+        /* === FOOTER === */
+        .footer{background:var(--navy-900);border-top:1px solid rgba(255,255,255,.06);padding:0}
+        .footer-inner{max-width:1240px;margin:0 auto}
+        .footer-main{padding:60px 48px 40px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:40px}
+        .footer-col-title{font-size:14px;font-weight:600;color:var(--white);margin-bottom:20px}
+        .footer-link{display:block;font-size:13px;font-weight:300;color:var(--gray-400);margin-bottom:10px;text-decoration:none;cursor:pointer;transition:color .2s}
+        .footer-link:hover{color:var(--gold-500)}
+        .footer-social{display:flex;gap:10px;margin-top:16px}
+        .footer-social-btn{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gray-300);cursor:pointer;transition:all .2s;text-decoration:none}
+        .footer-social-btn:hover{background:rgba(201,168,76,.15);color:var(--gold-500);border-color:var(--gold-600)}
+        .footer-mid{padding:24px 48px;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px}
+        .footer-mid-section{display:flex;align-items:center;gap:16px}
+        .footer-mid-label{font-size:13px;font-weight:500;color:var(--gray-300);white-space:nowrap}
+        .footer-payment-icons{display:flex;gap:8px;align-items:center}
+        .footer-payment-icon{padding:6px 12px;border-radius:4px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700;color:var(--white);letter-spacing:.5px}
+        .footer-alliance{display:flex;align-items:center;gap:12px}
+        .footer-alliance-badge{padding:8px 16px;border-radius:var(--radius-sm);border:1px solid rgba(201,168,76,.2);background:rgba(201,168,76,.05);font-size:12px;font-weight:600;color:var(--gold-500);letter-spacing:1px;text-transform:uppercase}
+        .footer-bottom-bar{padding:20px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+        .footer-bottom-links{display:flex;gap:20px;flex-wrap:wrap}
+        .footer-bottom-links a{font-size:12px;color:var(--gray-500);text-decoration:none;transition:color .2s}
+        .footer-bottom-links a:hover{color:var(--gray-300)}
+        .footer-copy{font-size:12px;color:var(--gray-600)}
+
+        @media(max-width:768px){
+            .flights-page{padding:110px 16px 60px}
+            .search-summary{flex-direction:column;align-items:flex-start}
+            .fc-route{flex-wrap:wrap}
+            .fc-time{font-size:20px}
             .fc-main{grid-template-columns:1fr}
             .fc-classes{border-left:none;border-top:1px solid rgba(255,255,255,.04)}
-            .fc-class-col{min-width:0;padding:0}
-            .date-strip-day{min-width:75px;padding:10px 6px}
-        }
-        @media(max-width:600px){
-            .tariff-grid{grid-template-columns:1fr}
+            .fc-class-col{min-width:0;padding:14px 16px}
+            .date-strip-day{min-width:80px;padding:10px 8px}
+            .nav-main-links{display:none}
+            .nav-top{padding:0 16px}.nav-bottom{padding:0 16px}
+            .footer-main{grid-template-columns:1fr 1fr}
+            .footer-mid{flex-direction:column;align-items:flex-start}
+            .footer-bottom-bar{flex-direction:column;text-align:center}
         }
     </style>
 </head>
 <body>
     <script src="js/nav.js"></script>
+
+    <!-- NAV -->
     <nav class="nav">
         <div class="nav-top">
-            <button class="nav-top-btn">PL Polski ▾</button>
-            <button class="nav-top-btn">PLN ▾</button>
+            <button class="nav-top-btn" id="lang-btn">PL Polski ▾</button>
+            <button class="nav-top-btn" id="currency-btn">PLN ▾</button>
             <a href="login.html" class="nav-top-btn">Zaloguj się</a>
             <a href="register.html" class="nav-top-btn accent">Załóż konto</a>
         </div>
         <div class="nav-bottom">
             <a href="index.html" class="nav-logo"><div class="nav-logo-mark">V</div><div class="nav-logo-text">VIS <em>Airlines</em></div></a>
+            <div class="nav-main-links">
+                <a href="index.html" class="nav-main-link active">Zaplanuj podróż</a>
+                <a href="odprawa.html" class="nav-main-link">Odpraw się</a>
+                <a href="rezerwacje.html" class="nav-main-link" onclick="window.location.href='rezerwacje.html';return false;">Zarządzaj rezerwacją</a>
+                <div class="nav-dropdown-wrapper" style="position:relative;height:100%;">
+                    <button class="nav-main-link" id="helpnav-btn" style="cursor:pointer;">Pomoc i informacje ▾</button>
+                    <div id="helpnav-panel" style="position:absolute;top:100%;right:0;background:var(--navy-700);border:1px solid rgba(201,168,76,.15);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:24px 28px;min-width:680px;z-index:200;display:none;grid-template-columns:repeat(5,1fr);gap:20px;">
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Flota</div><a href="fleet.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Przegląd floty</a><a href="fleet-e175.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Embraer 175-E2</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Bagaż</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Zasady i wymiary</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Bagaż specjalny</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Na pokładzie</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Posiłki i napoje</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Klasy podróży</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Na lotnisku</div><a href="odprawa.html" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Odprawa</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Fast Track</a></div>
+                        <div style="font-size:13px;"><div style="font-weight:600;color:var(--white);margin-bottom:12px;">Obsługa</div><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Zmiana i zwrot</a><a href="#" style="display:block;padding:5px 0;color:var(--gray-400);text-decoration:none;font-size:13px;">Kontakt</a></div>
+                    </div>
+                </div>
+            </div>
+            <button class="nav-hamburger" aria-label="Menu">☰</button>
         </div>
     </nav>
 
-    <div class="progress-bar" id="progress"></div>
-    <main class="booking-page" id="app"></main>
+    <!-- MAIN -->
+    <main class="flights-page" id="app"></main>
 
-    <footer class="footer"><div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone. Członek oneworld®</div></footer>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-main">
+                <div><div class="footer-col-title">O VIS Airlines</div><a href="#" class="footer-link">O nas</a><a href="#" class="footer-link">Kariera</a><a href="#" class="footer-link">Biuro Prasowe</a><a href="#" class="footer-link">Corporate</a><a href="#" class="footer-link">Newsletter</a></div>
+                <div><div class="footer-col-title">Oferta dodatkowa</div><a href="#" class="footer-link">VIS dla Grup</a><a href="#" class="footer-link">VIS dla Firm</a><a href="#" class="footer-link">VIS Cargo</a><a href="#" class="footer-link">VIS Charters</a></div>
+                <div><div class="footer-col-title">Podróż z VIS</div><a href="#" class="footer-link">Usługi dodatkowe</a><a href="#" class="footer-link">Bagaż</a><a href="#" class="footer-link">VIS Upgrade</a><a href="#" class="footer-link">Nasze kierunki</a><a href="#" class="footer-link">VIS Rewards</a></div>
+                <div><div class="footer-col-title">Śledź nas na</div><div class="footer-social"><a href="#" class="footer-social-btn">f</a><a href="#" class="footer-social-btn">▶</a><a href="#" class="footer-social-btn">in</a><a href="#" class="footer-social-btn">✦</a><a href="#" class="footer-social-btn">𝕏</a></div></div>
+            </div>
+            <div class="footer-mid">
+                <div class="footer-mid-section"><span class="footer-mid-label">Metody płatności</span><div class="footer-payment-icons"><span class="footer-payment-icon">VISA</span><span class="footer-payment-icon">MC</span><span class="footer-payment-icon">PayPo</span><span class="footer-payment-icon">Klarna</span><span class="footer-payment-icon">BLIK</span></div></div>
+                <div class="footer-alliance"><span class="footer-mid-label">Jesteśmy członkiem</span><span class="footer-alliance-badge">oneworld ®</span></div>
+            </div>
+            <div class="footer-bottom-bar">
+                <div class="footer-bottom-links"><a href="#">Kontakt</a><a href="#">Regulacje lotnicze</a><a href="#">Regulaminy</a><a href="#">Ochrona Danych Osobowych</a><a href="#">Cyberbezpieczeństwo</a></div>
+                <div class="footer-copy">© 2026 VIS Airlines Sp. z o.o. Wszelkie prawa zastrzeżone.</div>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/main.js"></script>
     <script>
     (function(){
-        /* ============ FIREBASE ============ */
-        firebase.initializeApp({
-            apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
-            authDomain:"vis-airlines-b1677.firebaseapp.com",
-            projectId:"vis-airlines-b1677",
-            storageBucket:"vis-airlines-b1677.firebasestorage.app",
-            messagingSenderId:"159896846581",
-            appId:"1:159896846581:web:f7b41f69945004599e05bc"
-        });
-        const fbAuth=firebase.auth();
-        const fbDb=firebase.firestore();
-
-        function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:6},()=>c[Math.floor(Math.random()*c.length)]).join('');}
-
-        /* ============ DATA ============ */
-        const ROUTES=[{id:'VS100',from:'MAN',to:'CPK',dep:'06:00',arr:'08:10',duration:'2h 10m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},{id:'VS101',from:'CPK',to:'EDI',dep:'08:40',arr:'11:05',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},{id:'VS102',from:'EDI',to:'CPK',dep:'11:35',arr:'14:00',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},{id:'VS103',from:'CPK',to:'AAR',dep:'14:30',arr:'16:15',duration:'1h 45m',aircraft:'Embraer 175-E2',classes:{economy:119,business:649}},{id:'VS104',from:'AAR',to:'CPK',dep:'16:45',arr:'18:00',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:119,business:649}},{id:'VS105',from:'CPK',to:'EDI',dep:'18:30',arr:'20:55',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},{id:'VS106',from:'EDI',to:'CPK',dep:'21:25',arr:'23:50',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},{id:'VS107',from:'CPK',to:'MAN',dep:'00:20',arr:'02:30',duration:'2h 10m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},{id:'VS108',from:'BHX',to:'CPK',dep:'06:00',arr:'08:15',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:139,business:699}},{id:'VS109',from:'CPK',to:'NCL',dep:'08:45',arr:'11:00',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},{id:'VS110',from:'NCL',to:'CPK',dep:'11:30',arr:'13:45',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},{id:'VS111',from:'CPK',to:'AAL',dep:'14:15',arr:'16:05',duration:'1h 50m',aircraft:'Embraer 175-E2',classes:{economy:109,business:599}},{id:'VS112',from:'AAL',to:'CPK',dep:'16:35',arr:'18:30',duration:'1h 55m',aircraft:'Embraer 175-E2',classes:{economy:109,business:599}},{id:'VS113',from:'CPK',to:'BER',dep:'19:00',arr:'20:10',duration:'1h 10m',aircraft:'Embraer 175-E2',classes:{economy:89,business:499}},{id:'VS114',from:'BER',to:'CPK',dep:'20:40',arr:'21:50',duration:'1h 10m',aircraft:'Embraer 175-E2',classes:{economy:89,business:499}},{id:'VS115',from:'CPK',to:'BHX',dep:'22:20',arr:'00:35+1',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:139,business:699}},{id:'VS116',from:'BRN',to:'CPK',dep:'06:00',arr:'06:55',duration:'0h 55m',aircraft:'Embraer 175-E2',classes:{economy:69,business:399}},{id:'VS001',from:'CPK',to:'BZG',dep:'07:25',arr:'08:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},{id:'VS002',from:'BZG',to:'CPK',dep:'08:55',arr:'09:55',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},{id:'VS117',from:'CPK',to:'LEJ',dep:'10:25',arr:'11:40',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},{id:'VS118',from:'LEJ',to:'CPK',dep:'12:10',arr:'13:25',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},{id:'VS003',from:'CPK',to:'BZG',dep:'13:55',arr:'14:55',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},{id:'VS004',from:'BZG',to:'CPK',dep:'15:25',arr:'16:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},{id:'VS119',from:'CPK',to:'LEJ',dep:'16:55',arr:'18:10',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},{id:'VS120',from:'LEJ',to:'CPK',dep:'18:50',arr:'20:05',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},{id:'VS010',from:'CPK',to:'BHX',dep:'13:00',arr:'15:15',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},{id:'VS011',from:'BHX',to:'CPK',dep:'15:55',arr:'18:10',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},{id:'VS020',from:'CPK',to:'HEL',dep:'06:50',arr:'08:15',duration:'1h 25m',aircraft:'A321neo',classes:{economy:149,business:749}},{id:'VS021',from:'HEL',to:'CPK',dep:'08:55',arr:'10:20',duration:'1h 25m',aircraft:'A321neo',classes:{economy:149,business:749}},{id:'VS030',from:'CPK',to:'LHR',dep:'11:00',arr:'13:20',duration:'2h 20m',aircraft:'A321neo',classes:{economy:129,business:699}},{id:'VS031',from:'LHR',to:'CPK',dep:'14:00',arr:'16:20',duration:'2h 20m',aircraft:'A321neo',classes:{economy:129,business:699}},{id:'VS040',from:'CPK',to:'ALC',dep:'17:00',arr:'20:10',duration:'3h 10m',aircraft:'A321neo',classes:{economy:1,business:499}},{id:'VS041',from:'ALC',to:'CPK',dep:'20:50',arr:'01:00+1',duration:'4h 10m',aircraft:'A321neo',classes:{economy:1,business:499}},{id:'VS200',from:'CPK',to:'SYD',dep:'00:00',arr:'17:30+1',duration:'17h 30m',aircraft:'Boeing 777-8',classes:{economy:2799,business:11999},days:[1,2]},{id:'VS201',from:'SYD',to:'CPK',dep:'20:30',arr:'14:00+1',duration:'17h 30m',aircraft:'Boeing 777-8',classes:{economy:2799,business:11999},days:[2,3]},{id:'VS202',from:'CPK',to:'YYZ',dep:'17:00',arr:'02:45+1',duration:'9h 45m',aircraft:'Boeing 777-8',classes:{economy:2299,business:9999},days:[3,4]},{id:'VS203',from:'YYZ',to:'CPK',dep:'05:45',arr:'15:30',duration:'9h 45m',aircraft:'Boeing 777-8',classes:{economy:2299,business:9999},days:[4,5]},{id:'VS204',from:'CPK',to:'PER',dep:'18:30',arr:'10:00+1',duration:'15h 30m',aircraft:'Boeing 777-8',classes:{economy:2599,business:10999},days:[4,5]},{id:'VS205',from:'PER',to:'CPK',dep:'13:00',arr:'04:30+1',duration:'15h 30m',aircraft:'Boeing 777-8',classes:{economy:2599,business:10999},days:[5,6]},{id:'VS206',from:'CPK',to:'PEK',dep:'13:00',arr:'22:30',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[6,0]},{id:'VS207',from:'PEK',to:'CPK',dep:'01:30',arr:'11:00',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[0,1]},{id:'VS208',from:'CPK',to:'PEK',dep:'22:00',arr:'07:30+1',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[1]},{id:'VS209',from:'PEK',to:'CPK',dep:'10:30',arr:'20:00',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[2]}];
-        const AIRPORTS={'CPK':{city:'Warszawa / CPK'},'GDN':{city:'Gdańsk'},'SZZ':{city:'Szczecin'},'KRK':{city:'Kraków'},'BZG':{city:'Bydgoszcz'},'KTW':{city:'Katowice'},'RZE':{city:'Rzeszów'},'WRO':{city:'Wrocław'},'POZ':{city:'Poznań'},'FRA':{city:'Frankfurt'},'MUC':{city:'Monachium'},'DTM':{city:'Dortmund'},'BER':{city:'Berlin'},'BHX':{city:'Birmingham'},'HEL':{city:'Helsinki'},'LHR':{city:'Londyn'},'ALC':{city:'Alicante'},'MAN':{city:'Manchester'},'EDI':{city:'Edynburg'},'NCL':{city:'Newcastle'},'AAR':{city:'Aarhus'},'AAL':{city:'Aalborg'},'BRN':{city:'Brno'},'LEJ':{city:'Lipsk'},'SYD':{city:'Sydney'},'YYZ':{city:'Toronto'},'PER':{city:'Perth'},'PEK':{city:'Pekin'}};
-        const MONTHS=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
-        const DAYS_S=['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
-
-        const TARIFFS={
-            economy:[
-                {id:'eco-bronze',name:'Ekonomi Brąz',features:[
-                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Nie dozwolony'},
-                    {icon:'↩',text:'<strong>Zwroty</strong><br>Nie dozwolony'},
-                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
-                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
-                ]},
-                {id:'eco-gold',name:'Ekonomi Gold',rec:true,features:[
-                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Dozwolona plus różnica w taryfie'},
-                    {icon:'↩',text:'<strong>Zwroty</strong><br>Nie dozwolony'},
-                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
-                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
-                    {icon:'📦',text:'<strong>Bagaż rejestrowany</strong><br>1× 23kg'},
-                    {icon:'💺',text:'<strong>Rezerwacja miejsca</strong><br>W cenie'},
-                ]},
-            ],
-            business:[
-                {id:'biz-bronze',name:'Biznes Brąz',features:[
-                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Dozwolona plus różnica w taryfie'},
-                    {icon:'↩',text:'<strong>Zwroty</strong><br>Zwrot z wyjątkiem 299 PLN'},
-                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
-                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
-                    {icon:'📦',text:'<strong>Bagaż rejestrowany</strong><br>2× 32kg'},
-                    {icon:'💺',text:'<strong>Preferred Zone Seat</strong><br>W cenie'},
-                    {icon:'🚀',text:'<strong>Priorytetowy boarding</strong><br>W cenie'},
-                ]},
-                {id:'biz-gold',name:'Biznes Gold',rec:true,features:[
-                    {icon:'🔄',text:'<strong>Zmiana rezerwacji</strong><br>Dozwolona, bez dodatkowych opłat'},
-                    {icon:'↩',text:'<strong>Zwroty</strong><br>Pełny zwrot'},
-                    {icon:'👜',text:'<strong>1 przedmiot osobisty</strong><br>maks. 40 x 30 x 15cm'},
-                    {icon:'🧳',text:'<strong>Torba podręczna</strong><br>1 x 8kg, maks. 55 x 40 x 23cm'},
-                    {icon:'📦',text:'<strong>Bagaż rejestrowany</strong><br>2× 32kg'},
-                    {icon:'💺',text:'<strong>Preferred Zone Seat</strong><br>W cenie'},
-                    {icon:'🚀',text:'<strong>Priorytetowy boarding</strong><br>W cenie'},
-                    {icon:'🍽',text:'<strong>Lounge VIS Airlines</strong><br>Dostęp w cenie'},
-                ]},
-            ]
-        };
-        const TARIFF_MULTIPLIER={'eco-bronze':1,'eco-gold':1.15,'biz-bronze':1,'biz-gold':1.12};
-
-        /* ============ PARAMS ============ */
-        const P=new URLSearchParams(location.search);
-        const flightId=P.get('flight')||'VS001';
-        const cls=P.get('class')||'economy';
-        const dateStr=P.get('date')||'';
-        const tripType=P.get('type')||'one';
-        const adults=parseInt(P.get('adults'))||1;
-        const children=parseInt(P.get('children'))||0;
-        const infants=parseInt(P.get('infants'))||0;
-        const totalPax=adults+children;
-
-        const flight=ROUTES.find(r=>r.id===flightId)||ROUTES[0];
-        const fromA=AIRPORTS[flight.from]||{city:flight.from};
-        const toA=AIRPORTS[flight.to]||{city:flight.to};
-        const depDate=dateStr?new Date(dateStr+'T12:00:00'):new Date();
-        const retDateStr=P.get('ret')||'';
-        const retDate=retDateStr?new Date(retDateStr+'T12:00:00'):null;
-
-        // Find ALL return flights (there may be multiple)
-        const returnFlights=ROUTES.filter(r=>r.from===flight.to && r.to===flight.from);
-        const hasReturn=tripType==='round' && returnFlights.length>0;
-
-        function fmtDate(d){return DAYS_S[d.getDay()]+', '+d.getDate()+' '+MONTHS[d.getMonth()]+' '+d.getFullYear();}
-        function fmtShort(d){return d.getDate()+' '+MONTHS[d.getMonth()].substring(0,3)+' '+d.getFullYear();}
-
-        /* ============ STATE ============ */
-        let step=1;
-        let outTariff=null;
-        let retTariff=null;
-        let selectedReturnFlight=returnFlights.length===1?returnFlights[0]:null;
-        let outPrice=0, retPrice=0;
-        let passengerData=[];
-
-        const app=document.getElementById('app');
-        const prog=document.getElementById('progress');
-
-        const STEPS=[
-            {num:1,label:'Taryfa wylotu'},
-            ...(hasReturn?[{num:2,label:'Lot powrotny'},{num:3,label:'Taryfa powrotu'}]:[]),
-            {num:hasReturn?4:2,label:'Podsumowanie'},
-            {num:hasReturn?5:3,label:'Dane pasażera'},
-            {num:hasReturn?6:4,label:'Usługi dodatkowe'},
-            {num:hasReturn?7:5,label:'Płatność'},
+        /* ============================================
+           BAZA TRAS VIS Airlines
+           Dodawaj nowe trasy tutaj!
+           ============================================ */
+        const ROUTES = [
+            // === E175-E2 ===
+            {id:'VS100',from:'MAN',to:'CPK',dep:'06:00',arr:'08:10',duration:'2h 10m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},
+            {id:'VS101',from:'CPK',to:'EDI',dep:'08:40',arr:'11:05',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},
+            {id:'VS102',from:'EDI',to:'CPK',dep:'11:35',arr:'14:00',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},
+            {id:'VS103',from:'CPK',to:'AAR',dep:'14:30',arr:'16:15',duration:'1h 45m',aircraft:'Embraer 175-E2',classes:{economy:119,business:649}},
+            {id:'VS104',from:'AAR',to:'CPK',dep:'16:45',arr:'18:00',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:119,business:649}},
+            {id:'VS105',from:'CPK',to:'EDI',dep:'18:30',arr:'20:55',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},
+            {id:'VS106',from:'EDI',to:'CPK',dep:'21:25',arr:'23:50',duration:'2h 25m',aircraft:'Embraer 175-E2',classes:{economy:159,business:799}},
+            {id:'VS107',from:'CPK',to:'MAN',dep:'00:20',arr:'02:30',duration:'2h 10m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},
+            {id:'VS108',from:'BHX',to:'CPK',dep:'06:00',arr:'08:15',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:139,business:699}},
+            {id:'VS109',from:'CPK',to:'NCL',dep:'08:45',arr:'11:00',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},
+            {id:'VS110',from:'NCL',to:'CPK',dep:'11:30',arr:'13:45',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:149,business:749}},
+            {id:'VS111',from:'CPK',to:'AAL',dep:'14:15',arr:'16:05',duration:'1h 50m',aircraft:'Embraer 175-E2',classes:{economy:109,business:599}},
+            {id:'VS112',from:'AAL',to:'CPK',dep:'16:35',arr:'18:30',duration:'1h 55m',aircraft:'Embraer 175-E2',classes:{economy:109,business:599}},
+            {id:'VS113',from:'CPK',to:'BER',dep:'19:00',arr:'20:10',duration:'1h 10m',aircraft:'Embraer 175-E2',classes:{economy:89,business:499}},
+            {id:'VS114',from:'BER',to:'CPK',dep:'20:40',arr:'21:50',duration:'1h 10m',aircraft:'Embraer 175-E2',classes:{economy:89,business:499}},
+            {id:'VS115',from:'CPK',to:'BHX',dep:'22:20',arr:'00:35+1',duration:'2h 15m',aircraft:'Embraer 175-E2',classes:{economy:139,business:699}},
+            {id:'VS116',from:'BRN',to:'CPK',dep:'06:00',arr:'06:55',duration:'0h 55m',aircraft:'Embraer 175-E2',classes:{economy:69,business:399}},
+            {id:'VS001',from:'CPK',to:'BZG',dep:'07:25',arr:'08:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},
+            {id:'VS002',from:'BZG',to:'CPK',dep:'08:55',arr:'09:55',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},
+            {id:'VS117',from:'CPK',to:'LEJ',dep:'10:25',arr:'11:40',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},
+            {id:'VS118',from:'LEJ',to:'CPK',dep:'12:10',arr:'13:25',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},
+            {id:'VS003',from:'CPK',to:'BZG',dep:'13:55',arr:'14:55',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},
+            {id:'VS004',from:'BZG',to:'CPK',dep:'15:25',arr:'16:25',duration:'1h 00m',aircraft:'Embraer 175-E2',classes:{economy:100,business:600}},
+            {id:'VS119',from:'CPK',to:'LEJ',dep:'16:55',arr:'18:10',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},
+            {id:'VS120',from:'LEJ',to:'CPK',dep:'18:50',arr:'20:05',duration:'1h 15m',aircraft:'Embraer 175-E2',classes:{economy:99,business:549}},
+            // === A320neo ===
+            {id:'VS010',from:'CPK',to:'BHX',dep:'13:00',arr:'15:15',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},
+            {id:'VS011',from:'BHX',to:'CPK',dep:'15:55',arr:'18:10',duration:'2h 15m',aircraft:'A320neo',classes:{economy:200,business:800}},
+            // === A321neo ===
+            {id:'VS020',from:'CPK',to:'HEL',dep:'06:50',arr:'08:15',duration:'1h 25m',aircraft:'A321neo',classes:{economy:149,business:749}},
+            {id:'VS021',from:'HEL',to:'CPK',dep:'08:55',arr:'10:20',duration:'1h 25m',aircraft:'A321neo',classes:{economy:149,business:749}},
+            {id:'VS030',from:'CPK',to:'LHR',dep:'11:00',arr:'13:20',duration:'2h 20m',aircraft:'A321neo',classes:{economy:129,business:699}},
+            {id:'VS031',from:'LHR',to:'CPK',dep:'14:00',arr:'16:20',duration:'2h 20m',aircraft:'A321neo',classes:{economy:129,business:699}},
+            {id:'VS040',from:'CPK',to:'ALC',dep:'17:00',arr:'20:10',duration:'3h 10m',aircraft:'A321neo',classes:{economy:1,business:499}},
+            {id:'VS041',from:'ALC',to:'CPK',dep:'20:50',arr:'01:00+1',duration:'4h 10m',aircraft:'A321neo',classes:{economy:1,business:499}},
+            // === B777-8 (day-specific: 0=Nd,1=Pn,2=Wt,3=Śr,4=Cz,5=Pt,6=So) ===
+            {id:'VS200',from:'CPK',to:'SYD',dep:'00:00',arr:'17:30+1',duration:'17h 30m',aircraft:'Boeing 777-8',classes:{economy:2799,business:11999},days:[1,2]},
+            {id:'VS201',from:'SYD',to:'CPK',dep:'20:30',arr:'14:00+1',duration:'17h 30m',aircraft:'Boeing 777-8',classes:{economy:2799,business:11999},days:[2,3]},
+            {id:'VS202',from:'CPK',to:'YYZ',dep:'17:00',arr:'02:45+1',duration:'9h 45m',aircraft:'Boeing 777-8',classes:{economy:2299,business:9999},days:[3,4]},
+            {id:'VS203',from:'YYZ',to:'CPK',dep:'05:45',arr:'15:30',duration:'9h 45m',aircraft:'Boeing 777-8',classes:{economy:2299,business:9999},days:[4,5]},
+            {id:'VS204',from:'CPK',to:'PER',dep:'18:30',arr:'10:00+1',duration:'15h 30m',aircraft:'Boeing 777-8',classes:{economy:2599,business:10999},days:[4,5]},
+            {id:'VS205',from:'PER',to:'CPK',dep:'13:00',arr:'04:30+1',duration:'15h 30m',aircraft:'Boeing 777-8',classes:{economy:2599,business:10999},days:[5,6]},
+            {id:'VS206',from:'CPK',to:'PEK',dep:'13:00',arr:'22:30',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[6,0]},
+            {id:'VS207',from:'PEK',to:'CPK',dep:'01:30',arr:'11:00',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[0,1]},
+            {id:'VS208',from:'CPK',to:'PEK',dep:'22:00',arr:'07:30+1',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[1]},
+            {id:'VS209',from:'PEK',to:'CPK',dep:'10:30',arr:'20:00',duration:'9h 30m',aircraft:'Boeing 777-8',classes:{economy:1799,business:7999},days:[2]},
         ];
 
-        function renderProgress(){
-            prog.innerHTML=STEPS.map((s,i)=>{
-                const isCurrent=step===(i+1);
-                const isDone=step>(i+1);
-                return (i>0?'<div class="progress-sep"></div>':'')+
-                    `<div class="progress-step ${isCurrent?'active':''} ${isDone?'done':''}">
-                        <span class="progress-step-num">${isDone?'✓':s.num}</span>${s.label}
-                    </div>`;
-            }).join('');
+        const AIRPORTS = {
+            'CPK':{city:'Warszawa / CPK',name:'Centralny Port Komunikacyjny'},
+            'GDN':{city:'Gdańsk',name:'Gdańsk im. Lecha Wałęsy'},
+            'SZZ':{city:'Szczecin',name:'Szczecin-Goleniów'},
+            'KRK':{city:'Kraków',name:'Kraków Balice'},
+            'BZG':{city:'Bydgoszcz',name:'Bydgoszcz Szwederowo'},
+            'KTW':{city:'Katowice',name:'Katowice-Pyrzowice'},
+            'RZE':{city:'Rzeszów',name:'Rzeszów-Jasionka'},
+            'WRO':{city:'Wrocław',name:'Wrocław Strachowice'},
+            'POZ':{city:'Poznań',name:'Poznań Ławica'},
+            'FRA':{city:'Frankfurt',name:'Frankfurt am Main'},
+            'MUC':{city:'Monachium',name:'Monachium Franz Josef Strauß'},
+            'DTM':{city:'Dortmund',name:'Dortmund'},
+            'BER':{city:'Berlin',name:'Berlin Brandenburg'},
+            'BHX':{city:'Birmingham',name:'Birmingham'},
+            'HEL':{city:'Helsinki',name:'Helsinki-Vantaa'},
+            'LHR':{city:'Londyn',name:'London Heathrow'},
+            'ALC':{city:'Alicante',name:'Alicante-Elche'},
+            'MAN':{city:'Manchester',name:'Manchester'},
+            'EDI':{city:'Edynburg',name:'Edinburgh'},
+            'NCL':{city:'Newcastle',name:'Newcastle'},
+            'AAR':{city:'Aarhus',name:'Aarhus'},
+            'AAL':{city:'Aalborg',name:'Aalborg'},
+            'BRN':{city:'Brno',name:'Brno-Tuřany'},
+            'LEJ':{city:'Lipsk',name:'Leipzig/Halle'},
+            'SYD':{city:'Sydney',name:'Sydney Kingsford Smith'},
+            'YYZ':{city:'Toronto',name:'Toronto Pearson'},
+            'PER':{city:'Perth',name:'Perth'},
+            'PEK':{city:'Pekin',name:'Beijing Capital'},
+        };
+
+        const MONTHS_PL = ['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
+        const DAYS_PL = ['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+        const CLASS_NAMES = { economy: 'Ekonomiczna', premium: 'Premium', business: 'Biznes', first: 'Pierwsza' };
+
+        /* Parse URL params */
+        const params = new URLSearchParams(window.location.search);
+        const fromCode = params.get('from') || '';
+        const toCode = params.get('to') || '';
+        const depDate = params.get('dep') || '';
+        const tripType = params.get('type') || 'round';
+        let selectedClass = params.get('class') || 'economy';
+        const adults = parseInt(params.get('adults')) || 1;
+        const children = parseInt(params.get('children')) || 0;
+        const infants = parseInt(params.get('infants')) || 0;
+        const totalPax = adults + children;
+
+        let selectedDate = depDate ? new Date(depDate+'T12:00:00') : new Date();
+        let nextDayLayover = 0; // 0 = same day, 1-3 = days of layover
+
+        const app = document.getElementById('app');
+
+        /* ============================================
+           FIND FLIGHTS
+           ============================================ */
+        function findDirectFlights(from, to, forDate) {
+            const d = forDate || selectedDate;
+            const dayOfWeek = d.getDay();
+            return ROUTES.filter(r => r.from === from && r.to === to && (!r.days || r.days.includes(dayOfWeek)));
         }
 
-        /* ============ STEP 1: TARIFF ============ */
-        function renderTariffs(direction){
-            const isOut=direction==='out';
-            const currentFlight=isOut?flight:selectedReturnFlight;
-            const label=isOut?`${fromA.city} → ${toA.city}`:`${toA.city} → ${fromA.city}`;
-            const dateLabel=fmtDate(depDate);
-
-            // No return notice
-            let noReturnNotice='';
-            if(!isOut && !selectedReturnFlight){
-                // Should not happen now but safety
-                step++;render();return;
+        function findConnections(from, to) {
+            if (from === 'CPK' || to === 'CPK') return [];
+            const dayOfWeek = selectedDate.getDay();
+            let connections = [];
+            const leg1s = ROUTES.filter(r => r.from === from && r.to === 'CPK' && (!r.days || r.days.includes(dayOfWeek)));
+            const leg2s = ROUTES.filter(r => r.from === 'CPK' && r.to === to && (!r.days || r.days.includes(dayOfWeek)));
+            for (const l1 of leg1s) {
+                for (const l2 of leg2s) {
+                    connections.push({ leg1: l1, leg2: l2, via: 'CPK' });
+                }
             }
-            if(tripType==='round' && !hasReturn && isOut){
-                noReturnNotice=`<div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:var(--radius-md);padding:16px 24px;margin-bottom:24px;font-size:14px;color:var(--gold-400);display:flex;align-items:center;gap:10px;">
-                    <span style="font-size:20px;">⚠</span>
-                    <span>Wybrałeś lot w obie strony, ale trasa powrotna <strong>${toA.city} → ${fromA.city}</strong> nie jest jeszcze dostępna. Rezerwacja będzie w jedną stronę.</span>
-                </div>`;
-            }
-
-            // Build ALL tariffs — eco + business
-            const allTariffs=[];
-            // Economy tariffs
-            if(currentFlight.classes.economy){
-                TARIFFS.economy.forEach(t=>{
-                    const mult=TARIFF_MULTIPLIER[t.id]||1;
-                    allTariffs.push({...t,price:Math.round(currentFlight.classes.economy*mult),classType:'economy'});
-                });
-            }
-            // Business tariffs
-            if(currentFlight.classes.business){
-                TARIFFS.business.forEach(t=>{
-                    const mult=TARIFF_MULTIPLIER[t.id]||1;
-                    allTariffs.push({...t,price:Math.round(currentFlight.classes.business*mult),classType:'business'});
-                });
-            }
-
-            let html=noReturnNotice+`
-                <h2 class="step-title">Wybierz <span class="gold">taryfę</span></h2>
-                <div class="step-subtitle">${label} · ${dateLabel}</div>
-                <div class="tariff-grid">
-            `;
-
-            allTariffs.forEach(t=>{
-                const total=t.price*totalPax;
-                const sel=(isOut?outTariff:retTariff)===t.id;
-                html+=`
-                    <div class="tariff-card ${sel?'selected':''} ${t.rec?'recommended':''}" data-tariff="${t.id}" data-price="${t.price}" data-class="${t.classType}">
-                        <div class="tariff-header">
-                            <div class="tariff-price">${t.price} <span class="tariff-currency">PLN</span></div>
-                            <div class="tariff-name">${t.name}</div>
-                            ${t.rec?'<div class="tariff-rec-badge">Nasza rekomendacja</div>':''}
-                        </div>
-                        <div class="tariff-features">
-                            ${t.features.map(f=>`<div class="tariff-feature"><span class="tariff-feature-icon">${f.icon}</span><span>${f.text}</span></div>`).join('')}
-                        </div>
-                        <div class="tariff-btn-wrap">
-                            <button class="tariff-btn tariff-btn-outline">Wybierz</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html+=`</div>
-                <div class="action-bar">
-                    <button class="btn btn-ghost" onclick="history.back()">← Wróć</button>
-                    <button class="btn btn-gold btn-lg" id="tariff-next" disabled>Przejdź dalej →</button>
-                </div>`;
-
-            app.innerHTML=html;
-
-            app.querySelectorAll('.tariff-card').forEach(card=>{
-                card.addEventListener('click',()=>{
-                    app.querySelectorAll('.tariff-card').forEach(c=>c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    const tid=card.dataset.tariff;
-                    const tp=parseInt(card.dataset.price);
-                    if(isOut){outTariff=tid;outPrice=tp;}
-                    else{retTariff=tid;retPrice=tp;}
-                    document.getElementById('tariff-next').disabled=false;
-                });
-            });
-
-            document.getElementById('tariff-next').addEventListener('click',()=>{
-                step++;
-                render();
-            });
+            return connections;
         }
 
-        /* ============ STEP: RETURN FLIGHT SELECTION ============ */
-        let retSelectedDate=retDate||new Date(depDate.getTime()+86400000); // default: day after departure
-        let retSelectedClass='economy';
-
-        function getPriceForDate(basePrice,date){
-            const dow=date.getDay();
-            if(dow===0||dow===6) return Math.round(basePrice*1.15);
-            if(dow===2||dow===3) return Math.round(basePrice*0.90);
+        function getPriceForDate(basePrice, date) {
+            const d = new Date(date);
+            const dow = d.getDay();
+            // Weekend +15%, Tue/Wed -10%
+            if (dow === 0 || dow === 6) return Math.round(basePrice * 1.15);
+            if (dow === 2 || dow === 3) return Math.round(basePrice * 0.90);
             return basePrice;
         }
 
-        function renderReturnFlights(){
-            const MONTHS_S=['sty','lut','mar','kwi','maj','cze','lip','sie','wrz','paź','lis','gru'];
-            const DAYS_SHORT=['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+        function getClassPrice(route, cls, date) {
+            if (!route.classes[cls]) return null;
+            return getPriceForDate(route.classes[cls], date);
+        }
 
-            let html=`
-                <h2 class="step-title">Wybierz lot <span class="gold">powrotny</span></h2>
-                <div class="step-subtitle">${toA.city} → ${fromA.city}</div>
+        function formatDateShort(d) {
+            return d.getDate() + ' ' + MONTHS_PL[d.getMonth()];
+        }
+        function formatDateFull(d) {
+            return d.getDate() + ' ' + MONTHS_PL[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        /* ============================================
+           CHECK CLASS AVAILABILITY
+           ============================================ */
+        function checkClassAvailability(routes) {
+            for (const r of routes) {
+                if (!r.classes[selectedClass]) return false;
+            }
+            return true;
+        }
+
+        function getAvailableClasses(routes) {
+            const all = ['economy','premium','business','first'];
+            return all.filter(c => routes.every(r => r.classes[c]));
+        }
+
+        /* ============================================
+           RENDER
+           ============================================ */
+        function render() {
+            const from = AIRPORTS[fromCode];
+            const to = AIRPORTS[toCode];
+
+            if (!from || !to) {
+                app.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠</div><h3>Brak danych</h3><p>Nie rozpoznano lotnisk. <a href="index.html" style="color:var(--gold-500)">Wróć do wyszukiwarki</a></p></div>';
+                return;
+            }
+
+            const directFlights = findDirectFlights(fromCode, toCode);
+            const connections = findConnections(fromCode, toCode);
+            const allRoutes = directFlights.length > 0 ? directFlights : (connections.length > 0 ? [connections[0].leg1, connections[0].leg2] : []);
+
+            // Check class
+            let classNotice = '';
+            if (allRoutes.length > 0 && !checkClassAvailability(allRoutes)) {
+                const avail = getAvailableClasses(allRoutes);
+                selectedClass = avail[0] || 'economy';
+                classNotice = `
+                    <div class="class-notice">
+                        <span class="class-notice-icon">⚠</span>
+                        <span>Klasa <strong>${CLASS_NAMES[params.get('class')]}</strong> nie jest dostępna na tej trasie. Dostępne klasy:</span>
+                        <div class="class-notice-btns">
+                            ${avail.map(c => `<button class="class-notice-btn ${c === selectedClass ? 'active' : ''}" data-class="${c}">${CLASS_NAMES[c]}</button>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Date strip (7 days centered on selected)
+            let dateStripHTML = '<div class="date-strip">';
+            for (let i = -3; i <= 3; i++) {
+                const d = new Date(selectedDate);
+                d.setDate(d.getDate() + i);
+                const today = new Date(); today.setHours(0,0,0,0);
+                if (d < today) {
+                    dateStripHTML += `<div class="date-strip-day" style="opacity:0.3;cursor:default"><div class="ds-weekday">${DAYS_PL[d.getDay()]}</div><div class="ds-date">${d.getDate()} ${MONTHS_PL[d.getMonth()]}</div><div class="ds-price">—</div></div>`;
+                    continue;
+                }
+                const isActive = d.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+                let price = '—';
+                const dayFlights = findDirectFlights(fromCode, toCode, d);
+                if (dayFlights.length > 0) {
+                    const p = getClassPrice(dayFlights[0], selectedClass, d);
+                    if (p) price = p + ' PLN';
+                } else {
+                    // Check connections for this day
+                    const dayDow = d.getDay();
+                    const cl1 = ROUTES.filter(r => r.from === fromCode && r.to === 'CPK' && (!r.days || r.days.includes(dayDow)));
+                    const cl2 = ROUTES.filter(r => r.from === 'CPK' && r.to === toCode && (!r.days || r.days.includes(dayDow)));
+                    if (cl1.length > 0 && cl2.length > 0) {
+                        const p1 = getClassPrice(cl1[0], selectedClass, d);
+                        const p2 = getClassPrice(cl2[0], selectedClass, d);
+                        if (p1 && p2) price = Math.round((p1 + p2) * 0.8) + ' PLN';
+                    }
+                }
+                dateStripHTML += `<div class="date-strip-day ${isActive ? 'active' : ''}" data-date="${d.toISOString().split('T')[0]}"><div class="ds-weekday">${DAYS_PL[d.getDay()]}</div><div class="ds-date">${d.getDate()} ${MONTHS_PL[d.getMonth()]}</div><div class="ds-price">${price}</div></div>`;
+            }
+            dateStripHTML += '</div>';
+
+            // Summary bar
+            const paxLabel = totalPax + (totalPax === 1 ? ' pasażer' : totalPax < 5 ? ' pasażerów' : ' pasażerów') + (infants ? ' + ' + infants + ' niem.' : '');
+            const summaryHTML = `
+                <div class="search-summary animate-in">
+                    <div class="search-summary-route">
+                        <div class="ss-airport"><div class="ss-code">${fromCode}</div><div class="ss-city">${from.city}</div></div>
+                        <div class="ss-arrow">→</div>
+                        <div class="ss-airport"><div class="ss-code">${toCode}</div><div class="ss-city">${to.city}</div></div>
+                    </div>
+                    <div class="ss-info">
+                        <span class="ss-tag">${formatDateFull(selectedDate)}</span>
+                        <span class="ss-tag">${paxLabel}</span>
+                        <span class="ss-tag">${CLASS_NAMES[selectedClass]}</span>
+                        <a href="index.html" class="ss-edit">Zmień wyszukiwanie</a>
+                    </div>
+                </div>
             `;
 
-            // Date strip — 7 days from departure date
-            const todayD=new Date();todayD.setHours(0,0,0,0);
-            const minRetDate=new Date(depDate.getTime()+86400000); // min = day after outbound
+            // Flight results
+            let resultsHTML = '';
 
-            html+='<div class="date-strip">';
-            for(let i=-3;i<=3;i++){
-                const d=new Date(retSelectedDate);
-                d.setDate(d.getDate()+i);
-                const isPast=d<minRetDate;
-                const isActive=d.toDateString()===retSelectedDate.toDateString();
-                let price='—';
-                if(!isPast && returnFlights.length>0){
-                    const rf=returnFlights[0];
-                    const p=rf.classes.economy?getPriceForDate(rf.classes.economy,d):null;
-                    if(p) price=p+' PLN';
-                }
-                html+=`<div class="date-strip-day ${isActive?'active':''} ${isPast?'past':''}" ${isPast?'':'data-ret-date="'+d.toISOString().split("T")[0]+'"'}>
-                    <div class="ds-weekday">${DAYS_SHORT[d.getDay()]}</div>
-                    <div class="ds-date">${d.getDate()} ${MONTHS_S[d.getMonth()]}</div>
-                    <div class="ds-price">${price}</div>
-                </div>`;
-            }
-            html+='</div>';
-
-            // Flight cards with class columns
-            if(returnFlights.length===0){
-                html+='<div style="text-align:center;padding:40px;color:var(--gray-400);">Brak dostępnych lotów powrotnych na ten dzień.</div>';
-            } else {
-                html+=`<div style="font-size:13px;color:var(--gray-400);margin-bottom:14px;">Znaleziono <strong style="color:var(--white);">${returnFlights.length}</strong> lot${returnFlights.length>1?'ów':''} powrotn${returnFlights.length>1?'ych':'y'}</div>`;
-
-                returnFlights.forEach(rf=>{
-                    const isSel=selectedReturnFlight&&selectedReturnFlight.id===rf.id;
-                    const availClasses=Object.keys(rf.classes);
-
-                    let classCols='';
-                    availClasses.forEach(cls=>{
-                        const price=getPriceForDate(rf.classes[cls],retSelectedDate);
-                        const total=price*totalPax;
-                        const isClsSel=isSel&&retSelectedClass===cls;
-                        const clsNames={economy:'Ekonomiczna',business:'Biznes'};
-                        classCols+=`
-                            <div class="fc-class-col ${isClsSel?'selected':''}" data-rf="${rf.id}" data-cls="${cls}">
+            if (directFlights.length > 0) {
+                resultsHTML += `<div class="results-title">Znaleziono <strong>${directFlights.length}</strong> lot${directFlights.length > 1 ? 'ów' : ''} bezpośredni${directFlights.length > 1 ? 'ch' : ''}</div>`;
+                for (const flight of directFlights) {
+                    // Build class columns
+                    const availClasses = Object.keys(flight.classes);
+                    let classCols = '';
+                    for (const cls of availClasses) {
+                        const price = getPriceForDate(flight.classes[cls], selectedDate);
+                        const total = price * totalPax;
+                        const isSelected = cls === selectedClass;
+                        classCols += `
+                            <div class="fc-class-col ${isSelected ? 'selected' : ''}" data-flight="${flight.id}" data-class="${cls}">
                                 <div class="fc-class-top">
-                                    <div class="fc-class-name">${clsNames[cls]||cls}</div>
+                                    <div class="fc-class-name">${CLASS_NAMES[cls]}</div>
                                     <div class="fc-class-from">Od</div>
                                     <div class="fc-class-price">${price}</div>
-                                    <div class="fc-class-currency">PLN${totalPax>1?' · razem '+total+' PLN':''}</div>
+                                    <div class="fc-class-currency">PLN${totalPax > 1 ? ' · razem ' + total + ' PLN' : ''}</div>
                                 </div>
                                 <div class="fc-class-bottom">˅</div>
                             </div>
                         `;
-                    });
+                    }
 
-                    html+=`
-                        <div class="fc" style="${isSel?'border-color:var(--gold-500);box-shadow:0 0 0 1px var(--gold-500);':''}">
+                    resultsHTML += `
+                        <div class="flight-card">
                             <div class="fc-main">
                                 <div class="fc-route-section">
-                                    <div>
-                                        <div class="fc-time">${rf.dep}</div>
-                                        <div class="fc-time-sub">${AIRPORTS[rf.from]?.city||rf.from}</div>
-                                    </div>
-                                    <div class="fc-arrow-block">
-                                        <div class="fc-duration">${rf.duration}</div>
-                                        <div class="fc-line"></div>
-                                        <div class="fc-type">Bezpośredni</div>
-                                    </div>
-                                    <div>
-                                        <div class="fc-time">${rf.arr}</div>
-                                        <div class="fc-time-sub">${AIRPORTS[rf.to]?.city||rf.to}</div>
+                                    <div class="fc-route">
+                                        <div><div class="fc-time">${flight.dep}</div><div class="fc-time-sub">${from.city}</div></div>
+                                        <div class="fc-arrow-block">
+                                            <div class="fc-duration">${flight.duration}</div>
+                                            <div class="fc-line"></div>
+                                            <div class="fc-type">Bezpośredni</div>
+                                        </div>
+                                        <div><div class="fc-time">${flight.arr}</div><div class="fc-time-sub">${to.city}</div></div>
                                     </div>
                                 </div>
                                 <div class="fc-classes">${classCols}</div>
                             </div>
                             <div class="fc-meta-bar">
-                                <span style="padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;background:rgba(46,204,113,.1);color:#2ecc71;border:1px solid rgba(46,204,113,.2);">Bezpośredni</span>
-                                <span class="fc-meta-item">✈ ${rf.id}</span>
-                                <span class="fc-meta-item">${rf.aircraft}</span>
+                                <span class="fc-badge fc-badge-direct">Bezpośredni</span>
+                                <span class="fc-meta-item">✈ ${flight.id}</span>
+                                <span class="fc-meta-item">${flight.aircraft}</span>
+                                ${flight.days ? '<span class="fc-meta-item" style="color:var(--gold-500);">📅 ' + flight.days.map(d=>['Nd','Pn','Wt','Śr','Cz','Pt','So'][d]).join(', ') + '</span>' : ''}
+                                <button class="btn btn-outline btn-sm" style="margin-left:auto;padding:6px 14px;font-size:12px;" onclick="showFlightDetails('${flight.aircraft}','${Object.keys(flight.classes).join(',')}')">Szczegóły</button>
+                                <a href="booking.html?flight=${flight.id}&class=${selectedClass}&date=${selectedDate.toISOString().split('T')[0]}&type=${tripType}&adults=${adults}&children=${children}&infants=${infants}" class="btn btn-gold btn-sm fc-book" style="text-decoration:none;">Przejdź dalej</a>
                             </div>
                         </div>
                     `;
-                });
-            }
-
-            html+=`
-                <div class="action-bar">
-                    <button class="btn btn-ghost" id="ret-back">← Wróć</button>
-                    <button class="btn btn-gold btn-lg" id="ret-next" ${selectedReturnFlight?'':'disabled'}>Przejdź dalej →</button>
-                </div>`;
-
-            app.innerHTML=html;
-
-            // Date strip click
-            app.querySelectorAll('.date-strip-day[data-ret-date]').forEach(el=>{
-                el.addEventListener('click',()=>{
-                    retSelectedDate=new Date(el.dataset.retDate+'T12:00:00');
-                    renderReturnFlights();
-                });
-            });
-
-            // Class column click — selects flight AND class
-            app.querySelectorAll('.fc-class-col[data-rf]').forEach(col=>{
-                col.addEventListener('click',()=>{
-                    selectedReturnFlight=returnFlights.find(r=>r.id===col.dataset.rf);
-                    retSelectedClass=col.dataset.cls;
-                    renderReturnFlights();
-                });
-            });
-
-            document.getElementById('ret-back').addEventListener('click',()=>{step--;render();});
-            const nextBtn=document.getElementById('ret-next');
-            if(nextBtn)nextBtn.addEventListener('click',()=>{
-                if(!selectedReturnFlight)return;
-                step++;render();
-            });
-        }
-
-        /* ============ STEP: SUMMARY ============ */
-        function renderSummary(){
-            const totalOut=outPrice*totalPax;
-            const totalRet=retPrice*totalPax;
-            const grandTotal=totalOut+totalRet;
-            const allTariffsList=[...TARIFFS.economy,...TARIFFS.business];
-            const outTariffName=allTariffsList.find(t=>t.id===outTariff)?.name||'';
-            const retTariffName=retTariff?(allTariffsList.find(t=>t.id===retTariff)?.name||''):'';
-            const outIsBiz=outTariff&&outTariff.startsWith('biz');
-            const retIsBiz=retTariff&&retTariff.startsWith('biz');
-
-            let html=`<h2 class="step-title">Twój plan <span class="gold">podróży</span></h2>
-                <div class="step-subtitle">Sprawdź szczegóły przed przejściem dalej</div>`;
-
-            // Outbound
-            html+=`<div class="summary-card">
-                <h3>${fromA.city} do ${toA.city}</h3>
-                <div class="route-date">${fmtDate(depDate)}</div>
-                <div class="summary-flight">
-                    <div><div class="sf-time">${flight.dep}</div><div class="sf-code">${flight.from}</div></div>
-                    <div class="sf-arrow"><div class="sf-arrow-dur">${flight.duration}</div><div class="sf-arrow-line"></div></div>
-                    <div><div class="sf-time">${flight.arr}</div><div class="sf-code">${flight.to}</div></div>
-                    <div class="sf-details"><span>Czas: ${flight.duration}</span><span>VIS Airlines · ${flight.aircraft}</span></div>
-                    <span class="sf-tariff-badge ${outIsBiz?'sf-tariff-biz':'sf-tariff-eco'}">${outTariffName}</span>
-                </div>
-            </div>`;
-
-            // Return
-            if(hasReturn&&retTariff){
-                html+=`<div class="summary-card">
-                    <h3>${toA.city} do ${fromA.city}</h3>
-                    <div class="route-date">Lot powrotny</div>
-                    <div class="summary-flight">
-                        <div><div class="sf-time">${selectedReturnFlight.dep}</div><div class="sf-code">${selectedReturnFlight.from}</div></div>
-                        <div class="sf-arrow"><div class="sf-arrow-dur">${selectedReturnFlight.duration}</div><div class="sf-arrow-line"></div></div>
-                        <div><div class="sf-time">${selectedReturnFlight.arr}</div><div class="sf-code">${selectedReturnFlight.to}</div></div>
-                        <div class="sf-details"><span>Czas: ${selectedReturnFlight.duration}</span><span>VIS Airlines · ${selectedReturnFlight.aircraft}</span></div>
-                        <span class="sf-tariff-badge ${retIsBiz?'sf-tariff-biz':'sf-tariff-eco'}">${retTariffName}</span>
-                    </div>
-                </div>`;
-            }
-
-            html+=`<div class="summary-total">
-                <span class="summary-total-label">Łączna cena za rejsy:</span>
-                <span class="summary-total-price">${grandTotal.toLocaleString('pl-PL')}</span>
-                <span class="summary-total-cur">PLN</span>
-            </div>`;
-
-            html+=`<div class="action-bar">
-                <button class="btn btn-ghost" id="sum-back">← Wróć</button>
-                <div class="action-bar-price">
-                    <div class="action-bar-sub">Łączna cena · ${totalPax} ${totalPax===1?'pasażer':'pasażerów'}</div>
-                    <div class="action-bar-total">${grandTotal.toLocaleString('pl-PL')} PLN</div>
-                </div>
-                <button class="btn btn-gold btn-lg" id="sum-next">Wprowadź dane pasażera →</button>
-            </div>`;
-
-            app.innerHTML=html;
-            document.getElementById('sum-back').addEventListener('click',()=>{step--;render();});
-            document.getElementById('sum-next').addEventListener('click',()=>{step++;render();});
-        }
-
-        /* ============ STEP: PASSENGER FORM ============ */
-        function renderPassengerForm(){
-            let html=`<h2 class="step-title">Wprowadź dane <span class="gold">pasażera</span></h2>
-                <div class="step-subtitle">* = pola obowiązkowe · Dane w formie podanej w paszporcie</div>`;
-
-            for(let i=0;i<totalPax;i++){
-                const isChild=i>=adults;
-                const label=isChild?`Dziecko ${i-adults+1}`:`Pasażer ${i+1} (dorosły)`;
-                html+=`<div class="pax-form-section">
-                    <h3>${label}</h3>
-                    <div class="form-hint">Informacje osobowe</div>
-                    <div class="pax-form-grid">
-                        <div>
-                            <select class="form-select-line" data-pax="${i}" data-field="title">
-                                <option value="">Tytuł *</option>
-                                <option value="Pan">Pan</option>
-                                <option value="Pani">Pani</option>
-                            </select>
-                        </div>
-                        <div></div>
-                        <div>
-                            <input class="form-input-line" placeholder="Imię *" data-pax="${i}" data-field="firstName" required>
-                            <div class="form-error-text">Wprowadź imię</div>
-                        </div>
-                        <div>
-                            <input class="form-input-line" placeholder="Nazwisko *" data-pax="${i}" data-field="lastName" required>
-                            <div class="form-error-text">Wprowadź nazwisko</div>
-                        </div>
-                    </div>
-                </div>`;
-            }
-
-            // Contact info
-            html+=`<div class="pax-form-section">
-                <h3>Informacje kontaktowe</h3>
-                <div class="form-hint">Potrzebujemy tych danych do potwierdzenia rezerwacji</div>
-                <div class="pax-form-grid">
-                    <div class="full">
-                        <input class="form-input-line" type="email" placeholder="E-mail *" id="pax-email">
-                        <div class="form-error-text" id="email-error">Wprowadź poprawny adres e-mail</div>
-                    </div>
-                    <div>
-                        <select class="form-select-line" id="pax-phone-prefix">
-                            <option value="+48">🇵🇱 +48</option>
-                            <option value="+49">🇩🇪 +49</option>
-                            <option value="+44">🇬🇧 +44</option>
-                            <option value="+1">🇺🇸 +1</option>
-                        </select>
-                    </div>
-                    <div>
-                        <input class="form-input-line" type="tel" placeholder="Numer telefonu (bez 0 na początku) *" id="pax-phone">
-                        <div class="form-error-text" id="phone-error">Wprowadź poprawny numer telefonu (9 cyfr)</div>
-                    </div>
-                </div>
-            </div>`;
-
-            const grandTotal=(outPrice+retPrice)*totalPax;
-            html+=`<div class="action-bar">
-                <button class="btn btn-ghost" id="pax-back">← Wróć</button>
-                <div class="action-bar-price">
-                    <div class="action-bar-sub">Łączna cena · ${totalPax} ${totalPax===1?'pasażer':'pasażerów'}</div>
-                    <div class="action-bar-total">${grandTotal.toLocaleString('pl-PL')} PLN</div>
-                </div>
-                <button class="btn btn-gold btn-lg" id="pax-confirm">Potwierdź →</button>
-            </div>`;
-
-            app.innerHTML=html;
-            document.getElementById('pax-back').addEventListener('click',()=>{step--;render();});
-            document.getElementById('pax-confirm').addEventListener('click',validateAndProceed);
-        }
-
-        function validateAndProceed(){
-            let valid=true;
-            // Clear errors
-            document.querySelectorAll('.form-error-text').forEach(e=>e.classList.remove('show'));
-            document.querySelectorAll('.form-input-line').forEach(e=>e.classList.remove('error'));
-
-            // Passengers
-            const paxInputs=document.querySelectorAll('[data-field]');
-            paxInputs.forEach(inp=>{
-                if(inp.tagName==='SELECT'){
-                    if(!inp.value){inp.classList.add('error');valid=false;}
-                } else {
-                    if(!inp.value.trim()){
-                        inp.classList.add('error');
-                        const err=inp.parentElement.querySelector('.form-error-text');
-                        if(err)err.classList.add('show');
-                        valid=false;
-                    }
                 }
-            });
+            } else if (connections.length > 0) {
+                resultsHTML += `<div class="results-title">Brak lotów bezpośrednich. Znaleziono <strong>${connections.length}</strong> połączeni${connections.length > 1 ? 'a' : 'e'} z przesiadką</div>`;
 
-            // Email
-            const email=document.getElementById('pax-email');
-            const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if(!emailRegex.test(email.value)){
-                email.classList.add('error');
-                document.getElementById('email-error').classList.add('show');
-                valid=false;
-            }
-
-            // Phone
-            const phone=document.getElementById('pax-phone');
-            const phoneClean=phone.value.replace(/\s/g,'');
-            if(!/^\d{7,15}$/.test(phoneClean)){
-                phone.classList.add('error');
-                document.getElementById('phone-error').classList.add('show');
-                valid=false;
-            }
-
-            if(!valid){
-                // Scroll to first error
-                const firstErr=document.querySelector('.error');
-                if(firstErr)firstErr.scrollIntoView({behavior:'smooth',block:'center'});
-                return;
-            }
-
-            // Success → next step (services)
-            step++;
-            render();
-        }
-
-        /* ============ STEP: SERVICES ============ */
-        /* ============ EXTRAS STATE ============ */
-        let extras={seat:null,seatClass:'economy',bag8:0,bag12:0,bag10:0,bag15:0,bag20:0,bag25:0,bag40:0,bagOversized:0,wifi:false,priority:false,fasttrack:false,lounge:false,loungePremium:false};
-
-        // Duration-based pricing: [0-2h, 2-4h, 4-6h, 6-19h]
-        const PRICE_TABLE={
-            bag8:[80,100,120,140],
-            bag12:[100,120,140,160],
-            bag10:[90,110,130,150],
-            bag15:[120,140,160,180],
-            bag20:[130,150,170,190],
-            bag25:[150,180,210,240],
-            bag40:[200,250,300,320],
-            seatBiz:[40,60,80,100],
-            seatEco:[20,40,60,60],
-            bagOversized:[100,160,220,280],
-            wifi:[20,40,60,60],
-            priority:[15,15,30,30],
-            fasttrack:[60,60,60,60],
-            lounge:[200,200,200,200],
-            loungePremium:[250,250,250,250]
-        };
-
-        // Determine duration category from flight
-        function getDurationHours(f){
-            const parts=f.duration.match(/(\d+)h\s*(\d+)?m?/);
-            if(!parts)return 1;
-            return parseInt(parts[1])+(parseInt(parts[2]||0)/60);
-        }
-        function getDurationCategory(){
-            const h=getDurationHours(flight);
-            if(h<=2) return 0;
-            if(h<=4) return 1;
-            if(h<=6) return 2;
-            return 3;
-        }
-        const durCat=getDurationCategory();
-        function getPrice(key){ return PRICE_TABLE[key][durCat]; }
-
-        // Seat map configs per aircraft
-        const SEAT_CONFIGS={
-            'Embraer 175-E2':{cols:['A','B','','C','D'],rows:20,biz:4,exitRows:[4,10]},
-            'A220-100':{colsBiz:['A','B','','C','D'],colsEco:['A','B','','C','D','E'],rows:26,biz:4,exitRows:[4,12]},
-            'A320neo':{cols:['A','B','C','','D','E','F'],rows:30,biz:4,exitRows:[12,13]},
-            'A321neo':{cols:['A','B','C','','D','E','F'],rows:36,biz:4,exitRows:[14,15,30]},
-            'A321XLR':{cols:['A','B','C','','D','E','F'],rows:36,biz:4,exitRows:[14,15]},
-            'A330-900neo':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:40,biz:7,exitRows:[7,25]},
-            'Boeing 787-9':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:38,biz:6,exitRows:[6,22]},
-            'Boeing 777-8':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:42,biz:6,exitRows:[6,20,35]},
-            'Boeing 777-9':{cols:['A','B','C','','D','E','F','G','','H','J','K'],rows:44,biz:7,exitRows:[7,22,37]},
-        };
-
-        function calcExtrasTotal(){
-            let t=0;
-            if(extras.seat){
-                const seatPrice=extras.seatClass==='business'?getPrice('seatBiz'):getPrice('seatEco');
-                t+=seatPrice*totalPax;
-            }
-            t+=extras.bag8*getPrice('bag8');
-            t+=extras.bag12*getPrice('bag12');
-            t+=extras.bag10*getPrice('bag10');
-            t+=extras.bag15*getPrice('bag15');
-            t+=extras.bag20*getPrice('bag20');
-            t+=extras.bag25*getPrice('bag25');
-            t+=extras.bag40*getPrice('bag40');
-            t+=extras.bagOversized*getPrice('bagOversized');
-            if(extras.wifi) t+=getPrice('wifi')*totalPax;
-            if(extras.priority) t+=getPrice('priority')*totalPax;
-            if(extras.fasttrack) t+=getPrice('fasttrack')*totalPax;
-            if(extras.lounge) t+=getPrice('lounge')*totalPax;
-            if(extras.loungePremium) t+=getPrice('loungePremium')*totalPax;
-            return t;
-        }
-
-        function renderServices(){
-            const flightTotal=(outPrice+retPrice)*totalPax;
-            const extrasTotal=calcExtrasTotal();
-            const grandTotal=flightTotal+extrasTotal;
-            const durLabel=['0-2h','2-4h','4-6h','6-19h'][durCat];
-            const seatPrice=getPrice('seatEco');
-
-            let html=`
-                <h2 class="step-title">Usługi <span class="gold">dodatkowe</span></h2>
-                <div class="step-subtitle">Czas lotu: ${flight.duration} (cennik: ${durLabel}) · Każda usługa jest opcjonalna</div>
-
-                <!-- WYBÓR MIEJSCA -->
-                <div class="extras-section">
-                    <div class="extras-section-header">
-                        <div class="extras-section-icon">💺</div>
-                        <div>
-                            <div class="extras-section-title">Wybór miejsca</div>
-                            <div class="extras-section-desc">Ekonomi: ${getPrice('seatEco')} PLN · Biznes: ${getPrice('seatBiz')} PLN / os.</div>
+                // Next day option
+                resultsHTML += `
+                    <div class="next-day-option">
+                        <div class="ndo-info">
+                            <h4>Przesiadka w CPK — wybierz wariant</h4>
+                            <p>Możesz kontynuować tego samego dnia lub zatrzymać się na 1–3 dni</p>
                         </div>
-                    </div>
-                    <div class="extras-options">
-                        <div id="seat-pick-btn" style="padding:16px 20px;cursor:pointer;border-radius:var(--radius-sm);border:1px solid ${extras.seat?'var(--gold-500)':'rgba(255,255,255,.08)'};background:${extras.seat?'rgba(201,168,76,.08)':'transparent'};transition:all .3s;display:flex;align-items:center;justify-content:space-between;">
-                            <div>
-                                <div style="font-size:14px;font-weight:500;color:var(--white);">Wybierz miejsce na planie samolotu</div>
-                                <div style="font-size:12px;color:var(--gray-400);margin-top:3px;">${flight.aircraft}</div>
-                            </div>
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                ${extras.seat?`<span style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--gold-500);">${extras.seat}</span><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#e74c3c;" id="seat-remove-btn">✕ Usuń</button>`:''}
-                                <span class="btn btn-outline" style="padding:8px 16px;font-size:13px;">${extras.seat?'Zmień':'Wybierz →'}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BAGAŻ PODRĘCZNY -->
-                <div class="extras-section">
-                    <div class="extras-section-header">
-                        <div class="extras-section-icon">🧳</div>
-                        <div><div class="extras-section-title">Bagaż podręczny</div><div class="extras-section-desc">Dodatkowy bagaż do kabiny</div></div>
-                    </div>
-                    <div class="extras-options">
-                        ${[{k:'bag8',l:'8 kg'},{k:'bag12',l:'12 kg'}].map(b=>`<div class="extras-counter" data-extra="${b.k}">
-                            <div class="et-info"><div class="et-name">Bagaż podręczny ${b.l}</div><div class="et-desc">${getPrice(b.k)} PLN / szt.</div></div>
-                            <div class="et-counter"><button class="et-counter-btn" data-action="minus">−</button><span class="et-counter-val">${extras[b.k]}</span><button class="et-counter-btn" data-action="plus">+</button></div>
-                        </div>`).join('')}
-                    </div>
-                </div>
-
-                <!-- BAGAŻ REJESTROWANY -->
-                <div class="extras-section">
-                    <div class="extras-section-header">
-                        <div class="extras-section-icon">📦</div>
-                        <div><div class="extras-section-title">Bagaż rejestrowany</div><div class="extras-section-desc">Bagaż oddawany przy odprawie</div></div>
-                    </div>
-                    <div class="extras-options">
-                        ${[{k:'bag10',l:'10 kg'},{k:'bag15',l:'15 kg'},{k:'bag20',l:'20 kg'},{k:'bag25',l:'25 kg'},{k:'bag40',l:'40 kg'}].map(b=>`<div class="extras-counter" data-extra="${b.k}">
-                            <div class="et-info"><div class="et-name">Bagaż ${b.l}</div><div class="et-desc">${getPrice(b.k)} PLN / szt.</div></div>
-                            <div class="et-counter"><button class="et-counter-btn" data-action="minus">−</button><span class="et-counter-val">${extras[b.k]}</span><button class="et-counter-btn" data-action="plus">+</button></div>
-                        </div>`).join('')}
-                    </div>
-                </div>
-
-                <!-- BAGAŻ NIESTANDARDOWY -->
-                <div class="extras-section">
-                    <div class="extras-section-header">
-                        <div class="extras-section-icon">🎿</div>
-                        <div><div class="extras-section-title">Bagaż niestandardowy</div><div class="extras-section-desc">Sprzęt sportowy, instrumenty muzyczne</div></div>
-                    </div>
-                    <div class="extras-options">
-                        <div class="extras-counter" data-extra="bagOversized">
-                            <div class="et-info"><div class="et-name">Bagaż niestandardowy</div><div class="et-desc">${getPrice('bagOversized')} PLN / szt.</div></div>
-                            <div class="et-counter"><button class="et-counter-btn" data-action="minus">−</button><span class="et-counter-val">${extras.bagOversized}</span><button class="et-counter-btn" data-action="plus">+</button></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- WIFI -->
-                <div class="extras-section">
-                    <div class="extras-section-header">
-                        <div class="extras-section-icon">📶</div>
-                        <div><div class="extras-section-title">Wi-Fi na pokładzie</div><div class="extras-section-desc">Internet podczas lotu</div></div>
-                    </div>
-                    <div class="extras-options">
-                        <div class="extras-toggle ${extras.wifi?'active':''}" data-extra="wifi">
-                            <div class="et-info"><div class="et-name">Pakiet Wi-Fi</div><div class="et-desc">${getPrice('wifi')} PLN / os.</div></div>
-                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- USŁUGI PREMIUM -->
-                <div class="extras-section">
-                    <div class="extras-section-header">
-                        <div class="extras-section-icon">⭐</div>
-                        <div><div class="extras-section-title">Usługi premium</div><div class="extras-section-desc">Podróżuj wygodniej</div></div>
-                    </div>
-                    <div class="extras-options">
-                        <div class="extras-toggle ${extras.priority?'active':''}" data-extra="priority">
-                            <div class="et-info"><div class="et-name">Pierwszeństwo wejścia na pokład</div><div class="et-desc">${getPrice('priority')} PLN / os.</div></div>
-                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
-                        </div>
-                        <div class="extras-toggle ${extras.fasttrack?'active':''}" data-extra="fasttrack">
-                            <div class="et-info"><div class="et-name">Fast Track</div><div class="et-desc">${getPrice('fasttrack')} PLN / os. · szybka kontrola bezpieczeństwa</div></div>
-                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
-                        </div>
-                        <div class="extras-toggle ${extras.lounge?'active':''}" data-extra="lounge">
-                            <div class="et-info"><div class="et-name">Salonik Business</div><div class="et-desc">${getPrice('lounge')} PLN / os. · napoje, przekąski, Wi-Fi</div></div>
-                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
-                        </div>
-                        <div class="extras-toggle ${extras.loungePremium?'active':''}" data-extra="loungePremium">
-                            <div class="et-info"><div class="et-name">Salonik Pierwszej Klasy</div><div class="et-desc">${getPrice('loungePremium')} PLN / os. · pełen serwis, prysznic</div></div>
-                            <div class="et-switch"><div class="et-switch-track"><div class="et-switch-thumb"></div></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PODSUMOWANIE KOSZTÓW -->
-                <div class="extras-summary">
-                    <div class="extras-summary-row"><span>Loty</span><span>${flightTotal.toLocaleString('pl-PL')} PLN</span></div>
-                    <div class="extras-summary-row"><span>Usługi dodatkowe</span><span id="extras-cost">${extrasTotal>0?extrasTotal.toLocaleString('pl-PL')+' PLN':'—'}</span></div>
-                    <div class="extras-summary-row extras-summary-total"><span>Łączna cena</span><span id="extras-grand">${grandTotal.toLocaleString('pl-PL')} PLN</span></div>
-                </div>
-
-                <div class="action-bar">
-                    <button class="btn btn-ghost" id="svc-back">← Wróć</button>
-                    <button class="btn btn-gold btn-lg" id="svc-pay">Przejdź do płatności →</button>
-                </div>
-            `;
-
-            app.innerHTML=html;
-
-            // Toggle events
-            app.querySelectorAll('.extras-toggle').forEach(el=>{
-                el.addEventListener('click',()=>{
-                    const key=el.dataset.extra;
-                    extras[key]=!extras[key];
-                    el.classList.toggle('active');
-                    updateExtrasTotals();
-                });
-            });
-
-            // Counter events
-            app.querySelectorAll('.extras-counter').forEach(el=>{
-                const key=el.dataset.extra;
-                el.querySelector('[data-action="minus"]').addEventListener('click',()=>{
-                    if(extras[key]>0){extras[key]--;el.querySelector('.et-counter-val').textContent=extras[key];updateExtrasTotals();}
-                });
-                el.querySelector('[data-action="plus"]').addEventListener('click',()=>{
-                    if(extras[key]<9){extras[key]++;el.querySelector('.et-counter-val').textContent=extras[key];updateExtrasTotals();}
-                });
-            });
-
-            document.getElementById('svc-back').addEventListener('click',()=>{step--;render();});
-            document.getElementById('svc-pay').addEventListener('click',()=>{step++;render();});
-
-            // Seat map
-            document.getElementById('seat-pick-btn').addEventListener('click',e=>{
-                if(e.target.id==='seat-remove-btn')return;
-                openSeatMap();
-            });
-
-            // Seat remove
-            const rmBtn=document.getElementById('seat-remove-btn');
-            if(rmBtn) rmBtn.addEventListener('click',e=>{
-                e.stopPropagation();
-                extras.seat=null;
-                extras.seatClass='economy';
-                renderServices();
-            });
-        }
-
-        function openSeatMap(){
-            const ac=flight.aircraft;
-            const cfg=SEAT_CONFIGS[ac]||SEAT_CONFIGS['A321neo'];
-            const cols=cfg.cols||cfg.colsEco||['A','B','C','','D','E','F'];
-            const colsBiz=cfg.colsBiz||cols;
-            const colsEco=cfg.colsEco||cols;
-            const rows=cfg.rows;
-            const bizRows=cfg.biz;
-            const exitRows=cfg.exitRows||[];
-
-            const occupied=new Set();
-            const allCols=[...new Set([...colsBiz,...colsEco].filter(c=>c!==''))];
-            const occCount=Math.floor(rows*allCols.length*(.3+Math.random()*.2));
-            for(let i=0;i<occCount;i++){
-                const r=Math.floor(Math.random()*rows)+1;
-                const cArr=r<=bizRows?colsBiz.filter(c=>c!==''):colsEco.filter(c=>c!=='');
-                const c=cArr[Math.floor(Math.random()*cArr.length)];
-                occupied.add(r+c);
-            }
-            if(extras.seat)occupied.delete(extras.seat);
-
-            let modal=document.createElement('div');
-            modal.className='seatmap-modal show';
-            modal.innerHTML=`
-                <div class="seatmap-box">
-                    <div class="seatmap-header">
-                        <h3>Wybierz miejsce · ${ac}</h3>
-                        <button class="seatmap-close" id="sm-close">✕</button>
-                    </div>
-                    <div class="seatmap-legend">
-                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-biz"></div> Business ${getPrice('seatBiz')} PLN</div>
-                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-available"></div> Economy ${getPrice('seatEco')} PLN</div>
-                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-occupied"></div> Zajęte</div>
-                        <div class="seatmap-legend-item"><div class="seatmap-legend-dot seat-selected"></div> Twój wybór</div>
-                    </div>
-                    <div class="seatmap-body" id="sm-body"></div>
-                    <div class="seatmap-footer">
-                        <div><span class="seatmap-selected-info">Wybrane: </span><span class="seatmap-selected-seat" id="sm-selected">${extras.seat||'—'}</span></div>
-                        <button class="btn btn-gold" id="sm-confirm" ${extras.seat?'':'disabled'}>Potwierdź</button>
-                    </div>
-                </div>`;
-            document.body.appendChild(modal);
-
-            const body=document.getElementById('sm-body');
-            let html='<div class="seatmap-plane">';
-
-            // Header for biz columns
-            html+='<div style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-400);padding:6px 0;font-weight:600;">Business Class</div>';
-            html+='<div class="seatmap-row"><div class="seatmap-rownum"></div>';
-            colsBiz.forEach(c=>{
-                if(c==='') html+='<div class="seat-aisle"></div>';
-                else html+='<div class="seatmap-seat" style="background:none;cursor:default;font-size:11px;color:var(--gray-400);font-weight:600;">'+c+'</div>';
-            });
-            html+='</div>';
-
-            // Business rows
-            for(let r=1;r<=bizRows;r++){
-                html+='<div class="seatmap-row"><div class="seatmap-rownum">'+r+'</div>';
-                colsBiz.forEach(c=>{
-                    if(c===''){html+='<div class="seat-aisle"></div>';return;}
-                    const sid=r+c;
-                    const isOcc=occupied.has(sid);
-                    const isSel=extras.seat===sid;
-                    let cls='seatmap-seat '+(isSel?'seat-selected':isOcc?'seat-occupied':'seat-biz');
-                    html+='<div class="'+cls+'" data-seat="'+(isOcc&&!isSel?'':sid)+'" data-class="business">'+(isSel?'✓':isOcc?'✕':c)+'</div>';
-                });
-                html+='</div>';
-                if(exitRows.includes(r)) html+='<div style="width:100%;text-align:center;font-size:9px;color:#e74c3c;padding:2px 0;letter-spacing:2px;">← EXIT ·················· EXIT →</div>';
-            }
-
-            // Economy header
-            html+='<div style="height:1px;background:rgba(255,255,255,.06);margin:10px 0;"></div>';
-            html+='<div style="text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-400);padding:6px 0;font-weight:600;">Economy Class</div>';
-            html+='<div class="seatmap-row"><div class="seatmap-rownum"></div>';
-            colsEco.forEach(c=>{
-                if(c==='') html+='<div class="seat-aisle"></div>';
-                else html+='<div class="seatmap-seat" style="background:none;cursor:default;font-size:11px;color:var(--gray-400);font-weight:600;">'+c+'</div>';
-            });
-            html+='</div>';
-
-            // Economy rows
-            for(let r=bizRows+1;r<=rows;r++){
-                html+='<div class="seatmap-row"><div class="seatmap-rownum">'+r+'</div>';
-                colsEco.forEach(c=>{
-                    if(c===''){html+='<div class="seat-aisle"></div>';return;}
-                    const sid=r+c;
-                    const isOcc=occupied.has(sid);
-                    const isSel=extras.seat===sid;
-                    let cls='seatmap-seat '+(isSel?'seat-selected':isOcc?'seat-occupied':'seat-available');
-                    html+='<div class="'+cls+'" data-seat="'+(isOcc&&!isSel?'':sid)+'" data-class="economy">'+(isSel?'✓':isOcc?'✕':c)+'</div>';
-                });
-                html+='</div>';
-                if(exitRows.includes(r)) html+='<div style="width:100%;text-align:center;font-size:9px;color:#e74c3c;padding:2px 0;letter-spacing:2px;">← EXIT ·················· EXIT →</div>';
-            }
-
-            html+='</div>';
-            body.innerHTML=html;
-
-            // Seat click
-            body.querySelectorAll('.seatmap-seat[data-seat]').forEach(s=>{
-                if(!s.dataset.seat)return;
-                s.addEventListener('click',()=>{
-                    body.querySelectorAll('.seat-selected').forEach(p=>{
-                        const pClass=p.dataset.class;
-                        p.className='seatmap-seat '+(pClass==='business'?'seat-biz':'seat-available');
-                        p.textContent=p.dataset.seat.replace(/[0-9]/g,'');
-                    });
-                    s.className='seatmap-seat seat-selected';
-                    s.textContent='✓';
-                    document.getElementById('sm-selected').textContent=s.dataset.seat;
-                    document.getElementById('sm-confirm').disabled=false;
-                    document.getElementById('sm-confirm').textContent='Potwierdź — '+(s.dataset.class==='business'?getPrice('seatBiz'):getPrice('seatEco'))+' PLN';
-                });
-            });
-
-            document.getElementById('sm-close').addEventListener('click',()=>{modal.remove();});
-            modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-
-            document.getElementById('sm-confirm').addEventListener('click',()=>{
-                const selText=document.getElementById('sm-selected').textContent;
-                if(selText&&selText!=='—'){
-                    extras.seat=selText;
-                    const selEl=body.querySelector('.seat-selected');
-                    extras.seatClass=selEl?selEl.dataset.class:'economy';
-                    modal.remove();
-                    renderServices();
-                }
-            });
-        }
-
-        function updateExtrasTotals(){
-            const flightTotal=(outPrice+retPrice)*totalPax;
-            const et=calcExtrasTotal();
-            const gt=flightTotal+et;
-            const ec=document.getElementById('extras-cost');
-            const eg=document.getElementById('extras-grand');
-            if(ec) ec.textContent=et>0?et.toLocaleString('pl-PL')+' PLN':'—';
-            if(eg) eg.textContent=gt.toLocaleString('pl-PL')+' PLN';
-        }
-
-        /* ============ STEP: PAYMENT ============ */
-        function renderPayment(){
-            const flightTotal=(outPrice+retPrice)*totalPax;
-            const extrasTotal=calcExtrasTotal();
-            const grandTotal=flightTotal+extrasTotal;
-            const user=fbAuth.currentUser;
-            const allTariffsList=[...TARIFFS.economy,...TARIFFS.business];
-
-            if(!user){
-                app.innerHTML=`
-                    <div style="text-align:center;padding:60px 20px;">
-                        <div style="font-size:48px;margin-bottom:16px;">🔐</div>
-                        <h2 class="step-title">Zaloguj się aby <span class="gold">zapłacić</span></h2>
-                        <p style="color:var(--gray-400);margin-bottom:24px;">Musisz mieć konto żeby dokończyć rezerwację. Twoje dane są bezpieczne.</p>
-                        <div style="display:flex;gap:12px;justify-content:center;">
-                            <a href="login.html" class="btn btn-gold btn-lg">Zaloguj się</a>
-                            <a href="register.html" class="btn btn-outline btn-lg" style="text-decoration:none;">Załóż konto</a>
+                        <div class="ndo-toggle">
+                            <button class="ndo-btn ${nextDayLayover===0?'active':''}" data-days="0">Tego samego dnia</button>
+                            <button class="ndo-btn ${nextDayLayover===1?'active':''}" data-days="1">+1 dzień</button>
+                            <button class="ndo-btn ${nextDayLayover===2?'active':''}" data-days="2">+2 dni</button>
+                            <button class="ndo-btn ${nextDayLayover===3?'active':''}" data-days="3">+3 dni</button>
                         </div>
                     </div>
                 `;
-                return;
+
+                for (const conn of connections) {
+                    const availClasses = getAvailableClasses([conn.leg1, conn.leg2]);
+                    let classCols = '';
+                    for (const cls of availClasses) {
+                        const p1 = getPriceForDate(conn.leg1.classes[cls], selectedDate);
+                        const p2 = getPriceForDate(conn.leg2.classes[cls], selectedDate);
+                        const combined = Math.round((p1 + p2) * 0.8);
+                        const total = combined * totalPax;
+                        const isSelected = cls === selectedClass;
+                        classCols += `
+                            <div class="fc-class-col ${isSelected ? 'selected' : ''}" data-class="${cls}">
+                                <div class="fc-class-top">
+                                    <div class="fc-class-name">${CLASS_NAMES[cls]}</div>
+                                    <div class="fc-class-from">Od</div>
+                                    <div class="fc-class-price">${combined}</div>
+                                    <div class="fc-class-currency">PLN · -20%${totalPax > 1 ? ' · razem ' + total + ' PLN' : ''}</div>
+                                </div>
+                                <div class="fc-class-bottom">˅</div>
+                            </div>
+                        `;
+                    }
+
+                    const leg2date = new Date(selectedDate);
+                    leg2date.setDate(leg2date.getDate() + nextDayLayover);
+
+                    let layoverText = 'Przesiadka w CPK';
+                    if (nextDayLayover > 0) {
+                        layoverText = `Pobyt w CPK: ${nextDayLayover} ${nextDayLayover === 1 ? 'dzień' : 'dni'} — lot dalej ${formatDateShort(leg2date)}`;
+                    }
+
+                    resultsHTML += `
+                        <div class="flight-card">
+                            <div class="fc-main">
+                                <div class="fc-route-section">
+                                    <div class="fc-route">
+                                        <div><div class="fc-time">${conn.leg1.dep}</div><div class="fc-time-sub">${AIRPORTS[conn.leg1.from]?.city || conn.leg1.from}</div></div>
+                                        <div class="fc-arrow-block">
+                                            <div class="fc-duration">Przesiadka</div>
+                                            <div class="fc-line"></div>
+                                            <div class="fc-type">via CPK</div>
+                                        </div>
+                                        <div><div class="fc-time">${conn.leg2.arr}</div><div class="fc-time-sub">${AIRPORTS[conn.leg2.to]?.city || conn.leg2.to}</div></div>
+                                    </div>
+                                </div>
+                                <div class="fc-classes">${classCols}</div>
+                            </div>
+                            <div class="fc-connection" style="padding:12px 28px;">
+                                <div class="fc-leg">
+                                    <span class="fc-leg-times">${conn.leg1.dep} → ${conn.leg1.arr}</span>
+                                    <span class="fc-leg-route">${conn.leg1.from} → ${conn.leg1.to}</span>
+                                    <span class="fc-leg-aircraft">${conn.leg1.aircraft}</span>
+                                </div>
+                                <div class="fc-layover ${nextDayLayover > 0 ? 'fc-layover-next-day' : ''}">
+                                    <span>🔄</span> ${layoverText}
+                                </div>
+                                <div class="fc-leg">
+                                    <span class="fc-leg-times">${conn.leg2.dep} → ${conn.leg2.arr}</span>
+                                    <span class="fc-leg-route">${conn.leg2.from} → ${conn.leg2.to}${nextDayLayover > 0 ? ' (' + formatDateShort(leg2date) + ')' : ''}</span>
+                                    <span class="fc-leg-aircraft">${conn.leg2.aircraft}</span>
+                                </div>
+                            </div>
+                            <div class="fc-meta-bar">
+                                <span class="fc-badge fc-badge-connect">Przesiadka CPK</span>
+                                <span class="fc-meta-item">✈ ${conn.leg1.id} + ${conn.leg2.id}</span>
+                                <a href="booking.html?flight=${conn.leg1.id}&class=${selectedClass}&date=${selectedDate.toISOString().split('T')[0]}&type=${tripType}&adults=${adults}&children=${children}&infants=${infants}" class="btn btn-gold btn-sm fc-book" style="margin-left:auto;text-decoration:none;">Przejdź dalej</a>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                // Check if route exists on OTHER days
+                const allRoutes = ROUTES.filter(r => r.from === fromCode && r.to === toCode);
+                let dayHint = '';
+                if (allRoutes.length > 0 && allRoutes.some(r => r.days)) {
+                    const dayNames = ['Nd','Pn','Wt','Śr','Cz','Pt','So'];
+                    const allDays = [...new Set(allRoutes.flatMap(r => r.days || [0,1,2,3,4,5,6]))].sort();
+                    dayHint = `<p style="margin-top:12px;color:var(--gold-500);">Ta trasa obsługiwana jest w dni: <strong>${allDays.map(d=>dayNames[d]).join(', ')}</strong></p>`;
+                }
+                resultsHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✈</div>
+                        <h3>Brak połączeń w tym dniu</h3>
+                        <p>Nie znaleźliśmy lotów na trasie ${fromCode} → ${toCode} w wybranym dniu. Spróbuj inną datę.</p>
+                        ${dayHint}
+                        <a href="index.html" class="btn btn-gold" style="margin-top:20px">Wróć do wyszukiwarki</a>
+                    </div>
+                `;
             }
 
-            app.innerHTML=`
-                <h2 class="step-title">Płatność <span class="gold">bezpieczna</span></h2>
-                <div class="step-subtitle">Finalizuj swoją rezerwację</div>
+            app.innerHTML = summaryHTML + classNotice + dateStripHTML + resultsHTML;
 
-                <div class="extras-summary" style="margin-bottom:32px;">
-                    <div class="extras-summary-row"><span>Loty (${totalPax} ${totalPax===1?'pasażer':'pasażerów'})</span><span>${flightTotal.toLocaleString('pl-PL')} PLN</span></div>
-                    ${extrasTotal>0?`<div class="extras-summary-row"><span>Usługi dodatkowe</span><span>${extrasTotal.toLocaleString('pl-PL')} PLN</span></div>`:''}
-                    <div class="extras-summary-row extras-summary-total"><span>Do zapłaty</span><span>${grandTotal.toLocaleString('pl-PL')} PLN</span></div>
-                </div>
-
-                <div class="payment-box">
-                    <div class="payment-box-icon">🔒</div>
-                    <h3>Płatność online — Stripe</h3>
-                    <p>Po kliknięciu zostaniesz przekierowany na bezpieczną stronę płatności Stripe. Po opłaceniu rezerwacja zostanie potwierdzona automatycznie.</p>
-                    <div class="payment-methods">
-                        <span class="pm-badge">VISA</span>
-                        <span class="pm-badge">Mastercard</span>
-                        <span class="pm-badge">BLIK</span>
-                        <span class="pm-badge">PayPo</span>
-                        <span class="pm-badge">Klarna</span>
-                    </div>
-                    <button class="btn btn-gold btn-lg" style="width:100%;margin-top:20px;" id="pay-btn">Zapłać ${grandTotal.toLocaleString('pl-PL')} PLN</button>
-                    <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--gray-500);">
-                        Płatność obsługiwana przez Stripe. Klikając akceptujesz regulamin VIS Airlines.
-                    </div>
-                </div>
-
-                <div class="action-bar">
-                    <button class="btn btn-ghost" id="pay-back">← Wróć do usług dodatkowych</button>
-                </div>
-            `;
-
-            document.getElementById('pay-back').addEventListener('click',()=>{step--;render();});
-
-            document.getElementById('pay-btn').addEventListener('click',async()=>{
-                const payBtn=document.getElementById('pay-btn');
-                payBtn.disabled=true;payBtn.innerHTML='<span style="display:inline-block;width:20px;height:20px;border:2px solid rgba(10,22,40,.3);border-top-color:var(--navy-800);border-radius:50%;animation:spin .6s linear infinite;"></span> Przekierowanie do płatności...';
-
-                const code=genCode();
-                const route=flight.from+' → '+flight.to+(hasReturn&&selectedReturnFlight?' ↩ '+selectedReturnFlight.from+' → '+selectedReturnFlight.to:'');
-                const booking={
-                    code,
-                    userId:user.uid,
-                    userEmail:user.email,
-                    userName:user.displayName||'',
-                    from:flight.from,
-                    to:flight.to,
-                    flightId:flight.id,
-                    dep:flight.dep,
-                    arr:flight.arr,
-                    duration:flight.duration,
-                    aircraft:flight.aircraft,
-                    date:dateStr,
-                    tariff:allTariffsList.find(t=>t.id===outTariff)?.name||'',
-                    outPrice,
-                    pax:totalPax,
-                    adults,children,infants,
-                    extras:JSON.parse(JSON.stringify(extras)),
-                    extrasTotal:calcExtrasTotal(),
-                    totalPrice:grandTotal,
-                    status:'pending',
-                    createdAt:firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                if(hasReturn&&selectedReturnFlight){
-                    booking.returnFrom=selectedReturnFlight.from;
-                    booking.returnTo=selectedReturnFlight.to;
-                    booking.returnFlightId=selectedReturnFlight.id;
-                    booking.returnDep=selectedReturnFlight.dep;
-                    booking.returnArr=selectedReturnFlight.arr;
-                    booking.returnTariff=allTariffsList.find(t=>t.id===retTariff)?.name||'';
-                    booking.retPrice=retPrice;
-                }
-
-                try{
-                    // 1. Save booking to Firestore as pending
-                    await fbDb.collection('bookings').add(booking);
-
-                    // 2. Call Vercel to create Stripe Checkout session
-                    const resp=await fetch('https://vis-payments.vercel.app/api/checkout',{
-                        method:'POST',
-                        headers:{'Content-Type':'application/json'},
-                        body:JSON.stringify({
-                            amount:grandTotal*100, // Stripe uses grosze (cents)
-                            bookingCode:code,
-                            route:route,
-                            email:user.email
-                        })
-                    });
-
-                    const data=await resp.json();
-
-                    if(data.url){
-                        // 3. Redirect to Stripe Checkout
-                        window.location.href=data.url;
-                    }else{
-                        throw new Error(data.error||'Błąd tworzenia sesji płatności');
-                    }
-                }catch(e){
-                    console.error(e);
-                    payBtn.disabled=false;
-                    payBtn.textContent='Spróbuj ponownie';
-                    alert('Błąd: '+e.message);
-                }
+            // Event: class columns (Lufthansa-style)
+            app.querySelectorAll('.fc-class-col').forEach(col => {
+                col.addEventListener('click', () => {
+                    selectedClass = col.dataset.class;
+                    render();
+                });
             });
-        }
 
-        function renderConfirmation(code,total){
-            app.innerHTML=`
-                <div style="text-align:center;padding:60px 20px;">
-                    <div style="font-size:64px;margin-bottom:20px;">✅</div>
-                    <h2 style="font-family:var(--font-display);font-size:32px;font-weight:700;color:#2ecc71;margin-bottom:8px;">Rezerwacja potwierdzona!</h2>
-                    <p style="color:var(--gray-400);margin-bottom:24px;">Twój kod rezerwacji:</p>
-                    <div style="font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--gold-500);letter-spacing:6px;margin-bottom:8px;">${code}</div>
-                    <p style="color:var(--gray-400);font-size:14px;margin-bottom:8px;">Łączna kwota: <strong style="color:var(--white);">${total.toLocaleString('pl-PL')} PLN</strong></p>
-                    <p style="color:var(--gray-400);font-size:13px;margin-bottom:40px;">Rezerwacja została zapisana na Twoim koncie. Możesz ją zobaczyć w panelu „Zarządzaj rezerwacją".</p>
-                    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                        <a href="rezerwacje.html" class="btn btn-gold btn-lg" style="text-decoration:none;">Moje rezerwacje</a>
-                        <a href="index.html" class="btn btn-outline btn-lg" style="text-decoration:none;">Strona główna</a>
-                    </div>
-                </div>
-            `;
-            // Hide progress bar
-            document.getElementById('progress').style.display='none';
-        }
+            // Event: date strip
+            app.querySelectorAll('.date-strip-day[data-date]').forEach(el => {
+                el.addEventListener('click', () => {
+                    selectedDate = new Date(el.dataset.date + 'T12:00:00');
+                    render();
+                });
+            });
 
-        /* ============ RENDER ============ */
-        function render(){
-            renderProgress();
-            window.scrollTo({top:0,behavior:'smooth'});
+            // Event: class notice buttons
+            app.querySelectorAll('.class-notice-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedClass = btn.dataset.class;
+                    render();
+                });
+            });
 
-            if(step===1) renderTariffs('out');
-            else if(step===2 && hasReturn) renderReturnFlights();
-            else if(step===3 && hasReturn) renderTariffs('return');
-            else if((step===2 && !hasReturn)||(step===4 && hasReturn)) renderSummary();
-            else if((step===3 && !hasReturn)||(step===5 && hasReturn)) renderPassengerForm();
-            else if((step===4 && !hasReturn)||(step===6 && hasReturn)) renderServices();
-            else renderPayment();
+            // Event: next day layover
+            app.querySelectorAll('.ndo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    nextDayLayover = parseInt(btn.dataset.days);
+                    render();
+                });
+            });
         }
 
         render();
     })();
+
+    // Flight details popup
+    const AIRCRAFT_INFO={
+        'Embraer 175-E2':{bizPitch:'38"',ecoPitch:'30"',bizSeat:'RECARO R5 · 2+2',ecoSeat:'RECARO R2 · 2+2',wifi:true,meal:'Bezpłatny poczęstunek (napój + przekąska)',entertainment:'Brak systemu IFE'},
+        'A320neo':{bizPitch:'38"',ecoPitch:'30"',bizSeat:'RECARO CL3710 · 3+3',ecoSeat:'RECARO BL3530 · 3+3',wifi:true,meal:'Bezpłatny poczęstunek (napój + kanapka)',entertainment:'Streaming na urządzenie osobiste'},
+        'A321neo':{bizPitch:'38"',ecoPitch:'30"',bizSeat:'RECARO CL3710 · 3+3',ecoSeat:'RECARO BL3530 · 3+3',wifi:true,meal:'Bezpłatny poczęstunek (napój + ciepła kanapka)',entertainment:'Streaming na urządzenie osobiste'},
+        'A321XLR':{bizPitch:'40"',ecoPitch:'31"',bizSeat:'Collins Aerospace MiQ · 3+3',ecoSeat:'RECARO CL3810 · 3+3',wifi:true,meal:'Pełny posiłek ciepły + napoje',entertainment:'Ekran osobisty 10.1"'},
+        'A330-900neo':{bizPitch:'Lie-flat 1-2-1',ecoPitch:'32"',bizSeat:'Stelia Opal · 1-2-1',ecoSeat:'RECARO CL3710 · 2-4-2',wifi:true,meal:'Pełne menu z wyborem 3 dań',entertainment:'Ekran osobisty 13.3"'},
+        'Boeing 787-9':{bizPitch:'Lie-flat 1-2-1',ecoPitch:'32"',bizSeat:'Collins Aerospace Super Diamond · 1-2-1',ecoSeat:'RECARO CL3710 · 3-3-3',wifi:true,meal:'Pełne menu z wyborem 3 dań',entertainment:'Ekran osobisty 12.1"'},
+        'Boeing 777-8':{bizPitch:'Lie-flat 1-2-1',ecoPitch:'32"',bizSeat:'Collins Aerospace Horizon · 1-2-1',ecoSeat:'RECARO CL3810 · 3-3-3',wifi:true,meal:'Wielodaniowe menu premium + bar',entertainment:'Ekran osobisty 13.3" 4K'},
+        'Boeing 777-9':{bizPitch:'Lie-flat 1-2-1',ecoPitch:'32"',bizSeat:'Collins Aerospace Horizon · 1-2-1',ecoSeat:'RECARO CL3810 · 3-4-3',wifi:true,meal:'Wielodaniowe menu premium + bar',entertainment:'Ekran osobisty 13.3" 4K'},
+    };
+
+    function showFlightDetails(aircraft,classes){
+        const info=AIRCRAFT_INFO[aircraft]||AIRCRAFT_INFO['A321neo'];
+        const clsList=classes.split(',');
+        const hasBiz=clsList.includes('business');
+        const hasEco=clsList.includes('economy');
+
+        const modal=document.createElement('div');
+        modal.style.cssText='position:fixed;inset:0;z-index:2000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);';
+        modal.innerHTML=`
+            <div style="background:var(--navy-700);border:1px solid rgba(201,168,76,.15);border-radius:16px;width:95%;max-width:500px;overflow:hidden;">
+                <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;">
+                    <h3 style="font-family:var(--font-display);font-size:20px;font-weight:600;">${aircraft}</h3>
+                    <button onclick="this.closest('div[style]').parentElement.remove()" style="background:none;border:none;color:var(--gray-400);font-size:22px;cursor:pointer;">✕</button>
+                </div>
+                <div style="padding:24px;">
+                    ${hasEco?`
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--gray-400);margin-bottom:10px;font-weight:600;">Economy Class</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div style="background:var(--navy-900);border-radius:8px;padding:14px;">
+                                <div style="font-size:11px;color:var(--gray-400);">Rozstaw siedzeń</div>
+                                <div style="font-size:20px;font-weight:700;color:var(--white);margin-top:2px;">${info.ecoPitch}</div>
+                            </div>
+                            <div style="background:var(--navy-900);border-radius:8px;padding:14px;">
+                                <div style="font-size:11px;color:var(--gray-400);">Fotel</div>
+                                <div style="font-size:13px;font-weight:600;color:var(--white);margin-top:4px;">${info.ecoSeat}</div>
+                            </div>
+                        </div>
+                    </div>`:''}
+                    ${hasBiz?`
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--gold-500);margin-bottom:10px;font-weight:600;">Business Class</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div style="background:var(--navy-900);border-radius:8px;padding:14px;">
+                                <div style="font-size:11px;color:var(--gray-400);">Rozstaw siedzeń</div>
+                                <div style="font-size:20px;font-weight:700;color:var(--gold-400);margin-top:2px;">${info.bizPitch}</div>
+                            </div>
+                            <div style="background:var(--navy-900);border-radius:8px;padding:14px;">
+                                <div style="font-size:11px;color:var(--gray-400);">Fotel</div>
+                                <div style="font-size:13px;font-weight:600;color:var(--gold-400);margin-top:4px;">${info.bizSeat}</div>
+                            </div>
+                        </div>
+                    </div>`:''}
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--navy-900);border-radius:8px;">
+                            <span style="font-size:20px;">📶</span>
+                            <div><div style="font-size:13px;font-weight:600;color:var(--white);">Wi-Fi na pokładzie</div><div style="font-size:11px;color:var(--gray-400);">${info.wifi?'Dostępne (płatne)':'Niedostępne'}</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--navy-900);border-radius:8px;">
+                            <span style="font-size:20px;">🍽</span>
+                            <div><div style="font-size:13px;font-weight:600;color:var(--white);">Poczęstunek</div><div style="font-size:11px;color:var(--gray-400);">${info.meal}</div></div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--navy-900);border-radius:8px;">
+                            <span style="font-size:20px;">🎬</span>
+                            <div><div style="font-size:13px;font-weight:600;color:var(--white);">Rozrywka</div><div style="font-size:11px;color:var(--gray-400);">${info.entertainment}</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+    }
     </script>
 </body>
 </html>
