@@ -64,7 +64,7 @@
     </div>
 
     <script>
-    firebase.initializeApp({
+    if(!firebase.apps.length) firebase.initializeApp({
         apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
         authDomain:"vis-airlines-b1677.firebaseapp.com",
         projectId:"vis-airlines-b1677",
@@ -75,7 +75,8 @@
     const auth=firebase.auth();
 
     // If already logged in, redirect
-    auth.onAuthStateChanged(u=>{if(u)window.location.href='rezerwacje.html';});
+    let isLoggingIn=false;
+    auth.onAuthStateChanged(u=>{if(u&&!isLoggingIn)window.location.href='rezerwacje.html';});
 
     const btn=document.getElementById('login-btn');
     const errEl=document.getElementById('error-msg');
@@ -89,13 +90,23 @@
         const pass=document.getElementById('password').value;
         if(!email||!pass){showError('Wypełnij wszystkie pola.');return;}
         btn.disabled=true;btn.innerHTML='<span class="auth-spinner"></span>';
+        isLoggingIn=true;
         try{
             await auth.signInWithEmailAndPassword(email,pass);
             window.location.href='rezerwacje.html';
         }catch(e){
-            const msgs={'auth/user-not-found':'Nie znaleziono konta z tym e-mailem.','auth/wrong-password':'Nieprawidłowe hasło.','auth/invalid-email':'Nieprawidłowy format e-mail.','auth/invalid-credential':'Nieprawidłowy e-mail lub hasło.'};
-            showError(msgs[e.code]||'Błąd logowania. Spróbuj ponownie.');
+            console.error('Login error:',e.code,e.message);
+            const msgs={
+                'auth/user-not-found':'Nie znaleziono konta z tym e-mailem.',
+                'auth/wrong-password':'Nieprawidłowe hasło.',
+                'auth/invalid-email':'Nieprawidłowy format e-mail.',
+                'auth/invalid-credential':'Nieprawidłowy e-mail lub hasło.',
+                'auth/too-many-requests':'Zbyt wiele prób. Poczekaj chwilę i spróbuj ponownie.',
+                'auth/network-request-failed':'Błąd sieci. Sprawdź połączenie internetowe.'
+            };
+            showError(msgs[e.code]||'Błąd logowania: '+e.message);
             btn.disabled=false;btn.textContent='Zaloguj się';
+            isLoggingIn=false;
         }
     });
 
