@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siatka połączeń — VIS Airlines</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--navy-800);color:var(--white);font-family:var(--font-body);overflow:hidden;height:100vh}
+
+        .rm-top{position:fixed;top:94px;left:0;right:0;z-index:800;background:rgba(4,10,20,.95);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:12px 48px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+        .rm-search-group{display:flex;align-items:center;gap:8px;flex:1;min-width:200px}
+        .rm-search-label{font-size:11px;color:var(--gray-400);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+        .rm-search-input{padding:10px 16px;border-radius:8px;background:var(--navy-900);border:1px solid rgba(255,255,255,.08);color:var(--white);font-size:14px;font-family:var(--font-body);outline:none;width:100%;max-width:240px;transition:border-color .3s}
+        .rm-search-input:focus{border-color:var(--gold-600)}
+        .rm-search-input::placeholder{color:var(--gray-500)}
+        .rm-info{font-size:12px;color:var(--gray-400);margin-left:auto;white-space:nowrap}
+        .rm-info strong{color:var(--gold-500)}
+
+        #map{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1}
+
+        /* Custom Leaflet overrides */
+        .leaflet-container{background:#0a1628!important;font-family:var(--font-body)!important}
+        .leaflet-tile{filter:saturate(0.15) brightness(0.45) contrast(1.2)!important}
+        .leaflet-control-zoom{border:1px solid rgba(255,255,255,.1)!important;border-radius:8px!important;overflow:hidden}
+        .leaflet-control-zoom a{background:var(--navy-700)!important;color:var(--gold-500)!important;border-bottom:1px solid rgba(255,255,255,.06)!important;width:36px!important;height:36px!important;line-height:36px!important;font-size:18px!important}
+        .leaflet-control-zoom a:hover{background:var(--navy-600)!important}
+
+        .country-marker{display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:var(--font-body);font-weight:700;color:var(--white);cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.4);border:2px solid rgba(255,255,255,.15)}
+        .country-marker:hover{transform:scale(1.15);box-shadow:0 6px 30px rgba(0,0,0,.5)}
+        .country-marker.hub{background:var(--gold-600);color:var(--navy-800);border-color:var(--gold-500)}
+        .country-marker.int{background:rgba(10,22,40,.9);border-color:rgba(201,168,76,.3)}
+
+        .route-line{stroke:rgba(201,168,76,.25);stroke-width:1.5;fill:none}
+
+        /* Popup */
+        .rm-popup{background:var(--navy-700)!important;border:1px solid rgba(201,168,76,.15)!important;border-radius:12px!important;box-shadow:0 16px 48px rgba(0,0,0,.5)!important;min-width:280px}
+        .rm-popup .leaflet-popup-content-wrapper{background:transparent!important;border-radius:12px!important;padding:0!important;margin:0!important}
+        .rm-popup .leaflet-popup-content{margin:0!important;width:auto!important}
+        .rm-popup .leaflet-popup-tip{background:var(--navy-700)!important;border:1px solid rgba(201,168,76,.15)!important}
+        .leaflet-popup-close-button{color:var(--gray-400)!important;font-size:20px!important;top:8px!important;right:12px!important}
+
+        .popup-header{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+        .popup-country{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--white)}
+        .popup-count{font-size:12px;color:var(--gold-500);margin-top:2px}
+        .popup-airports{padding:8px 0;max-height:300px;overflow-y:auto}
+        .popup-airport{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;transition:background .15s;cursor:pointer;text-decoration:none}
+        .popup-airport:hover{background:rgba(201,168,76,.06)}
+        .popup-code{font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--gold-500);min-width:40px}
+        .popup-city{font-size:14px;color:var(--gray-200);flex:1;margin-left:12px}
+        .popup-routes{font-size:11px;color:var(--gray-400)}
+        .popup-arrow{color:var(--gray-500);font-size:14px}
+
+        @media(max-width:768px){
+            .rm-top{padding:10px 16px;top:88px}
+            .rm-search-input{max-width:100%}
+            .rm-info{display:none}
+        }
+    </style>
+</head>
+<body>
+    <script src="js/nav.js"></script>
+    <div id="map"></div>
+    <div class="rm-top">
+        <div class="rm-search-group">
+            <span class="rm-search-label">Skąd</span>
+            <input class="rm-search-input" placeholder="CPK" id="rm-from" value="CPK">
+        </div>
+        <div class="rm-search-group">
+            <span class="rm-search-label">Dokąd</span>
+            <input class="rm-search-input" placeholder="Wybierz miejsce przylotu" id="rm-to">
+        </div>
+        <div class="rm-info">Siatka połączeń VIS Airlines · <strong id="rm-total">0</strong> kierunków</div>
+    </div>
+
+    <script>
+    // === DATA ===
+    const HUB={code:'CPK',city:'Warszawa / CPK',lat:52.17,lng:20.97};
+
+    const AIRPORTS={
+        // Poland
+        'BZG':{city:'Bydgoszcz',lat:53.10,lng:17.98,country:'Polska',flag:'🇵🇱'},
+        // UK
+        'MAN':{city:'Manchester',lat:53.35,lng:-2.27,country:'Wielka Brytania',flag:'🇬🇧'},
+        'EDI':{city:'Edynburg',lat:55.95,lng:-3.37,country:'Wielka Brytania',flag:'🇬🇧'},
+        'NCL':{city:'Newcastle',lat:55.04,lng:-1.69,country:'Wielka Brytania',flag:'🇬🇧'},
+        'BHX':{city:'Birmingham',lat:52.45,lng:-1.75,country:'Wielka Brytania',flag:'🇬🇧'},
+        'LHR':{city:'Londyn',lat:51.47,lng:-0.46,country:'Wielka Brytania',flag:'🇬🇧'},
+        // Germany
+        'BER':{city:'Berlin',lat:52.36,lng:13.51,country:'Niemcy',flag:'🇩🇪'},
+        'LEJ':{city:'Lipsk',lat:51.42,lng:12.24,country:'Niemcy',flag:'🇩🇪'},
+        // Denmark
+        'AAR':{city:'Aarhus',lat:56.30,lng:10.62,country:'Dania',flag:'🇩🇰'},
+        'AAL':{city:'Aalborg',lat:57.09,lng:9.85,country:'Dania',flag:'🇩🇰'},
+        // Czech Republic
+        'BRN':{city:'Brno',lat:49.15,lng:16.69,country:'Czechy',flag:'🇨🇿'},
+        // Finland
+        'HEL':{city:'Helsinki',lat:60.32,lng:24.97,country:'Finlandia',flag:'🇫🇮'},
+        // Spain
+        'ALC':{city:'Alicante',lat:38.28,lng:-0.56,country:'Hiszpania',flag:'🇪🇸'},
+        // Australia
+        'SYD':{city:'Sydney',lat:-33.95,lng:151.18,country:'Australia',flag:'🇦🇺'},
+        'PER':{city:'Perth',lat:-31.94,lng:115.97,country:'Australia',flag:'🇦🇺'},
+        // Canada
+        'YYZ':{city:'Toronto',lat:43.68,lng:-79.63,country:'Kanada',flag:'🇨🇦'},
+        // China
+        'PEK':{city:'Pekin',lat:40.08,lng:116.58,country:'Chiny',flag:'🇨🇳'},
+    };
+
+    // Group by country
+    const countries={};
+    Object.entries(AIRPORTS).forEach(([code,ap])=>{
+        if(!countries[ap.country]) countries[ap.country]={flag:ap.flag,airports:[],lat:0,lng:0};
+        countries[ap.country].airports.push({code,...ap});
+    });
+    // Calculate center for each country
+    Object.values(countries).forEach(c=>{
+        c.lat=c.airports.reduce((s,a)=>s+a.lat,0)/c.airports.length;
+        c.lng=c.airports.reduce((s,a)=>s+a.lng,0)/c.airports.length;
+    });
+
+    document.getElementById('rm-total').textContent=Object.keys(AIRPORTS).length;
+
+    // === MAP ===
+    const map=L.map('map',{
+        center:[30,15],
+        zoom:3,
+        minZoom:2,
+        maxZoom:8,
+        zoomControl:true,
+        attributionControl:false
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{
+        maxZoom:19
+    }).addTo(map);
+
+    // === ROUTE LINES ===
+    Object.values(AIRPORTS).forEach(ap=>{
+        const line=L.polyline([[HUB.lat,HUB.lng],[ap.lat,ap.lng]],{
+            color:'rgba(201,168,76,0.2)',
+            weight:1.5,
+            dashArray:'6,4'
+        }).addTo(map);
+    });
+
+    // === HUB MARKER ===
+    const hubSize=48;
+    const hubIcon=L.divIcon({
+        className:'',
+        html:`<div class="country-marker hub" style="width:${hubSize}px;height:${hubSize}px;font-size:16px;">CPK</div>`,
+        iconSize:[hubSize,hubSize],
+        iconAnchor:[hubSize/2,hubSize/2]
+    });
+    L.marker([HUB.lat,HUB.lng],{icon:hubIcon}).addTo(map)
+        .bindPopup(`<div class="popup-header"><div class="popup-country">🇵🇱 CPK — Hub VIS Airlines</div><div class="popup-count">Centralny Port Komunikacyjny · Warszawa</div></div>`,{className:'rm-popup'});
+
+    // === COUNTRY MARKERS ===
+    Object.entries(countries).forEach(([name,c])=>{
+        const count=c.airports.length;
+        const size=count>=3?44:38;
+        const icon=L.divIcon({
+            className:'',
+            html:`<div class="country-marker int" style="width:${size}px;height:${size}px;font-size:${count>=10?16:14}px;">${count}</div>`,
+            iconSize:[size,size],
+            iconAnchor:[size/2,size/2]
+        });
+
+        let popupHTML=`<div class="popup-header"><div class="popup-country">${c.flag} ${name}</div><div class="popup-count">${count} ${count===1?'połączenie':count<5?'połączenia':'połączeń'}</div></div><div class="popup-airports">`;
+        c.airports.forEach(ap=>{
+            popupHTML+=`<a class="popup-airport" href="flights.html?from=CPK&to=${ap.code}&dep=${new Date().toISOString().split('T')[0]}&type=one&class=economy&adults=1&children=0&infants=0">
+                <span class="popup-code">${ap.code}</span>
+                <span class="popup-city">${ap.city}</span>
+                <span class="popup-arrow">→</span>
+            </a>`;
+        });
+        popupHTML+='</div>';
+
+        L.marker([c.lat,c.lng],{icon}).addTo(map)
+            .bindPopup(popupHTML,{className:'rm-popup',maxWidth:320});
+    });
+
+    // === SEARCH ===
+    const rmTo=document.getElementById('rm-to');
+    rmTo.addEventListener('keydown',e=>{
+        if(e.key==='Enter'){
+            const q=rmTo.value.trim().toUpperCase();
+            if(AIRPORTS[q]){
+                const ap=AIRPORTS[q];
+                map.flyTo([ap.lat,ap.lng],5,{duration:1.5});
+            } else {
+                // Search by city name
+                const found=Object.entries(AIRPORTS).find(([code,a])=>a.city.toLowerCase().includes(rmTo.value.trim().toLowerCase()));
+                if(found){
+                    map.flyTo([found[1].lat,found[1].lng],5,{duration:1.5});
+                }
+            }
+        }
+    });
+
+    // Fit bounds to show all routes
+    const allCoords=[[HUB.lat,HUB.lng],...Object.values(AIRPORTS).map(a=>[a.lat,a.lng])];
+    map.fitBounds(allCoords,{padding:[100,100],maxZoom:4});
+    </script>
+    <script src="js/main.js"></script>
+</body>
+</html>
