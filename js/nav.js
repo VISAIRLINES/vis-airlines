@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 <div class="vis-nav-logo-text">VIS <em>Airlines</em></div>
             </a>
             <div class="vis-nav-links">
-                <a href="flights.html" class="vis-nav-link">Zaplanuj podróż</a>
+                <a href="routemap.html" class="vis-nav-link">Zaplanuj podróż</a>
                 <a href="odprawa.html" class="vis-nav-link">Odpraw się</a>
                 <a href="rezerwacje.html" class="vis-nav-link" id="vis-manage-link">Zarządzaj rezerwacją</a>
                 <div class="vis-nav-dd" id="vis-dd">
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function(){
             <button class="vis-drawer-close" id="vis-drawer-close">✕</button>
         </div>
         <div class="vis-drawer-links">
-            <a href="flights.html" class="vis-drawer-link">Zaplanuj podróż</a>
+            <a href="routemap.html" class="vis-drawer-link">Zaplanuj podróż</a>
             <a href="odprawa.html" class="vis-drawer-link">Odpraw się</a>
             <a href="rezerwacje.html" class="vis-drawer-link">Zarządzaj rezerwacją</a>
             <a href="fleet.html" class="vis-drawer-link">Flota</a>
