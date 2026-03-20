@@ -826,7 +826,7 @@
 
     <script>
     // Firebase auth for nav
-    firebase.initializeApp({
+    if(!firebase.apps.length) firebase.initializeApp({
         apiKey:"AIzaSyBhn5Tv3iUCBYczQhfYnlHEjBIBDlPk0HQ",
         authDomain:"vis-airlines-b1677.firebaseapp.com",
         projectId:"vis-airlines-b1677",
